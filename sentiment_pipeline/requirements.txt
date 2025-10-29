@@ -1,0 +1,52 @@
+
+# Web Scraping Libraries
+playwright  # Used for news scraping
+selenium    # Used for tweet scraping
+# Note: Playwright usually requires installing browser executables separately: `playwright install`
+
+# NLP/Sentiment Analysis Libraries
+transformers # Core library for FinBERT model
+torch        # The underlying ML framework required by transformers (PyTorch)
+# Note: Use the specific torch package for your environment (e.g., torch==2.x.x+cu118 for CUDA)
+
+# Database Connector
+pymongo      # MongoDB driver (includes required dependencies for MongoDB Atlas/SRV URIs)
+
+# Configuration Management
+python-dotenv # Used to load environment variables from a .env file
+
+# Other useful packages that might be implicitly required or good to have:
+# lxml (sometimes used by playwright/selenium for parsing)
+# sentencepiece (common dependency for transformer models)
+# protobuf (common dependency for transformer models)
+```
+
+## Recommended `requirements.txt`
+
+For a robust and functional environment, here is the consolidated and refined list of dependencies you should use in your `requirements.txt` file:
+
+```
+# Core Libraries
+# -----------------------------------------------------------
+# MongoDB Driver
+pymongo
+
+# Web Scraping Tools
+playwright
+selenium
+supervisor
+# NLP/Machine Learning Stack
+# Note: You may need to replace 'torch' with the specific version 
+# that supports your environment (e.g., CUDA) for best performance.
+transformers
+torch
+
+# Configuration
+python-dotenv
+
+# Common underlying dependencies often required by the ML/NLP stack
+# You can remove these if you prefer to rely on `transformers` installation
+# to pull them in, but including them ensures direct installation.
+# sentencepiece
+# protobuf
+```

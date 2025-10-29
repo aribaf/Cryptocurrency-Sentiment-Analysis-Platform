@@ -1,0 +1,16 @@
+# 1. Base Image: Use an official Python image
+FROM python:3.10-slim
+
+# 2. Working Directory: Set the directory inside the container
+WORKDIR /app
+
+# 3. Install Dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 4. Copy Code: Copy all your project files and the supervisor config
+COPY . .
+
+# 5. Entry Command: Run the supervisor process manager instead of a single script
+# Supervisor will now run 'automation.py' and the 4 other scripts concurrently.
+CMD ["/usr/local/bin/supervisord", "-c", "supervisord.conf"]

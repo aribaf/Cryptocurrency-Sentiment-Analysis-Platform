@@ -19,12 +19,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install system libs for browsers
+      - name: Install system libs for browsers (adjusted)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
-            libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpangocairo-1.0-0 \
-            libasound2 libxss1 libgtk-3-0
+          # install a minimal set of libraries Playwright/Chromium needs
+          sudo apt-get install -y --no-install-recommends \
+            libnss3 \
+            libatk1.0-0 \
+            libcups2 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxrandr2 \
+            libgbm1 \
+            libpangocairo-1.0-0 \
+            libasound2-plugins \
+            libxss1 \
+            libgtk-3-0
+
+          # let playwright also try to install deps (this is idempotent)
+          # (the python package provides `playwright install-deps`)
+          python -m pip install --upgrade pip setuptools
+          pip install playwright || true
+          python -m playwright install-deps || true
 
       - name: Install Python packages (CPU PyTorch + others)
         run: |

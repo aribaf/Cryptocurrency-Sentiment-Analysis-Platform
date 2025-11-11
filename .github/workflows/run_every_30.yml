@@ -26,21 +26,21 @@ jobs:
       - name: Install system deps (chromium + unzip)
         run: |
           sudo apt-get update
-          # install chromium browser and unzip
-          sudo apt-get install -y --no-install-recommends chromium-browser unzip ca-certificates wget
+          # install chromium browser and unzip (and curl if missing)
+          sudo apt-get install -y --no-install-recommends chromium-browser unzip ca-certificates wget curl
 
       - name: Install Python deps (light)
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir selenium pymongo python-dotenv playwright
+          pip install --no-cache-dir selenium pymongo python-dotenv playwright webdriver-manager
 
           # install playwright's browser helper (safe)
           python -m playwright install chromium || true
 
-      - name: Install chromedriver matching Chromium version
+      - name: Install chromedriver (apt fallback + webdriver-manager fallback)
         run: |
           set -e
-          # discover chromium binary path and version
+          echo "Looking for Chromium binary and version..."
           if command -v chromium-browser >/dev/null 2>&1; then
             CHROME_BIN=$(command -v chromium-browser)
             CHROME_VERSION=$($CHROME_BIN --version | awk '{print $2}')
@@ -48,7 +48,6 @@ jobs:
             CHROME_BIN=$(command -v google-chrome-stable)
             CHROME_VERSION=$($CHROME_BIN --version | awk '{print $3}')
           else
-            echo "No chromium/google-chrome binary found; exiting with nonfatal message"
             CHROME_BIN=""
             CHROME_VERSION=""
           fi
@@ -56,21 +55,36 @@ jobs:
           echo "Detected chrome binary: ${CHROME_BIN}"
           echo "Detected chrome version: ${CHROME_VERSION}"
 
-          if [ -n "${CHROME_VERSION}" ]; then
-            MAJOR=$(echo "${CHROME_VERSION}" | cut -d. -f1)
-            echo "Chrome major version: ${MAJOR}"
-            LATEST=$(curl -sS "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR}")
-            echo "Chromedriver version to download: ${LATEST}"
-            URL="https://chromedriver.storage.googleapis.com/${LATEST}/chromedriver_linux64.zip"
-            echo "Downloading chromedriver from: ${URL}"
-            curl -sS -L -o /tmp/chromedriver_linux64.zip "${URL}"
-            unzip -o /tmp/chromedriver_linux64.zip -d /tmp
-            sudo mv -f /tmp/chromedriver /usr/local/bin/chromedriver
+          echo "Attempt 1: install chromium-chromedriver from apt (fast, often matches)"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends chromium-chromedriver || true
+
+          if [ -x /usr/bin/chromedriver ]; then
+            echo "Chromedriver installed at /usr/bin/chromedriver (from apt). Symlinking to /usr/local/bin"
+            sudo ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
             sudo chmod +x /usr/local/bin/chromedriver
-            echo "Installed chromedriver: $(/usr/local/bin/chromedriver --version || true)"
+            /usr/local/bin/chromedriver --version || true
           else
-            echo "Skipping chromedriver download because Chrome version not found."
+            echo "Apt chromedriver not available or failed. Attempting Python webdriver-manager fallback..."
+            python - <<'PY'
+import os, shutil, sys
+try:
+    from webdriver_manager.chrome import ChromeDriverManager
+    path = ChromeDriverManager().install()
+    print("webdriver-manager downloaded chromedriver to:", path)
+    dest = "/usr/local/bin/chromedriver"
+    shutil.copy(path, dest)
+    os.chmod(dest, 0o755)
+    print("Copied chromedriver to", dest)
+    print("Chromedriver version:", os.popen(dest + " --version").read())
+except Exception as e:
+    print("webdriver-manager fallback failed:", e, file=sys.stderr)
+    raise
+PY
           fi
+
+          echo "Final chromedriver location (ls -l):"
+          ls -la /usr/local/bin/chromedriver || ls -la /usr/bin/chromedriver || true
 
       - name: Prepare logs directory (repo root)
         run: |

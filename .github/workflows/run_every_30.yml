@@ -1,60 +1,98 @@
-name: Run crypto backend every 30 minutes (safe sequential jobs, logs saved)
+name: Run crypto backend every 30 minutes (safe sequential jobs + chromedriver auto-install)
 
-# prevent overlapping runs (cancel previous)
 concurrency:
   group: crypto-pipeline
   cancel-in-progress: true
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # every 30 minutes
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
-  # ---------- JOB: Twitter Scrape (runs first) ----------
+  # ---------- JOB: Twitter Scrape (install matching chromedriver) ----------
   twitter:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
-        with: { python-version: '3.11' }
+        with:
+          python-version: '3.11'
 
-      - name: Install minimal system deps
+      - name: Install system deps (chromium + unzip)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libnss3 libxss1 libgtk-3-0 libgbm1
+          # install chromium browser and unzip
+          sudo apt-get install -y --no-install-recommends chromium-browser unzip ca-certificates wget
 
       - name: Install Python deps (light)
         run: |
           python -m pip install --upgrade pip
           pip install --no-cache-dir selenium pymongo python-dotenv playwright
 
-          # install playwright browsers
-          python -m playwright install chromium
+          # install playwright's browser helper (safe)
+          python -m playwright install chromium || true
 
-      - name: Prepare logs dir
-        run: mkdir -p logs
+      - name: Install chromedriver matching Chromium version
+        run: |
+          set -e
+          # discover chromium binary path and version
+          if command -v chromium-browser >/dev/null 2>&1; then
+            CHROME_BIN=$(command -v chromium-browser)
+            CHROME_VERSION=$($CHROME_BIN --version | awk '{print $2}')
+          elif command -v google-chrome-stable >/dev/null 2>&1; then
+            CHROME_BIN=$(command -v google-chrome-stable)
+            CHROME_VERSION=$($CHROME_BIN --version | awk '{print $3}')
+          else
+            echo "No chromium/google-chrome binary found; exiting with nonfatal message"
+            CHROME_BIN=""
+            CHROME_VERSION=""
+          fi
 
-      - name: Write .env from secrets
+          echo "Detected chrome binary: ${CHROME_BIN}"
+          echo "Detected chrome version: ${CHROME_VERSION}"
+
+          if [ -n "${CHROME_VERSION}" ]; then
+            MAJOR=$(echo "${CHROME_VERSION}" | cut -d. -f1)
+            echo "Chrome major version: ${MAJOR}"
+            LATEST=$(curl -sS "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${MAJOR}")
+            echo "Chromedriver version to download: ${LATEST}"
+            URL="https://chromedriver.storage.googleapis.com/${LATEST}/chromedriver_linux64.zip"
+            echo "Downloading chromedriver from: ${URL}"
+            curl -sS -L -o /tmp/chromedriver_linux64.zip "${URL}"
+            unzip -o /tmp/chromedriver_linux64.zip -d /tmp
+            sudo mv -f /tmp/chromedriver /usr/local/bin/chromedriver
+            sudo chmod +x /usr/local/bin/chromedriver
+            echo "Installed chromedriver: $(/usr/local/bin/chromedriver --version || true)"
+          else
+            echo "Skipping chromedriver download because Chrome version not found."
+          fi
+
+      - name: Prepare logs directory (repo root)
+        run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          mkdir -p "$GITHUB_WORKSPACE/logs"
+          ls -la "$GITHUB_WORKSPACE"
+
+      - name: Write .env from secrets (repo root)
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
         run: |
-          echo "MONGO_URI=${MONGO_URI}" > .env
-          echo "TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}" >> .env
-          echo "HEADLESS=true" >> .env
+          echo "MONGO_URI=${MONGO_URI}" > "$GITHUB_WORKSPACE/.env"
+          echo "TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}" >> "$GITHUB_WORKSPACE/.env"
+          echo "HEADLESS=true" >> "$GITHUB_WORKSPACE/.env"
+          echo ".env created at $GITHUB_WORKSPACE/.env"
 
-      - name: Run twitter_scraper (one cycle, limited)
-        working-directory: ./sentiment_pipeline
-        env:
-          MAX_TWEETS_PER_TAG: 200   # limit tweets per tag (change if needed)
+      - name: Run twitter_scraper_selenium.py (one cycle)
         run: |
-          echo "=== START twitter_scraper_selenium.py ===" > ../logs/twitter.log
-          python twitter_scraper_selenium.py >> ../logs/twitter.log 2>&1 || true
-          echo "=== END twitter_scraper_selenium.py ===" >> ../logs/twitter.log
+          echo "=== START twitter_scraper_selenium.py ===" > "$GITHUB_WORKSPACE/logs/twitter.log"
+          python "$GITHUB_WORKSPACE/sentiment_pipeline/twitter_scraper_selenium.py" >> "$GITHUB_WORKSPACE/logs/twitter.log" 2>&1 || true
+          echo "=== END twitter_scraper_selenium.py ===" >> "$GITHUB_WORKSPACE/logs/twitter.log"
 
       - name: Upload twitter log artifact
         uses: actions/upload-artifact@v4
@@ -62,7 +100,7 @@ jobs:
           name: twitter-log-${{ github.run_id }}
           path: logs/twitter.log
 
-  # ---------- JOB: Sentiment Analyzer (runs after twitter) ----------
+  # ---------- JOB: Sentiment Analyzer (needs twitter) ----------
   analyzer:
     runs-on: ubuntu-latest
     needs: twitter
@@ -72,32 +110,32 @@ jobs:
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
-        with: { python-version: '3.11' }
+        with:
+          python-version: '3.11'
 
       - name: Install Python packages (CPU torch + transformers)
         run: |
           python -m pip install --upgrade pip
           pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchvision torchaudio --extra-index-url https://pypi.org/simple
-          pip install --no-cache-dir transformers pymongo python-dotenv
+          pip install --no-cache-dir transformers pymongo python-dotenv sentencepiece
 
       - name: Prepare logs dir
-        run: mkdir -p logs
+        run: mkdir -p "$GITHUB_WORKSPACE/logs"
 
       - name: Write .env from secrets
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
-          echo "MONGO_URI=${MONGO_URI}" > .env
+          echo "MONGO_URI=${MONGO_URI}" > "$GITHUB_WORKSPACE/.env"
 
-      - name: Run sentiment_analyzer (process limited batch)
-        working-directory: ./sentiment_pipeline
+      - name: Run sentiment_analyzer (limited batch)
         env:
-          BATCH_SIZE: 64            # number of texts processed at once
-          MAX_TWEETS_TO_ANALYZE: 1000  # max tweets to pull/update per run
+          BATCH_SIZE: 32
+          MAX_TWEETS_TO_ANALYZE: 200
         run: |
-          echo "=== START sentiment_analyzer.py ===" > ../logs/analyzer.log
-          python sentiment_analyzer.py >> ../logs/analyzer.log 2>&1 || true
-          echo "=== END sentiment_analyzer.py ===" >> ../logs/analyzer.log
+          echo "=== START sentiment_analyzer.py ===" > "$GITHUB_WORKSPACE/logs/analyzer.log"
+          python "$GITHUB_WORKSPACE/sentiment_pipeline/sentiment_analyzer.py" >> "$GITHUB_WORKSPACE/logs/analyzer.log" 2>&1 || true
+          echo "=== END sentiment_analyzer.py ===" >> "$GITHUB_WORKSPACE/logs/analyzer.log"
 
       - name: Upload analyzer log artifact
         uses: actions/upload-artifact@v4
@@ -105,7 +143,7 @@ jobs:
           name: analyzer-log-${{ github.run_id }}
           path: logs/analyzer.log
 
-  # ---------- JOB: Aggregator (runs after analyzer) ----------
+  # ---------- JOB: Aggregator (needs analyzer) ----------
   aggregator:
     runs-on: ubuntu-latest
     needs: analyzer
@@ -113,30 +151,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
-        with: { python-version: '3.11' }
+        with:
+          python-version: '3.11'
 
-      - name: Install pymongo
+      - name: Install pymongo & pandas
         run: |
           python -m pip install --upgrade pip
-          pip install pymongo python-dotenv pandas
+          pip install --no-cache-dir pymongo python-dotenv pandas
 
       - name: Prepare logs dir
-        run: mkdir -p logs
+        run: mkdir -p "$GITHUB_WORKSPACE/logs"
 
       - name: Write .env from secrets
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
-          echo "MONGO_URI=${MONGO_URI}" > .env
+          echo "MONGO_URI=${MONGO_URI}" > "$GITHUB_WORKSPACE/.env"
 
-      - name: Run sentiment_aggregator (one quick cycle)
-        working-directory: ./sentiment_pipeline
+      - name: Run sentiment_aggregator (one cycle)
         run: |
-          echo "=== START sentiment_aggregator.py ===" > ../logs/aggregator.log
-          python sentiment_aggregator.py >> ../logs/aggregator.log 2>&1 || true
-          echo "=== END sentiment_aggregator.py ===" >> ../logs/aggregator.log
+          echo "=== START sentiment_aggregator.py ===" > "$GITHUB_WORKSPACE/logs/aggregator.log"
+          python "$GITHUB_WORKSPACE/sentiment_pipeline/sentiment_aggregator.py" >> "$GITHUB_WORKSPACE/logs/aggregator.log" 2>&1 || true
+          echo "=== END sentiment_aggregator.py ===" >> "$GITHUB_WORKSPACE/logs/aggregator.log"
 
       - name: Upload aggregator log artifact
         uses: actions/upload-artifact@v4
@@ -144,40 +182,59 @@ jobs:
           name: aggregator-log-${{ github.run_id }}
           path: logs/aggregator.log
 
-  # ---------- JOB: news & reddit automation (runs in parallel/simple) ----------
+  # ---------- JOB: news & reddit automation (other) ----------
   other:
     runs-on: ubuntu-latest
-    needs: twitter   # optional: run after twitter or remove "needs" to run parallel
+    needs: twitter
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
-        with: { python-version: '3.11' }
+        with:
+          python-version: '3.11'
 
-      - name: Install deps
+      - name: Install deps (minimal)
         run: |
           python -m pip install --upgrade pip
-          pip install playwright pymongo python-dotenv
+          pip install --no-cache-dir playwright pymongo python-dotenv
 
-      - name: Run news.py
-        working-directory: ./sentiment_pipeline/news
+      - name: Prepare logs dir (repo-root)
         run: |
-          mkdir -p logs
-          echo "=== START news.py ===" > ../../logs/news.log
-          python news.py >> ../../logs/news.log 2>&1 || true
-          echo "=== END news.py ===" >> ../../logs/news.log
+          echo "Workspace: $GITHUB_WORKSPACE"
+          mkdir -p "$GITHUB_WORKSPACE/logs"
+          ls -la "$GITHUB_WORKSPACE"
 
-      - name: Run automation.py
-        working-directory: ./sentiment_pipeline/reddit
+      - name: Create .env from secrets (repo-root)
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
         run: |
-          echo "=== START automation.py ===" > ../../logs/automation.log
-          python automation.py >> ../../logs/automation.log 2>&1 || true
-          echo "=== END automation.py ===" >> ../../logs/automation.log
+          echo "MONGO_URI=${MONGO_URI}" > "$GITHUB_WORKSPACE/.env"
+          echo "REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}" >> "$GITHUB_WORKSPACE/.env"
+          echo "REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}" >> "$GITHUB_WORKSPACE/.env"
+          echo "REDDIT_USER_AGENT=${REDDIT_USER_AGENT}" >> "$GITHUB_WORKSPACE/.env"
+          echo "HEADLESS=true" >> "$GITHUB_WORKSPACE/.env"
+
+      - name: Run news.py (one cycle) - absolute path
+        run: |
+          echo "=== START news.py ===" > "$GITHUB_WORKSPACE/logs/news.log"
+          python "$GITHUB_WORKSPACE/sentiment_pipeline/news/news.py" >> "$GITHUB_WORKSPACE/logs/news.log" 2>&1 || true
+          echo "=== END news.py ===" >> "$GITHUB_WORKSPACE/logs/news.log"
+
+      - name: Run automation.py (one cycle) - absolute path
+        run: |
+          echo "=== START automation.py ===" > "$GITHUB_WORKSPACE/logs/automation.log"
+          python "$GITHUB_WORKSPACE/sentiment_pipeline/reddit/automation.py" >> "$GITHUB_WORKSPACE/logs/automation.log" 2>&1 || true
+          echo "=== END automation.py ===" >> "$GITHUB_WORKSPACE/logs/automation.log"
 
       - name: Upload other logs
         uses: actions/upload-artifact@v4
         with:
           name: other-logs-${{ github.run_id }}
-          path: logs
+          path: |
+            logs/news.log
+            logs/automation.log

@@ -19,24 +19,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install system deps (for playwright/chrome)
+      - name: Install system libs for browsers
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpangocairo-1.0-0 libasound2 libxss1 libgtk-3-0
+          sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+            libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpangocairo-1.0-0 \
+            libasound2 libxss1 libgtk-3-0
 
-      - name: Install Python packages (cached)
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Pip install deps
+      - name: Install Python packages (CPU PyTorch + others)
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt || pip install playwright selenium transformers torch pymongo python-dotenv pandas praw || true; else pip install playwright selenium transformers torch pymongo python-dotenv pandas praw || true; fi
-          # install playwright browsers
-          python -m playwright install --with-deps chromium
+
+          # Install CPU-only PyTorch wheels (avoids huge GPU wheels and many failures)
+          pip install --no-cache-dir \
+            --index-url https://download.pytorch.org/whl/cpu \
+            torch torchvision torchaudio \
+            --extra-index-url https://pypi.org/simple
+
+          # Install other required packages (including sentencepiece for transformers models)
+          pip install --no-cache-dir playwright selenium transformers pymongo python-dotenv pandas praw sentencepiece
+
+          # Install Playwright browser binaries (chromium)
+          python -m playwright install chromium
 
       - name: Create logs directory
         run: mkdir -p logs

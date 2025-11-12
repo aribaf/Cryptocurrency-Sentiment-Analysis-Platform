@@ -21,29 +21,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Google Chrome + ChromeDriver + dependencies
+      - name: Install Google Chrome + matching ChromeDriver + dependencies
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y wget gnupg unzip xvfb build-essential
+          sudo apt-get install -y wget gnupg unzip curl ca-certificates
 
           # Install Google Chrome stable
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/googlechrome.gpg
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | \
+            sudo gpg --dearmor -o /usr/share/keyrings/googlechrome.gpg
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | \
             sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-          # Install ChromeDriver (matching Chrome version)
-          if ! sudo apt-get install -y -qq chromedriver; then
-            sudo apt-get install -y -qq chromium-chromedriver
-          fi
+          # Get Chrome version and major version number
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
+          CHROME_MAJOR=$(echo "$CHROME_VERSION" | cut -d. -f1)
+          echo "Detected Chrome version: $CHROME_VERSION (major: $CHROME_MAJOR)"
 
-          # Extra libs Chrome needs to run in headless mode
-          sudo apt-get install -y libnss3 libxss1 libappindicator3-1 libatk-bridge2.0-0 libgtk-3-0 libasound2 fonts-liberation
+          # Download matching ChromeDriver
+          CHROMEDRIVER_VERSION=$(curl -sS "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_MAJOR}")
+          echo "Matching ChromeDriver version: $CHROMEDRIVER_VERSION"
+          wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" -O /tmp/chromedriver_linux64.zip
+          unzip -q /tmp/chromedriver_linux64.zip -d /tmp/
+          sudo mv /tmp/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
 
-          # Print versions for debugging
-          google-chrome --version || true
-          chromedriver --version || true
+          # Install additional dependencies Chrome needs
+          sudo apt-get install -y libnss3 libxss1 libappindicator3-1 libatk-bridge2.0-0 libgtk-3-0 fonts-liberation || true
+
+          # Print versions for confirmation
+          google-chrome --version
+          chromedriver --version
 
       - name: Set up Python
         uses: actions/setup-python@v5

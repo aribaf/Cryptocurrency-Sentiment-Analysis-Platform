@@ -15,11 +15,15 @@ jobs:
       PYTHONUNBUFFERED: '1'
       HF_HOME: /home/runner/.cache/huggingface
 
+    defaults:
+      run:
+        working-directory: sentiment_pipeline/news   # 👈 Run inside the news folder
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-      - uses: actions/setup-python@v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -38,4 +42,6 @@ jobs:
 
       - name: Run news scraper once
         run: |
-          python new.py
+          echo "Running inside $(pwd)"
+          ls -la
+          python news.py

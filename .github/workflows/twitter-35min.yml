@@ -21,17 +21,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Google Chrome
+      - name: Install Google Chrome + ChromeDriver + dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget gnupg
+          sudo apt-get install -y wget gnupg unzip xvfb build-essential
+
+          # Install Google Chrome stable
           wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/googlechrome.gpg
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | \
             sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-      - uses: actions/setup-python@v5
+          # Install ChromeDriver (matching Chrome version)
+          if ! sudo apt-get install -y -qq chromedriver; then
+            sudo apt-get install -y -qq chromium-chromedriver
+          fi
+
+          # Extra libs Chrome needs to run in headless mode
+          sudo apt-get install -y libnss3 libxss1 libappindicator3-1 libatk-bridge2.0-0 libgtk-3-0 libasound2 fonts-liberation
+
+          # Print versions for debugging
+          google-chrome --version || true
+          chromedriver --version || true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 

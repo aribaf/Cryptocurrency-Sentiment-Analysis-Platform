@@ -14,6 +14,10 @@ jobs:
       MONGO_URI: ${{ secrets.MONGO_URI }}
       PYTHONUNBUFFERED: '1'
 
+    defaults:
+      run:
+        working-directory: sentiment_pipeline   # 👈 run inside this folder
+
     steps:
       - uses: actions/checkout@v4
 
@@ -46,5 +50,6 @@ jobs:
         env:
           HEADLESS: '1'
         run: |
-          # Ensure your script reads HEADLESS env and turns on headless
+          echo "Running inside $(pwd)"
+          ls -la
           python twitter_scraper_selenium.py

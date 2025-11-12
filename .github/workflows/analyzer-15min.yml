@@ -1,0 +1,35 @@
+name: Sentiment analyzer (every 15m)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  analyzer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      RUN_ONCE: '1'
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      PYTHONUNBUFFERED: '1'
+      HF_HOME: /home/runner/.cache/huggingface
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: pip-${{ runner.os }}-
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers pymongo
+      - name: Run once
+        run: |
+          python sentiment_analyzer.py

@@ -13,8 +13,8 @@
                 "_id": "68fb72038b391edeafbc29e5",
                 "coin": "BTC",
                 "time_bucket": "2025-10-07 21:00:00",
-                "mean_sentiment_score": 0.7315436076993744,
-                "tweet_count": 18,
+                "mean_sentiment_score": 0.7206620563040761,
+                "tweet_count": 17,
                 "unit": "hour"
             },
             {
@@ -381,8 +381,8 @@
                 "_id": "68fb72038b391edeafbc2a13",
                 "coin": "BTC",
                 "time_bucket": "2025-10-23 23:00:00",
-                "mean_sentiment_score": 0.7764245836685101,
-                "tweet_count": 3,
+                "mean_sentiment_score": 0.8977490775287151,
+                "tweet_count": 2,
                 "unit": "hour"
             },
             {
@@ -485,8 +485,8 @@
                 "_id": "68fcbefe8b391edeafbc5a67",
                 "coin": "BTC",
                 "time_bucket": "2025-10-25 16:00:00",
-                "mean_sentiment_score": 0.7028078397735953,
-                "tweet_count": 10,
+                "mean_sentiment_score": 0.6835207614219851,
+                "tweet_count": 9,
                 "unit": "hour"
             },
             {
@@ -669,8 +669,8 @@
                 "_id": "68ffa4a68b391edeafbcc921",
                 "coin": "BTC",
                 "time_bucket": "2025-10-27 00:00:00",
-                "mean_sentiment_score": 0.6392593119632114,
-                "tweet_count": 11,
+                "mean_sentiment_score": 0.6130638847127556,
+                "tweet_count": 10,
                 "unit": "hour"
             },
             {
@@ -725,16 +725,16 @@
                 "_id": "68fff0738b391edeafbcd670",
                 "coin": "BTC",
                 "time_bucket": "2025-10-28 03:00:00",
-                "mean_sentiment_score": 0.588521803310141,
-                "tweet_count": 20,
+                "mean_sentiment_score": 0.5746816437397348,
+                "tweet_count": 19,
                 "unit": "hour"
             },
             {
                 "_id": "690001018b391edeafbcd8e0",
                 "coin": "BTC",
                 "time_bucket": "2025-10-28 04:00:00",
-                "mean_sentiment_score": 0.7337131168072423,
-                "tweet_count": 18,
+                "mean_sentiment_score": 0.8277834720211104,
+                "tweet_count": 16,
                 "unit": "hour"
             },
             {
@@ -752,6 +752,1094 @@
                 "mean_sentiment_score": 0.7313779189251364,
                 "tweet_count": 20,
                 "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3212",
+                "coin": "BTC",
+                "time_bucket": "2025-10-28 20:00:00",
+                "mean_sentiment_score": 0.6485143850247065,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3213",
+                "coin": "BTC",
+                "time_bucket": "2025-10-28 21:00:00",
+                "mean_sentiment_score": 0.5345865218815478,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3214",
+                "coin": "BTC",
+                "time_bucket": "2025-10-28 22:00:00",
+                "mean_sentiment_score": 0.7555846139788628,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3215",
+                "coin": "BTC",
+                "time_bucket": "2025-10-28 23:00:00",
+                "mean_sentiment_score": 0.6516880930655382,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3216",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 00:00:00",
+                "mean_sentiment_score": 0.7224687229841947,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3217",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 01:00:00",
+                "mean_sentiment_score": 0.6680541878773106,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3218",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 02:00:00",
+                "mean_sentiment_score": 0.802856860930721,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd3219",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 03:00:00",
+                "mean_sentiment_score": 0.7069909948855638,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e998b391edeafbd32e9",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 04:00:00",
+                "mean_sentiment_score": 0.7938325956463813,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e998b391edeafbd32ea",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 09:00:00",
+                "mean_sentiment_score": 0.7634759354922507,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd321a",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 10:00:00",
+                "mean_sentiment_score": 0.4924821319496807,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd321b",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 11:00:00",
+                "mean_sentiment_score": 0.7067671993126471,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e998b391edeafbd32eb",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 12:00:00",
+                "mean_sentiment_score": 0.7750299600884318,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e998b391edeafbd32ec",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 13:00:00",
+                "mean_sentiment_score": 0.47531427019699046,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd321c",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 14:00:00",
+                "mean_sentiment_score": 0.6011697854846716,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e998b391edeafbd32ed",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 15:00:00",
+                "mean_sentiment_score": 0.8371842410415411,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd321d",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 16:00:00",
+                "mean_sentiment_score": 0.6271055795784507,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd321e",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 17:00:00",
+                "mean_sentiment_score": 0.5420967092737555,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd3355",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 18:00:00",
+                "mean_sentiment_score": 0.7541264165192842,
+                "tweet_count": 19,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a338b391edeafbd321f",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 19:00:00",
+                "mean_sentiment_score": 0.7143278445582837,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd3356",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 20:00:00",
+                "mean_sentiment_score": 0.6906154170632363,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd3357",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 21:00:00",
+                "mean_sentiment_score": 0.6067318620446782,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "69024ccf8b391edeafbd3503",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 22:00:00",
+                "mean_sentiment_score": 0.7358929684851319,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69025b028b391edeafbd38e0",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 23:00:00",
+                "mean_sentiment_score": 0.8363934257999062,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69026cf18b391edeafbd3bee",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 00:00:00",
+                "mean_sentiment_score": 0.7147707566618919,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "690277e68b391edeafbd3d73",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 01:00:00",
+                "mean_sentiment_score": 0.7506887867030773,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "690286268b391edeafbd3f6d",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 02:00:00",
+                "mean_sentiment_score": 0.9092886410653591,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "690294398b391edeafbd4168",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 03:00:00",
+                "mean_sentiment_score": 0.8306066267192364,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "690303318b391edeafbd5057",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 10:00:00",
+                "mean_sentiment_score": 0.6034943845123053,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "690307f18b391edeafbd511b",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 11:00:00",
+                "mean_sentiment_score": 0.867938390666885,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "69030f178b391edeafbd522d",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 12:00:00",
+                "mean_sentiment_score": 0.6091587050376754,
+                "tweet_count": 19,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d13a",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 13:00:00",
+                "mean_sentiment_score": 0.8704362471277515,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d13b",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 21:00:00",
+                "mean_sentiment_score": 0.7681196494959295,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d13c",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 22:00:00",
+                "mean_sentiment_score": 0.6622668579220772,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d13d",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 23:00:00",
+                "mean_sentiment_score": 0.8407591167837382,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d13e",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 00:00:00",
+                "mean_sentiment_score": 0.7098353436061492,
+                "tweet_count": 24,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d13f",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 01:00:00",
+                "mean_sentiment_score": 0.6312683081099143,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4815d91edd2a46a7b5",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 02:00:00",
+                "mean_sentiment_score": 0.6980847671627999,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d140",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 03:00:00",
+                "mean_sentiment_score": 0.6465520709753036,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d141",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 04:00:00",
+                "mean_sentiment_score": 0.7717358795925975,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4815d91edd2a46a7b6",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 05:00:00",
+                "mean_sentiment_score": 0.688864110223949,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d142",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 06:00:00",
+                "mean_sentiment_score": 0.18134787864983082,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d143",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 07:00:00",
+                "mean_sentiment_score": 0.7128582090478053,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d144",
+                "coin": "BTC",
+                "time_bucket": "2025-10-31 08:00:00",
+                "mean_sentiment_score": 0.4321105855384043,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d145",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 13:00:00",
+                "mean_sentiment_score": 0.8456518118166261,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d146",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 14:00:00",
+                "mean_sentiment_score": 0.8358011996107442,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d147",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 15:00:00",
+                "mean_sentiment_score": 0.8213058061897754,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d148",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 16:00:00",
+                "mean_sentiment_score": 0.05167043209075928,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d149",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 17:00:00",
+                "mean_sentiment_score": 0.6967804321589378,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d14a",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 18:00:00",
+                "mean_sentiment_score": 0.6916822112877579,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d14b",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 19:00:00",
+                "mean_sentiment_score": 0.4752242667600512,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d14c",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 20:00:00",
+                "mean_sentiment_score": 0.793028800693505,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d14d",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 21:00:00",
+                "mean_sentiment_score": 0.6421713635325431,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d14e",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 22:00:00",
+                "mean_sentiment_score": 0.8629363114014268,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c215d91edd2a46d14f",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 23:00:00",
+                "mean_sentiment_score": 0.8262921859111104,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691457bb15d91edd2a46d264",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 14:00:00",
+                "mean_sentiment_score": 0.5239198219496757,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69145fcd15d91edd2a46d392",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 15:00:00",
+                "mean_sentiment_score": 0.8586651645600796,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914703a15d91edd2a46d5f6",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 16:00:00",
+                "mean_sentiment_score": 0.7063639491796494,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914839515d91edd2a46d8ad",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 17:00:00",
+                "mean_sentiment_score": 0.6755640295644602,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "69148caf15d91edd2a46d9f5",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 18:00:00",
+                "mean_sentiment_score": 0.4418212167918682,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69149a5515d91edd2a46dbe9",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 19:00:00",
+                "mean_sentiment_score": 0.7993030566722155,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914aa4a15d91edd2a46de3d",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 20:00:00",
+                "mean_sentiment_score": 0.796201457735151,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914b3a515d91edd2a46df93",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 21:00:00",
+                "mean_sentiment_score": 0.8380266143009066,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a325e",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a325f",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3260",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3261",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3262",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3263",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3264",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3265",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3266",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3267",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3268",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3269",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a326a",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a326b",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a326c",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a326d",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a326e",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a326f",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3270",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3271",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3272",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3273",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3274",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3275",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3276",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3277",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 10:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3278",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 11:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3279",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a327a",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a327b",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a327c",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a327d",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a327e",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a327f",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3280",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3281",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3282",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3283",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3284",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3285",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3286",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3287",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3288",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3289",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a328a",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a328b",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a328c",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a328d",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a328e",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a328f",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3290",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3291",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 15:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3292",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3293",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3294",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3295",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3296",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3297",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3298",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 22:00:00",
+                "mean_sentiment_score": 0.013864291831851006,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a3299",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a329a",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a329b",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a329c",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a329d",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a329e",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a329f",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a0",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a1",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a2",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a3",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 14:00:00",
+                "mean_sentiment_score": 0.2780234788854917,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a4",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 15:00:00",
+                "mean_sentiment_score": 0.48929127874343015,
+                "tweet_count": 19,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a5",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 16:00:00",
+                "mean_sentiment_score": 0.5636657178401947,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a6",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 19:00:00",
+                "mean_sentiment_score": 0.6738104061646895,
+                "tweet_count": 11,
+                "unit": "hour"
             }
         ],
         "day": [
@@ -759,8 +1847,8 @@
                 "_id": "68fb72038b391edeafbc2a15",
                 "coin": "BTC",
                 "time_bucket": "2025-10-07 19:00:00",
-                "mean_sentiment_score": 0.7269908274870877,
-                "tweet_count": 51,
+                "mean_sentiment_score": 0.7232000444084405,
+                "tweet_count": 50,
                 "unit": "day"
             },
             {
@@ -823,16 +1911,16 @@
                 "_id": "68fb72038b391edeafbc2a1d",
                 "coin": "BTC",
                 "time_bucket": "2025-10-23 19:00:00",
-                "mean_sentiment_score": 0.6956173472491832,
-                "tweet_count": 29,
+                "mean_sentiment_score": 0.7013974097956504,
+                "tweet_count": 28,
                 "unit": "day"
             },
             {
                 "_id": "68fbd6108b391edeafbc3a9d",
                 "coin": "BTC",
                 "time_bucket": "2025-10-24 19:00:00",
-                "mean_sentiment_score": 0.7319570816861292,
-                "tweet_count": 97,
+                "mean_sentiment_score": 0.7304525560272548,
+                "tweet_count": 96,
                 "unit": "day"
             },
             {
@@ -847,16 +1935,104 @@
                 "_id": "68ffa4a68b391edeafbcc923",
                 "coin": "BTC",
                 "time_bucket": "2025-10-26 19:00:00",
-                "mean_sentiment_score": 0.6304510534973815,
-                "tweet_count": 64,
+                "mean_sentiment_score": 0.6261532355454706,
+                "tweet_count": 63,
                 "unit": "day"
             },
             {
                 "_id": "68ffa4a68b391edeafbcc924",
                 "coin": "BTC",
                 "time_bucket": "2025-10-27 19:00:00",
-                "mean_sentiment_score": 0.6407303828120565,
-                "tweet_count": 134,
+                "mean_sentiment_score": 0.6491914955074436,
+                "tweet_count": 131,
+                "unit": "day"
+            },
+            {
+                "_id": "69023a348b391edeafbd3220",
+                "coin": "BTC",
+                "time_bucket": "2025-10-28 19:00:00",
+                "mean_sentiment_score": 0.6664020498305487,
+                "tweet_count": 209,
+                "unit": "day"
+            },
+            {
+                "_id": "69023a348b391edeafbd3221",
+                "coin": "BTC",
+                "time_bucket": "2025-10-29 19:00:00",
+                "mean_sentiment_score": 0.7265870479711642,
+                "tweet_count": 120,
+                "unit": "day"
+            },
+            {
+                "_id": "69131f4915d91edd2a46a7b7",
+                "coin": "BTC",
+                "time_bucket": "2025-10-30 19:00:00",
+                "mean_sentiment_score": 0.6881126509979367,
+                "tweet_count": 131,
+                "unit": "day"
+            },
+            {
+                "_id": "691451c315d91edd2a46d150",
+                "coin": "BTC",
+                "time_bucket": "2025-11-01 19:00:00",
+                "mean_sentiment_score": 0.7463674808345866,
+                "tweet_count": 57,
+                "unit": "day"
+            },
+            {
+                "_id": "691451c315d91edd2a46d151",
+                "coin": "BTC",
+                "time_bucket": "2025-11-02 19:00:00",
+                "mean_sentiment_score": 0.7183917594351331,
+                "tweet_count": 49,
+                "unit": "day"
+            },
+            {
+                "_id": "691457bb15d91edd2a46d265",
+                "coin": "BTC",
+                "time_bucket": "2025-11-11 19:00:00",
+                "mean_sentiment_score": 0.6579895473903778,
+                "tweet_count": 33,
+                "unit": "day"
+            },
+            {
+                "_id": "69149a5715d91edd2a46dbea",
+                "coin": "BTC",
+                "time_bucket": "2025-11-12 19:00:00",
+                "mean_sentiment_score": 0.17333528657227454,
+                "tweet_count": 99,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a7",
+                "coin": "BTC",
+                "time_bucket": "2025-11-13 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 179,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a8",
+                "coin": "BTC",
+                "time_bucket": "2025-11-14 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 268,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68b758f042a488a32a9",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.09715040610344322,
+                "tweet_count": 135,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68b758f042a488a32aa",
+                "coin": "BTC",
+                "time_bucket": "2025-11-16 19:00:00",
+                "mean_sentiment_score": 0.6738104061646895,
+                "tweet_count": 11,
                 "unit": "day"
             }
         ],
@@ -865,8 +2041,8 @@
                 "_id": "68fb72038b391edeafbc2a1e",
                 "coin": "BTC",
                 "time_bucket": "2025-10-04 19:00:00",
-                "mean_sentiment_score": 0.7493164888609433,
-                "tweet_count": 177,
+                "mean_sentiment_score": 0.748366412198679,
+                "tweet_count": 176,
                 "unit": "week"
             },
             {
@@ -881,16 +2057,40 @@
                 "_id": "68fb72038b391edeafbc2a20",
                 "coin": "BTC",
                 "time_bucket": "2025-10-18 19:00:00",
-                "mean_sentiment_score": 0.7321725433547664,
-                "tweet_count": 206,
+                "mean_sentiment_score": 0.7324381215205672,
+                "tweet_count": 204,
                 "unit": "week"
             },
             {
                 "_id": "68fcd8f58b391edeafbc5e43",
                 "coin": "BTC",
                 "time_bucket": "2025-10-25 19:00:00",
-                "mean_sentiment_score": 0.6748000268537475,
-                "tweet_count": 396,
+                "mean_sentiment_score": 0.683235966098744,
+                "tweet_count": 852,
+                "unit": "week"
+            },
+            {
+                "_id": "691451c415d91edd2a46d152",
+                "coin": "BTC",
+                "time_bucket": "2025-11-01 19:00:00",
+                "mean_sentiment_score": 0.7334353077348392,
+                "tweet_count": 106,
+                "unit": "week"
+            },
+            {
+                "_id": "691457bb15d91edd2a46d266",
+                "coin": "BTC",
+                "time_bucket": "2025-11-08 19:00:00",
+                "mean_sentiment_score": 0.06713963460196487,
+                "tweet_count": 579,
+                "unit": "week"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ab",
+                "coin": "BTC",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.14059739240942754,
+                "tweet_count": 146,
                 "unit": "week"
             }
         ]
@@ -1213,8 +2413,8 @@
                 "_id": "68fb72038b391edeafbc2a48",
                 "coin": "ETH",
                 "time_bucket": "2025-10-23 15:00:00",
-                "mean_sentiment_score": 0.7461079300070802,
-                "tweet_count": 6,
+                "mean_sentiment_score": 0.7223989333957433,
+                "tweet_count": 5,
                 "unit": "hour"
             },
             {
@@ -1469,8 +2669,8 @@
                 "_id": "68ffa4a68b391edeafbcc928",
                 "coin": "ETH",
                 "time_bucket": "2025-10-26 12:00:00",
-                "mean_sentiment_score": 0.6895521905273199,
-                "tweet_count": 10,
+                "mean_sentiment_score": 0.6773899367286099,
+                "tweet_count": 9,
                 "unit": "hour"
             },
             {
@@ -1533,8 +2733,8 @@
                 "_id": "68ffa4a68b391edeafbcc930",
                 "coin": "ETH",
                 "time_bucket": "2025-10-26 20:00:00",
-                "mean_sentiment_score": 0.6083595983684064,
-                "tweet_count": 10,
+                "mean_sentiment_score": 0.5966474604275491,
+                "tweet_count": 9,
                 "unit": "hour"
             },
             {
@@ -1565,8 +2765,8 @@
                 "_id": "68ffa4a68b391edeafbcc934",
                 "coin": "ETH",
                 "time_bucket": "2025-10-27 00:00:00",
-                "mean_sentiment_score": 0.7880936873933444,
-                "tweet_count": 13,
+                "mean_sentiment_score": 0.8534187638821702,
+                "tweet_count": 12,
                 "unit": "hour"
             },
             {
@@ -1589,8 +2789,8 @@
                 "_id": "68ffb7958b391edeafbcce05",
                 "coin": "ETH",
                 "time_bucket": "2025-10-27 23:00:00",
-                "mean_sentiment_score": 0.5903159610927105,
-                "tweet_count": 10,
+                "mean_sentiment_score": 0.5587808469103442,
+                "tweet_count": 9,
                 "unit": "hour"
             },
             {
@@ -1637,8 +2837,8 @@
                 "_id": "6900118c8b391edeafbcdb3f",
                 "coin": "ETH",
                 "time_bucket": "2025-10-28 05:00:00",
-                "mean_sentiment_score": 0.8348929521938165,
-                "tweet_count": 3,
+                "mean_sentiment_score": 0.8319547884166241,
+                "tweet_count": 2,
                 "unit": "hour"
             },
             {
@@ -1647,6 +2847,1054 @@
                 "time_bucket": "2025-10-28 06:00:00",
                 "mean_sentiment_score": 0.8031709908694029,
                 "tweet_count": 25,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3222",
+                "coin": "ETH",
+                "time_bucket": "2025-10-28 20:00:00",
+                "mean_sentiment_score": 0.5846294495277107,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3223",
+                "coin": "ETH",
+                "time_bucket": "2025-10-28 21:00:00",
+                "mean_sentiment_score": 0.4647075325250626,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3224",
+                "coin": "ETH",
+                "time_bucket": "2025-10-28 22:00:00",
+                "mean_sentiment_score": 0.48448931872844697,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3225",
+                "coin": "ETH",
+                "time_bucket": "2025-10-28 23:00:00",
+                "mean_sentiment_score": 0.6858774154362353,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3226",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 00:00:00",
+                "mean_sentiment_score": 0.7865433196670243,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3227",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 01:00:00",
+                "mean_sentiment_score": 0.849488478153944,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3228",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 02:00:00",
+                "mean_sentiment_score": 0.8148660553353173,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3229",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 03:00:00",
+                "mean_sentiment_score": 0.7543985291849822,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd322a",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 04:00:00",
+                "mean_sentiment_score": 0.8459901064634323,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32ee",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 09:00:00",
+                "mean_sentiment_score": 0.8528894116170704,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32ef",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 10:00:00",
+                "mean_sentiment_score": 0.5924128070473671,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f0",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 11:00:00",
+                "mean_sentiment_score": 0.7343987577002157,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f1",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 12:00:00",
+                "mean_sentiment_score": 0.5046511983498931,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd322b",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 13:00:00",
+                "mean_sentiment_score": 0.514151531457901,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f2",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 14:00:00",
+                "mean_sentiment_score": 0.6210766769945621,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f3",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 15:00:00",
+                "mean_sentiment_score": 0.42421429567039015,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd322c",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 16:00:00",
+                "mean_sentiment_score": 0.710518778115511,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd322d",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 17:00:00",
+                "mean_sentiment_score": 0.6980918436532928,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd3358",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 18:00:00",
+                "mean_sentiment_score": 0.825214475731958,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd3359",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 19:00:00",
+                "mean_sentiment_score": 0.6666029583041867,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd335a",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 20:00:00",
+                "mean_sentiment_score": 0.6754998803138733,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f78b391edeafbd335b",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 21:00:00",
+                "mean_sentiment_score": 0.8543376620858908,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69024ccf8b391edeafbd3504",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 22:00:00",
+                "mean_sentiment_score": 0.907899234443903,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "69025b028b391edeafbd38e1",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 23:00:00",
+                "mean_sentiment_score": 0.8678496601060033,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "69026cf38b391edeafbd3bef",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 00:00:00",
+                "mean_sentiment_score": 0.09260308152685565,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "690277e78b391edeafbd3d74",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 01:00:00",
+                "mean_sentiment_score": 0.7259973068721592,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "69028d288b391edeafbd4066",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 02:00:00",
+                "mean_sentiment_score": 0.8608726151287556,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6902943a8b391edeafbd4169",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 03:00:00",
+                "mean_sentiment_score": 0.83604337554425,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "690303328b391edeafbd5058",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 10:00:00",
+                "mean_sentiment_score": 0.8716490492224693,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "690305948b391edeafbd50b3",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 11:00:00",
+                "mean_sentiment_score": 0.747219467163086,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69030f178b391edeafbd522e",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 12:00:00",
+                "mean_sentiment_score": 0.8166967452104602,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d153",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 13:00:00",
+                "mean_sentiment_score": 0.8303315921997031,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d154",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 21:00:00",
+                "mean_sentiment_score": 0.840542156781469,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d155",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 22:00:00",
+                "mean_sentiment_score": 0.7008729585342937,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d156",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 23:00:00",
+                "mean_sentiment_score": 0.8820807866752147,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d157",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 00:00:00",
+                "mean_sentiment_score": 0.8010765979997814,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d158",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 01:00:00",
+                "mean_sentiment_score": 0.8052038811147213,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d159",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 02:00:00",
+                "mean_sentiment_score": 0.7182873774852072,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d15a",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 03:00:00",
+                "mean_sentiment_score": 0.7814379616712148,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d15b",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 04:00:00",
+                "mean_sentiment_score": 0.6845995606007901,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d15c",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 05:00:00",
+                "mean_sentiment_score": 0.5829942245036364,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d15d",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 06:00:00",
+                "mean_sentiment_score": 0.8048855488499006,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d15e",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 07:00:00",
+                "mean_sentiment_score": 0.4934478447669082,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d15f",
+                "coin": "ETH",
+                "time_bucket": "2025-10-31 08:00:00",
+                "mean_sentiment_score": 0.8240272641181946,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d160",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 13:00:00",
+                "mean_sentiment_score": 0.7521174536086619,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d161",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 14:00:00",
+                "mean_sentiment_score": 0.7120451778173447,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d162",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 15:00:00",
+                "mean_sentiment_score": 0.8456548228859901,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d163",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 16:00:00",
+                "mean_sentiment_score": 0.826792623847723,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d164",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 17:00:00",
+                "mean_sentiment_score": 0.6407531946897507,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4a15d91edd2a46a7b8",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 18:00:00",
+                "mean_sentiment_score": 0.7782756121596321,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d165",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 19:00:00",
+                "mean_sentiment_score": 0.8067159513011575,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d166",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 20:00:00",
+                "mean_sentiment_score": 0.7938136685905712,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d167",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 21:00:00",
+                "mean_sentiment_score": 0.7808282903085152,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d168",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 22:00:00",
+                "mean_sentiment_score": 0.8309706194947164,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c415d91edd2a46d169",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 23:00:00",
+                "mean_sentiment_score": 0.6918123563130696,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914584f15d91edd2a46d27b",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 14:00:00",
+                "mean_sentiment_score": 0.2966906398534775,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "69145fce15d91edd2a46d393",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 15:00:00",
+                "mean_sentiment_score": 0.7343815045261924,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914703c15d91edd2a46d5f9",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 16:00:00",
+                "mean_sentiment_score": 0.7960587628185749,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "69147ae515d91edd2a46d772",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 17:00:00",
+                "mean_sentiment_score": 0.5985379628837109,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914939315d91edd2a46daef",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 18:00:00",
+                "mean_sentiment_score": 0.7889259569346905,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "69149a5715d91edd2a46dbeb",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 19:00:00",
+                "mean_sentiment_score": 0.7277987735966841,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914aa4c15d91edd2a46de3f",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 20:00:00",
+                "mean_sentiment_score": 0.7817055378109217,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914b3a615d91edd2a46df94",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 21:00:00",
+                "mean_sentiment_score": 0.7712082552413145,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ac",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 22:00:00",
+                "mean_sentiment_score": 0.18005007803440098,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ad",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ae",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 00:00:00",
+                "mean_sentiment_score": 0.11839314230850767,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32af",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b0",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b1",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b2",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b3",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 13:00:00",
+                "mean_sentiment_score": 0.0005240961909294128,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b4",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b5",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b6",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 18:00:00",
+                "mean_sentiment_score": 0.10436202678829432,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b7",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b8",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32b9",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ba",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32bb",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32bc",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32bd",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32be",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32bf",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c0",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c1",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c2",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c3",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c4",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c5",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c6",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 10:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c7",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 11:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c8",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32c9",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ca",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32cb",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32cc",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32cd",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ce",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32cf",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d0",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d1",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d2",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d3",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d4",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d5",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d6",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d7",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 05:00:00",
+                "mean_sentiment_score": 0.03793318482736746,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d8",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32d9",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32da",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32db",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32dc",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32dd",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32de",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32df",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 15:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e0",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e1",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e2",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e3",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e4",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e5",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e6",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e7",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e8",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32e9",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ea",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32eb",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ec",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ed",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 15:00:00",
+                "mean_sentiment_score": 0.45084201792875933,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ee",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 16:00:00",
+                "mean_sentiment_score": 0.30613601207733154,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68b758f042a488a32ef",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 19:00:00",
+                "mean_sentiment_score": 0.8186696879565716,
+                "tweet_count": 2,
                 "unit": "hour"
             }
         ],
@@ -1711,8 +3959,8 @@
                 "_id": "68fb72038b391edeafbc2a59",
                 "coin": "ETH",
                 "time_bucket": "2025-10-22 19:00:00",
-                "mean_sentiment_score": 0.7381916893482731,
-                "tweet_count": 57,
+                "mean_sentiment_score": 0.7359334532104964,
+                "tweet_count": 56,
                 "unit": "day"
             },
             {
@@ -1735,24 +3983,112 @@
                 "_id": "68fcd8f68b391edeafbc5e45",
                 "coin": "ETH",
                 "time_bucket": "2025-10-25 19:00:00",
-                "mean_sentiment_score": 0.6887002067606142,
-                "tweet_count": 163,
+                "mean_sentiment_score": 0.6880192668349654,
+                "tweet_count": 162,
                 "unit": "day"
             },
             {
                 "_id": "68ffa4a78b391edeafbcc936",
                 "coin": "ETH",
                 "time_bucket": "2025-10-26 19:00:00",
-                "mean_sentiment_score": 0.5904752774222288,
-                "tweet_count": 64,
+                "mean_sentiment_score": 0.5979428410590175,
+                "tweet_count": 62,
                 "unit": "day"
             },
             {
                 "_id": "68ffa4a78b391edeafbcc937",
                 "coin": "ETH",
                 "time_bucket": "2025-10-27 19:00:00",
-                "mean_sentiment_score": 0.7380206620998003,
-                "tweet_count": 110,
+                "mean_sentiment_score": 0.7358089959490355,
+                "tweet_count": 108,
+                "unit": "day"
+            },
+            {
+                "_id": "69023a348b391edeafbd322e",
+                "coin": "ETH",
+                "time_bucket": "2025-10-28 19:00:00",
+                "mean_sentiment_score": 0.6692349380962757,
+                "tweet_count": 181,
+                "unit": "day"
+            },
+            {
+                "_id": "690240f78b391edeafbd335c",
+                "coin": "ETH",
+                "time_bucket": "2025-10-29 19:00:00",
+                "mean_sentiment_score": 0.7574062169555368,
+                "tweet_count": 72,
+                "unit": "day"
+            },
+            {
+                "_id": "691451c415d91edd2a46d16a",
+                "coin": "ETH",
+                "time_bucket": "2025-10-30 19:00:00",
+                "mean_sentiment_score": 0.7321306550280845,
+                "tweet_count": 94,
+                "unit": "day"
+            },
+            {
+                "_id": "69131f4a15d91edd2a46a7b9",
+                "coin": "ETH",
+                "time_bucket": "2025-11-01 19:00:00",
+                "mean_sentiment_score": 0.7559272155579594,
+                "tweet_count": 45,
+                "unit": "day"
+            },
+            {
+                "_id": "691451c415d91edd2a46d16b",
+                "coin": "ETH",
+                "time_bucket": "2025-11-02 19:00:00",
+                "mean_sentiment_score": 0.7877189292921685,
+                "tweet_count": 32,
+                "unit": "day"
+            },
+            {
+                "_id": "6914584f15d91edd2a46d27c",
+                "coin": "ETH",
+                "time_bucket": "2025-11-11 19:00:00",
+                "mean_sentiment_score": 0.6302404600040367,
+                "tweet_count": 24,
+                "unit": "day"
+            },
+            {
+                "_id": "69149a5715d91edd2a46dbec",
+                "coin": "ETH",
+                "time_bucket": "2025-11-12 19:00:00",
+                "mean_sentiment_score": 0.12873115644735444,
+                "tweet_count": 85,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f0",
+                "coin": "ETH",
+                "time_bucket": "2025-11-13 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 90,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f1",
+                "coin": "ETH",
+                "time_bucket": "2025-11-14 19:00:00",
+                "mean_sentiment_score": 0.003951373419517457,
+                "tweet_count": 144,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f2",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.0436718094234283,
+                "tweet_count": 52,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f3",
+                "coin": "ETH",
+                "time_bucket": "2025-11-16 19:00:00",
+                "mean_sentiment_score": 0.8186696879565716,
+                "tweet_count": 2,
                 "unit": "day"
             }
         ],
@@ -1777,16 +4113,40 @@
                 "_id": "68fb72048b391edeafbc2a5d",
                 "coin": "ETH",
                 "time_bucket": "2025-10-18 19:00:00",
-                "mean_sentiment_score": 0.7216147817369248,
-                "tweet_count": 185,
+                "mean_sentiment_score": 0.7208374005884094,
+                "tweet_count": 184,
                 "unit": "week"
             },
             {
                 "_id": "68fcd8f78b391edeafbc5e47",
                 "coin": "ETH",
                 "time_bucket": "2025-10-25 19:00:00",
-                "mean_sentiment_score": 0.6861448791928213,
-                "tweet_count": 337,
+                "mean_sentiment_score": 0.6958527274289894,
+                "tweet_count": 679,
+                "unit": "week"
+            },
+            {
+                "_id": "69131f4b15d91edd2a46a7ba",
+                "coin": "ETH",
+                "time_bucket": "2025-11-01 19:00:00",
+                "mean_sentiment_score": 0.7691393563306177,
+                "tweet_count": 77,
+                "unit": "week"
+            },
+            {
+                "_id": "6914584f15d91edd2a46d27d",
+                "coin": "ETH",
+                "time_bucket": "2025-11-08 19:00:00",
+                "mean_sentiment_score": 0.07765865046802484,
+                "tweet_count": 343,
+                "unit": "week"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f5",
+                "coin": "ETH",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.07237543455428547,
+                "tweet_count": 54,
                 "unit": "week"
             }
         ]
@@ -2205,16 +4565,16 @@
                 "_id": "68fbd6118b391edeafbc3aa8",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-24 20:00:00",
-                "mean_sentiment_score": 0.7811992564238608,
-                "tweet_count": 12,
+                "mean_sentiment_score": 0.7730675737627528,
+                "tweet_count": 11,
                 "unit": "hour"
             },
             {
                 "_id": "68fbd6118b391edeafbc3aa9",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-24 21:00:00",
-                "mean_sentiment_score": 0.5783281543602546,
-                "tweet_count": 6,
+                "mean_sentiment_score": 0.666852655261755,
+                "tweet_count": 5,
                 "unit": "hour"
             },
             {
@@ -2453,8 +4813,8 @@
                 "_id": "68ffa4a98b391edeafbcc946",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-26 23:00:00",
-                "mean_sentiment_score": 0.6680258159339427,
-                "tweet_count": 25,
+                "mean_sentiment_score": 0.6588245760649443,
+                "tweet_count": 24,
                 "unit": "hour"
             },
             {
@@ -2469,8 +4829,8 @@
                 "_id": "68ffa9648b391edeafbcca3f",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-27 21:00:00",
-                "mean_sentiment_score": 0.754460571333766,
-                "tweet_count": 6,
+                "mean_sentiment_score": 0.7412366218864918,
+                "tweet_count": 5,
                 "unit": "hour"
             },
             {
@@ -2493,8 +4853,8 @@
                 "_id": "68ffc5d68b391edeafbcd046",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-28 00:00:00",
-                "mean_sentiment_score": 0.7905932691879571,
-                "tweet_count": 20,
+                "mean_sentiment_score": 0.7869468624458501,
+                "tweet_count": 19,
                 "unit": "hour"
             },
             {
@@ -2525,24 +4885,1128 @@
                 "_id": "690001028b391edeafbcd8e2",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-28 04:00:00",
-                "mean_sentiment_score": 0.7774948120117188,
-                "tweet_count": 15,
+                "mean_sentiment_score": 0.7745872038815703,
+                "tweet_count": 14,
                 "unit": "hour"
             },
             {
                 "_id": "6900118c8b391edeafbcdb40",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-28 05:00:00",
-                "mean_sentiment_score": 0.770552071556449,
-                "tweet_count": 10,
+                "mean_sentiment_score": 0.7794973212811682,
+                "tweet_count": 9,
                 "unit": "hour"
             },
             {
                 "_id": "690018a58b391edeafbcdc57",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-28 06:00:00",
-                "mean_sentiment_score": 0.7014361418912123,
-                "tweet_count": 29,
+                "mean_sentiment_score": 0.697893160681885,
+                "tweet_count": 26,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd322f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-28 20:00:00",
+                "mean_sentiment_score": 0.7526895352639258,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3230",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-28 21:00:00",
+                "mean_sentiment_score": 0.7928730530353884,
+                "tweet_count": 24,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3231",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-28 22:00:00",
+                "mean_sentiment_score": 0.7251617608902355,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3232",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-28 23:00:00",
+                "mean_sentiment_score": 0.6624885197314951,
+                "tweet_count": 27,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3233",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 00:00:00",
+                "mean_sentiment_score": 0.7662084009498358,
+                "tweet_count": 19,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3234",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 01:00:00",
+                "mean_sentiment_score": 0.8604134141721509,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3235",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 02:00:00",
+                "mean_sentiment_score": 0.7779507948195232,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3236",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 03:00:00",
+                "mean_sentiment_score": 0.724822288217104,
+                "tweet_count": 23,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3237",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 04:00:00",
+                "mean_sentiment_score": 0.6761102005839348,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f4",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 09:00:00",
+                "mean_sentiment_score": 0.647812238894403,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f5",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 10:00:00",
+                "mean_sentiment_score": 0.7163503263145685,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3238",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 11:00:00",
+                "mean_sentiment_score": 0.6939742490649223,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd3239",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 12:00:00",
+                "mean_sentiment_score": 0.5387106499789903,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd323a",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 13:00:00",
+                "mean_sentiment_score": 0.7060690503567457,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd323b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 14:00:00",
+                "mean_sentiment_score": 0.729729335134228,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023e9a8b391edeafbd32f6",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 15:00:00",
+                "mean_sentiment_score": 0.7810645907052925,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f88b391edeafbd335d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 16:00:00",
+                "mean_sentiment_score": 0.7371452370037636,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd323c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 17:00:00",
+                "mean_sentiment_score": 0.5995079912245274,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd323d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 18:00:00",
+                "mean_sentiment_score": 0.7401036758991806,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd323e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 19:00:00",
+                "mean_sentiment_score": 0.7940151157788933,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "69023a348b391edeafbd323f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 20:00:00",
+                "mean_sentiment_score": 0.7469407382675193,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "690240f88b391edeafbd335e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 21:00:00",
+                "mean_sentiment_score": 0.7876495208059039,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "69024a738b391edeafbd34b1",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 22:00:00",
+                "mean_sentiment_score": 0.7839691303670406,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "69025b038b391edeafbd38e2",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 23:00:00",
+                "mean_sentiment_score": 0.8134570121765137,
+                "tweet_count": 2,
+                "unit": "hour"
+            },
+            {
+                "_id": "69026cf38b391edeafbd3bf0",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 00:00:00",
+                "mean_sentiment_score": 0.6969683443506558,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "69027f118b391edeafbd3e78",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 01:00:00",
+                "mean_sentiment_score": 0.7473400831222534,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "690286288b391edeafbd3f6e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 02:00:00",
+                "mean_sentiment_score": 0.7518660593777895,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6902943c8b391edeafbd416b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 03:00:00",
+                "mean_sentiment_score": -0.031404147545496586,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "690303358b391edeafbd5059",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 10:00:00",
+                "mean_sentiment_score": 0.8399860933423042,
+                "tweet_count": 1,
+                "unit": "hour"
+            },
+            {
+                "_id": "690305948b391edeafbd50b4",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 11:00:00",
+                "mean_sentiment_score": 0.7983042070908206,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "69030f1a8b391edeafbd522f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 12:00:00",
+                "mean_sentiment_score": 0.7551874159411951,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "69031fbf8b391edeafbd567b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 13:00:00",
+                "mean_sentiment_score": 0.7216420210897923,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d16c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 21:00:00",
+                "mean_sentiment_score": 0.7075927046438059,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d16d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 22:00:00",
+                "mean_sentiment_score": 0.6682064678106043,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d16e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 23:00:00",
+                "mean_sentiment_score": 0.29511836916208267,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d16f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 00:00:00",
+                "mean_sentiment_score": 0.6855193605789771,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7bb",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 01:00:00",
+                "mean_sentiment_score": 0.8074002614865701,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d170",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 02:00:00",
+                "mean_sentiment_score": 0.3785289898514748,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d171",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 03:00:00",
+                "mean_sentiment_score": 0.8221801490607588,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7bc",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 04:00:00",
+                "mean_sentiment_score": 0.5837121494114399,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7bd",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 05:00:00",
+                "mean_sentiment_score": 0.6897653605788946,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d172",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 06:00:00",
+                "mean_sentiment_score": 0.4596077859401703,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d173",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 07:00:00",
+                "mean_sentiment_score": 0.655957935208624,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7be",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-31 08:00:00",
+                "mean_sentiment_score": 0.834997230519851,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7bf",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 13:00:00",
+                "mean_sentiment_score": 0.7830148149514571,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7c0",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 14:00:00",
+                "mean_sentiment_score": 0.6306003434583545,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d174",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 15:00:00",
+                "mean_sentiment_score": 0.8204733990132809,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7c1",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 16:00:00",
+                "mean_sentiment_score": 0.7491783489688085,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d175",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 17:00:00",
+                "mean_sentiment_score": 0.6630443572998046,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d176",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 18:00:00",
+                "mean_sentiment_score": 0.7005441722460091,
+                "tweet_count": 20,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d177",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 19:00:00",
+                "mean_sentiment_score": 0.714812412392348,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d178",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 20:00:00",
+                "mean_sentiment_score": 0.8552890944993123,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d179",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 21:00:00",
+                "mean_sentiment_score": 0.6302116497165777,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d17a",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 22:00:00",
+                "mean_sentiment_score": 0.719889111159479,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "691451c615d91edd2a46d17b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 23:00:00",
+                "mean_sentiment_score": 0.8552166189998388,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914584f15d91edd2a46d27e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 14:00:00",
+                "mean_sentiment_score": 0.7814901171562572,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "69145fd015d91edd2a46d396",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 15:00:00",
+                "mean_sentiment_score": 0.7041879265452735,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "691472a315d91edd2a46d64c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 16:00:00",
+                "mean_sentiment_score": 0.7613816869755586,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "69147ae815d91edd2a46d775",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 17:00:00",
+                "mean_sentiment_score": 0.761865440600862,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "69148cb315d91edd2a46d9f6",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 18:00:00",
+                "mean_sentiment_score": 0.6600680743654569,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "69149a5a15d91edd2a46dbed",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 19:00:00",
+                "mean_sentiment_score": 0.7019247253192589,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914aa4f15d91edd2a46de40",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 20:00:00",
+                "mean_sentiment_score": 0.7292200273109807,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6914b3a815d91edd2a46df97",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 21:00:00",
+                "mean_sentiment_score": 0.7694667067068318,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f6",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f7",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f8",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32f9",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 01:00:00",
+                "mean_sentiment_score": 0.037368350408294004,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32fa",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 02:00:00",
+                "mean_sentiment_score": 0.04946854666751971,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32fb",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32fc",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 5,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32fd",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 13:00:00",
+                "mean_sentiment_score": -0.001157514750957489,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32fe",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 9,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a32ff",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 17:00:00",
+                "mean_sentiment_score": -0.01321376008646824,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3300",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3301",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3302",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3303",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 21:00:00",
+                "mean_sentiment_score": 0.032695635842780235,
+                "tweet_count": 24,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3304",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3305",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3306",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3307",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3308",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3309",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a330a",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 24,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a330b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a330c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a330d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 15,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a330e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a330f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3310",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 10:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3311",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 11:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3312",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3313",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3314",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3315",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3316",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3317",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3318",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3319",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 20:00:00",
+                "mean_sentiment_score": 0.1634744368493557,
+                "tweet_count": 4,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a331a",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a331b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a331c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a331d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 3,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a331e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a331f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3320",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3321",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3322",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 22,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3323",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 06:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 14,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3324",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3325",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3326",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3327",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 12:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3328",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 13:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3329",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 7,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a332a",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 15:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a332b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 16:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a332c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 17:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 28,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a332d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 18:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 19,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a332e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 23,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a332f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 20:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 12,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3330",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 21:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 19,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3331",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 22:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 21,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3332",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 23:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3333",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 00:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 11,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3334",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 01:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3335",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 02:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3336",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 03:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 23,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3337",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 04:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 18,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3338",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 05:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 24,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3339",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 06:00:00",
+                "mean_sentiment_score": 0.0678384673710053,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a333a",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 07:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 10,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a333b",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 08:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 13,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a333c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 09:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 6,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a333d",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 14:00:00",
+                "mean_sentiment_score": 0.0,
+                "tweet_count": 17,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a333e",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 15:00:00",
+                "mean_sentiment_score": 0.26269512227736413,
+                "tweet_count": 16,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a333f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 16:00:00",
+                "mean_sentiment_score": 0.7569358057808131,
+                "tweet_count": 8,
+                "unit": "hour"
+            },
+            {
+                "_id": "6919e68d758f042a488a3340",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 19:00:00",
+                "mean_sentiment_score": 0.6605450907722116,
+                "tweet_count": 10,
                 "unit": "hour"
             }
         ],
@@ -2623,8 +6087,8 @@
                 "_id": "68fbd6128b391edeafbc3aac",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-24 19:00:00",
-                "mean_sentiment_score": 0.7165908071575529,
-                "tweet_count": 118,
+                "mean_sentiment_score": 0.7202703605951934,
+                "tweet_count": 116,
                 "unit": "day"
             },
             {
@@ -2639,16 +6103,104 @@
                 "_id": "68ffa4a98b391edeafbcc948",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-26 19:00:00",
-                "mean_sentiment_score": 0.6792251335536228,
-                "tweet_count": 94,
+                "mean_sentiment_score": 0.6769710428091468,
+                "tweet_count": 93,
                 "unit": "day"
             },
             {
                 "_id": "68ffa9648b391edeafbcca40",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-27 19:00:00",
-                "mean_sentiment_score": 0.7166210443856533,
-                "tweet_count": 149,
+                "mean_sentiment_score": 0.7140240014832414,
+                "tweet_count": 142,
+                "unit": "day"
+            },
+            {
+                "_id": "69023a368b391edeafbd3240",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-28 19:00:00",
+                "mean_sentiment_score": 0.7170141333695121,
+                "tweet_count": 294,
+                "unit": "day"
+            },
+            {
+                "_id": "69023a368b391edeafbd3241",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-29 19:00:00",
+                "mean_sentiment_score": 0.7448116431502919,
+                "tweet_count": 95,
+                "unit": "day"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7c2",
+                "coin": "SOLANA",
+                "time_bucket": "2025-10-30 19:00:00",
+                "mean_sentiment_score": 0.6672193780926794,
+                "tweet_count": 145,
+                "unit": "day"
+            },
+            {
+                "_id": "69131f4d15d91edd2a46a7c3",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-01 19:00:00",
+                "mean_sentiment_score": 0.7072359044686891,
+                "tweet_count": 96,
+                "unit": "day"
+            },
+            {
+                "_id": "691451c715d91edd2a46d17c",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-02 19:00:00",
+                "mean_sentiment_score": 0.7391858679762521,
+                "tweet_count": 77,
+                "unit": "day"
+            },
+            {
+                "_id": "6914585215d91edd2a46d27f",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-11 19:00:00",
+                "mean_sentiment_score": 0.7255177828712298,
+                "tweet_count": 61,
+                "unit": "day"
+            },
+            {
+                "_id": "69149a5a15d91edd2a46dbee",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-12 19:00:00",
+                "mean_sentiment_score": 0.15398341868374793,
+                "tweet_count": 185,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68e758f042a488a3341",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-13 19:00:00",
+                "mean_sentiment_score": 0.0023147352809048116,
+                "tweet_count": 339,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68e758f042a488a3342",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-14 19:00:00",
+                "mean_sentiment_score": 0.002239375847251479,
+                "tweet_count": 292,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68e758f042a488a3343",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.040510939921845124,
+                "tweet_count": 275,
+                "unit": "day"
+            },
+            {
+                "_id": "6919e68e758f042a488a3344",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-16 19:00:00",
+                "mean_sentiment_score": 0.6605450907722116,
+                "tweet_count": 10,
                 "unit": "day"
             }
         ],
@@ -2673,16 +6225,40 @@
                 "_id": "68fb72058b391edeafbc2a98",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-18 19:00:00",
-                "mean_sentiment_score": 0.7195405533473039,
-                "tweet_count": 290,
+                "mean_sentiment_score": 0.7210430800526714,
+                "tweet_count": 288,
                 "unit": "week"
             },
             {
                 "_id": "68fcd8f78b391edeafbc5e4a",
                 "coin": "SOLANA",
                 "time_bucket": "2025-10-25 19:00:00",
-                "mean_sentiment_score": 0.7182662162801575,
-                "tweet_count": 494,
+                "mean_sentiment_score": 0.7126035284314889,
+                "tweet_count": 1020,
+                "unit": "week"
+            },
+            {
+                "_id": "69131f4e15d91edd2a46a7c4",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-01 19:00:00",
+                "mean_sentiment_score": 0.7214564084576044,
+                "tweet_count": 173,
+                "unit": "week"
+            },
+            {
+                "_id": "6914585215d91edd2a46d280",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-08 19:00:00",
+                "mean_sentiment_score": 0.08458621461717508,
+                "tweet_count": 877,
+                "unit": "week"
+            },
+            {
+                "_id": "6919e68e758f042a488a3345",
+                "coin": "SOLANA",
+                "time_bucket": "2025-11-15 19:00:00",
+                "mean_sentiment_score": 0.06226652416220879,
+                "tweet_count": 285,
                 "unit": "week"
             }
         ]

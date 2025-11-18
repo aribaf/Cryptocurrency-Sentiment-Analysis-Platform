@@ -135,22 +135,26 @@ class SentimentAnalyzer:
 # Execution Block: Scheduled Sentiment Processor
 # ==============================================================================
 
+import time
+from datetime import timedelta
+
 if __name__ == "__main__":
-    
-    ANALYSIS_INTERVAL_SECONDS = 900 
-    
+    ANALYSIS_INTERVAL_SECONDS = 3600  # 1 hour
+
     analyzer = None
     try:
         analyzer = SentimentAnalyzer()
-        
+
         logger.info("🟢 STARTING SENTIMENT ANALYZER. Press Ctrl+C to stop.")
-        
+
         while True:
             analyzer.run_analysis_cycle(batch_size=BATCH_SIZE)
-            
-            logger.info(f"😴 Sleeping for {ANALYSIS_INTERVAL_SECONDS} seconds...")
+
+            # human-readable sleep message
+            hr = timedelta(seconds=ANALYSIS_INTERVAL_SECONDS)
+            logger.info(f"😴 Sleeping for {ANALYSIS_INTERVAL_SECONDS} seconds ({hr})...")
             time.sleep(ANALYSIS_INTERVAL_SECONDS)
-            
+
     except KeyboardInterrupt:
         logger.info("\n\n🛑 Sentiment Analyzer stopped by user (Ctrl+C).")
     except Exception as e:

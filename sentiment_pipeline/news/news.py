@@ -128,5 +128,24 @@ def scrape_news(news_sites=None):
     return saved
 
 # ---------------- RUN ----------------
+# Put the main scraping logic into a function named `run_once`
+def run_once():
+    try:
+        logging.info("⏰ Starting one-time run...")
+        count = scrape_news()   # or whichever function triggers one cycle
+        logging.info(f"✅ One-time run complete. {count} saved.")
+    except Exception as e:
+        logging.exception("❌ Error during one-time run: %s", e)
+
 if __name__ == "__main__":
-    scrape_news()
+    try:
+        logging.info("🕒 Starting news scraper loop — will run every hour. Press Ctrl+C to stop.")
+        while True:
+            run_once()  # one scraping + save cycle
+            logging.info("😴 Sleeping for 1 hour...")
+            time.sleep(3600)  # 1 hour
+    except KeyboardInterrupt:
+        logging.info("🛑 Stopped by user (KeyboardInterrupt). Exiting gracefully.")
+    except Exception:
+        logging.exception("❌ Unhandled exception in main loop. Exiting.")
+

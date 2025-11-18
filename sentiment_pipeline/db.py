@@ -20,7 +20,7 @@ class Database:
         # ✅ Add new database + collection for news
         self.news_db = self.client['crypto_news_db']
         self.news_collection = self.news_db['latest_news']
-
+        self.transactions_collection = self.db['transactions']
         self._create_indexes()
 
     def _create_indexes(self):
@@ -36,7 +36,16 @@ class Database:
         # ✅ News
         self.news_collection.create_index([('url', ASCENDING)], unique=True)
         self.news_collection.create_index([('source', ASCENDING), ('fetched_at', DESCENDING)])
-
+           
+           
+        # Transactions
+         # ✅ Transactions
+        self.transactions_collection.create_index([("tx_hash", ASCENDING)], unique=True)
+        self.transactions_collection.create_index([("from", ASCENDING)])
+        self.transactions_collection.create_index([("to", ASCENDING)])
+        self.transactions_collection.create_index([("blockchain", ASCENDING), ("timestamp", DESCENDING)])
+        self.transactions_collection.create_index([("value_usd", DESCENDING)])
+        self.transactions_collection.create_index([("timestamp", ASCENDING)])
     # -----------------------------
     # Tweets
     # -----------------------------
@@ -86,6 +95,11 @@ class Database:
             )
         except Exception as e:
             print(f"Error inserting news article: {e}")
+
+
+
+
+
 
 # ✅ Connection Test
 if __name__ == "__main__":

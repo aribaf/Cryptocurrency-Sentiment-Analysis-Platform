@@ -1,7 +1,6 @@
-# main.py (or api_server.py)
 import sys 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 from typing import List, Dict, Optional
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
@@ -12,6 +11,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from bson import ObjectId # Re-importing ObjectId for clarity
+# transactions router (add this import)
+# api/main.py (near top imports)
+try:
+    from .transactions import router as tx_router
+except Exception as e:
+    print(f"Could not import .transactions: {e}")
+    tx_router = None
+
 
 # --- Configuration (remains the same) ---
 MONGO_URI = "mongodb+srv://aribafaryad:uGZKX4AZ5F7vEjkW@tweets.d0g9ckv.mongodb.net/?retryWrites=true&w=majority&appName=tweets"
@@ -23,10 +31,17 @@ TARGET_HASHTAGS = ["BTC", "ETH", "SOLANA"]
 TIMEZONE = "Asia/Karachi" 
 # -----------------------------------------------------
 
+# --- Coin Mapping for Data Consistency ---
+TICKER_TO_FULL_NAME = {
+    "BTC": "Bitcoin",
+    "ETH": "Ethereum",
+    "SOLANA": "Solana"
+}
+# -----------------------------------------------------
+
 # --- Security Setup ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# 💥 TRUNCATION FIX INJECTED HERE 💥
 def verify_password(plain_password, hashed_password):
     # Truncate the plain password to 72 chars before verifying
     return pwd_context.verify(plain_password[:72], hashed_password)
@@ -38,6 +53,33 @@ def get_password_hash(password):
 
 # --- Initialize FastAPI App (remains the same) ---
 app = FastAPI(title="CryptoSent API")
+# mount transactions router under /api so final endpoints are /api/transactions/...
+if tx_router:
+    app.include_router(tx_router, prefix="/api")
+
+# =========================
+# ACCOUNT MANAGEMENT MODELS
+# =========================
+class ProfileUpdate(BaseModel):
+    user_id: Optional[str] = None
+    email: Optional[EmailStr] = None 
+    username: Optional[str] = None
+    new_email: Optional[EmailStr] = None
+
+class PasswordUpdate(BaseModel):
+    user_id: Optional[str] = None
+    email: Optional[EmailStr] = None
+    current_password: str
+    new_password: str
+
+class DeactivateRequest(BaseModel):
+    user_id: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class DeleteRequest(BaseModel):
+    user_id: Optional[str] = None
+    email: Optional[EmailStr] = None
+    confirm: bool
 
 # Setup CORS (remains the same)
 app.add_middleware(
@@ -80,9 +122,8 @@ class UserCreate(BaseModel):
     password: str
 
 # ----------------------------------------------------------------------
-# A. USER AUTHENTICATION ENDPOINTS 
+# A. USER AUTHENTICATION ENDPOINTS (NO CHANGES)
 # ----------------------------------------------------------------------
-# (These routes correctly call the FIXED get_password_hash function)
 
 @app.post("/api/register", status_code=status.HTTP_201_CREATED, summary="User Registration (FR01)")
 async def register_user(user_data: UserCreate):
@@ -95,13 +136,12 @@ async def register_user(user_data: UserCreate):
         )
 
     if len(user_data.password) < 8:
-         raise HTTPException(
+          raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": "Password must be at least 8 characters."}
         )
 
     # 3. Hash Password and Create User
-    # 💥 This call now uses the fixed function above 💥
     hashed_password = get_password_hash(user_data.password)
     
     new_user_data = dict(user_data)
@@ -125,7 +165,6 @@ async def register_user(user_data: UserCreate):
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
     user = users_collection.find_one({"email": form_data.username.lower()})
 
-    # 💥 This call now uses the fixed function above 💥
     if not user or not verify_password(form_data.password, user["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -141,7 +180,7 @@ async def logout_user():
 
 
 # ----------------------------------------------------------------------
-# B. DATA ENDPOINTS (Remain the same, using raw_collection/agg_collection)
+# B. DATA ENDPOINTS
 # ----------------------------------------------------------------------
 
 @app.get("/api/recent", summary="Get recent tweets/sentiments")
@@ -173,106 +212,235 @@ async def get_recent_sentiments(limit: int = 30):
 
     return {"data": formatted_tweets}
 
+# ----------------------------------------------------------------------
+# FIX 1: ADD /api/sentiment/twitter endpoint for RecentList component
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# FIX 1: UPDATED /api/sentiment/twitter endpoint 
+# Wraps response in {"data": [...]}. Ensures 'created_at' is a string.
+# ----------------------------------------------------------------------
+@app.get("/api/sentiment/twitter", summary="Get recent tweets (Fixes 404, fixes data structure)")
+async def get_recent_twitter(limit: int = 20, coin: Optional[str] = None):
+    try:
+        twitter_collection = raw_collection 
+
+        query = {"sentiment.scores": {"$exists": True}, "is_irrelevant": False}
+        if coin and coin != "ALL":
+            coin_match = TICKER_TO_FULL_NAME.get(coin, coin) 
+            query["coin"] = {"$in": [coin_match, coin]}
+
+        tweets = list(twitter_collection.find(
+            query,
+            {"_id": 0, "tweet_id": 1, "coin": 1, "text": 1, "url": 1, 
+             "created_at": 1, "sentiment.label": 1, "sentiment.scores": 1}
+        ).sort("scraped_at", -1).limit(limit))
+
+        formatted_tweets = []
+        for tweet in tweets:
+            scores = tweet.get('sentiment', {}).get('scores', {})
+            confidence_score = scores.get(tweet.get('sentiment', {}).get('label', 'neutral').lower(), 0)
+
+            formatted_tweets.append({
+                "id": tweet['tweet_id'],
+                "title": tweet['text'],
+                "text": tweet['text'],
+                "coin": tweet['coin'],
+                "url": tweet['url'],
+                # Ensures created_at is a string, preventing "Invalid time value"
+                "created_at": tweet.get('created_at', ""), 
+                "sentiment_label": tweet.get('sentiment', {}).get('label', 'Neutral'),
+                "confidence": confidence_score,
+                "source": "twitter",
+            })
+            
+        # <<< CRITICAL CHANGE: Wrap the array in the "data" key >>>
+        return {"data": formatted_tweets}
+
+    except Exception as e:
+        print(f"Twitter fetch error: {e}")
+        # Return an object with an empty array on error for consistency
+        return {"data": []}
+
+# ----------------------------------------------------------------------
+# FIX 2: UPDATED /api/sentiment/news endpoint 
+# Wraps response in {"data": [...]}. Ensures 'created_at' is a string.
+# ----------------------------------------------------------------------
+@app.get("/api/sentiment/news", summary="Get recent news articles (fixes data structure)")
+async def get_recent_news(limit: int = 20, coin: Optional[str] = None):
+    try:
+        news_db = client["crypto_news_db"]
+        news_collection = news_db["latest_news"]
+
+        query = {"sentiment.score": {"$exists": True}}
+        if coin and coin != "ALL":
+            query["coin_tags"] = {"$in": [coin]}
+
+        news_posts = list(news_collection.find(
+            query, 
+            {"_id": 0, "title": 1, "url": 1, "coin_tags": 1, "fetched_at": 1, "sentiment.score": 1}
+        ).sort("fetched_at", -1).limit(limit))
+
+        formatted_posts = [
+            {
+                "id": post.get("url", ""), 
+                "title": post.get("title", "No title"),
+                "text": post.get("title", ""),
+                "coin": post.get("coin_tags", [])[0] if post.get("coin_tags") else None,
+                "url": post.get("url", "#"),
+                # Ensures fetched_at is a string, preventing "Invalid time value"
+                "created_at": post.get("fetched_at", ""), 
+                "sentiment_label": post.get("sentiment", {}).get("label", "Neutral"),
+                "confidence": post.get("sentiment", {}).get("score", 0.0),
+                "source": "news",
+            }
+            for post in news_posts
+        ]
+        
+        # <<< CRITICAL CHANGE: Wrap the array in the "data" key >>>
+        return {"data": formatted_posts}
+
+    except Exception as e:
+        print(f"News fetch error: {e}")
+        # Return an object with an empty array on error for consistency
+        return {"data": []}
 @app.get("/api/trends/{coin}", summary="Get multi-source sentiment trends (Twitter, Reddit, News, Overall)")
 async def get_coin_trends(coin: str, unit: str = "day"):
-    """
-    Return daily/hourly sentiment trends across all sources (Twitter, Reddit, News).
-    """
+    # ... (TRENDS LOGIC REMAINS UNCHANGED) ...
+    if unit == "day":
+        days_lookback = 30
+    elif unit == "week":
+        days_lookback = 90
+    else:
+        days_lookback = 7
+        
+    start_date = datetime.now() - timedelta(days=days_lookback)
+    
+    start_date_str = start_date.strftime('%Y-%m-%dT%H:%M:%S.000000') 
 
+    
     # --- Twitter (from tweets DB) ---
     tweet_db = client["crypto_tweets_db"]
     twitter_collection = tweet_db["latest_tweets"]
+    
+    twitter_coin_match = TICKER_TO_FULL_NAME.get(coin, coin)
 
     twitter_pipeline = [
-        {"$match": {"coin": coin, "sentiment.scores": {"$exists": True}}},
+        {"$match": {
+            "coin": twitter_coin_match, 
+            "sentiment.scores": {"$exists": True},
+            "scraped_at": {"$gte": start_date_str} 
+        }},
+        
+        {"$addFields": {
+            "scraped_at_date": {
+                "$toDate": {"$ifNull": ["$scraped_at", "$created_at"]}
+            }
+        }},
+        
         {
             "$group": {
-                "_id": {"$dateTrunc": {"date": "$scraped_at", "unit": unit}},
+                "_id": {"$dateTrunc": {"date": "$scraped_at_date", "unit": unit}},
                 "twitter_score": {
-                    "$avg": {
-                        "$subtract": [
-                            "$sentiment.scores.positive",
-                            "$sentiment.scores.negative",
-                        ]
-                    }
+                    "$avg": {"$subtract": ["$sentiment.scores.positive", "$sentiment.scores.negative"]}
                 },
             }
         },
         {"$sort": {"_id": 1}},
     ]
     twitter_results = list(twitter_collection.aggregate(twitter_pipeline))
-    twitter_data = {r["_id"].isoformat(): r["twitter_score"] for r in twitter_results if "_id" in r}
+    twitter_data = {r["_id"].isoformat().replace('+00:00', 'Z'): r["twitter_score"] for r in twitter_results if "_id" in r}
 
     # --- Reddit (from reddit DB) ---
     reddit_db = client["crypto_reddit_db"]
     reddit_collection = reddit_db["latest_reddit"]
 
     reddit_pipeline = [
-        {"$match": {"coin": coin}},
-        {
-            "$group": {
-                "_id": {"$dateTrunc": {"date": "$created_at", "unit": unit}},
-                "reddit_score": {"$avg": "$polarity"},
-            }
-        },
+        {"$match": {
+            "coin": coin,
+            "created_at": {"$gte": start_date_str} 
+        }},
+        
+        {"$addFields": {"created_at_date": {"$toDate": "$created_at"}}},
+
+        {"$group": {
+            "_id": {"$dateTrunc": {"date": "$created_at_date", "unit": unit}},
+            "reddit_score": {"$avg": "$polarity"},
+        }},
         {"$sort": {"_id": 1}},
     ]
     reddit_results = list(reddit_collection.aggregate(reddit_pipeline))
-# Fixed code:
-    reddit_data = {r["_id"].isoformat(): r["reddit_score"] 
-                for r in reddit_results 
-                if "_id" in r and r["_id"] is not None}
+    reddit_data = {r["_id"].isoformat().replace('+00:00', 'Z'): r["reddit_score"] for r in reddit_results if "_id" in r and r["_id"] is not None}
+    
     # --- News (from news DB) ---
     news_db = client["crypto_news_db"]
     news_collection = news_db["latest_news"]
 
-    # New News pipeline with date conversion fix
     news_pipeline = [
-        {"$match": {"coin_tags": coin, "sentiment.score": {"$exists": True}}},
-        
-        # 💥 FIX: Add $addFields to ensure $fetched_at is a valid date 💥
-        {"$addFields": {
-            "fetched_at_date": {
-                # Use $toDate to convert the string to a BSON Date object
-                "$toDate": "$fetched_at" 
-            }
+        {"$match": {
+            "coin_tags": {"$in": [coin]}, 
+            "sentiment.score": {"$exists": True},
+            "fetched_at": {"$gte": start_date_str}
         }},
-        # -------------------------------------------------------------
+        
+        {"$addFields": {"fetched_at_date": {"$toDate": "$fetched_at"}}},
 
-        {
-            "$group": {
-                # Now use the new, guaranteed date field for dateTrunc
-                "_id": {"$dateTrunc": {"date": "$fetched_at_date", "unit": unit}},
-                "news_score": {"$avg": "$sentiment.score"},
-            }
-        },
+        {"$group": {
+            "_id": {"$dateTrunc": {"date": "$fetched_at_date", "unit": unit}},
+            "news_score": {"$avg": "$sentiment.score"},
+        }},
         {"$sort": {"_id": 1}},
     ]
     news_results = list(news_collection.aggregate(news_pipeline))
-    news_data = {r["_id"].isoformat(): r["news_score"] for r in news_results if "_id" in r}
+    news_data = {r["_id"].isoformat().replace('+00:00', 'Z'): r["news_score"] for r in news_results if "_id" in r}
 
-    # --- Merge all by timestamp ---
+    # --- Merge all by timestamp and fill missing gaps with zero ---
+    combined = []
     all_timestamps = sorted(set(twitter_data.keys()) | set(reddit_data.keys()) | set(news_data.keys()))
 
-    combined = []
-    for ts in all_timestamps:
-        tw = twitter_data.get(ts, None)
-        rd = reddit_data.get(ts, None)
-        nw = news_data.get(ts, None)
-        valid_scores = [s for s in [tw, rd, nw] if s is not None]
+    if not all_timestamps:
+        return {"data": []}
+
+    start_dt = datetime.fromisoformat(all_timestamps[0].replace('Z', '+00:00'))
+    end_dt = datetime.now().replace(microsecond=0)
+
+    if unit == "day" or unit == "week":
+        step = timedelta(days=1)
+    else: # hour
+        step = timedelta(hours=1)
+    
+    current_dt = start_dt
+    
+    while current_dt <= end_dt:
+        bucket_key = current_dt.isoformat().replace('+00:00', 'Z')
+        
+        tw = twitter_data.get(bucket_key, 0)
+        rd = reddit_data.get(bucket_key, 0)
+        nw = news_data.get(bucket_key, 0)
+        
+        valid_scores = [s for s in [tw, rd, nw] if s != 0]
+        
         overall = sum(valid_scores) / len(valid_scores) if valid_scores else 0
+        
         combined.append({
-            "time_bucket": ts,
-            "twitter": tw or 0,
-            "reddit": rd or 0,
-            "news": nw or 0,
+            "time_bucket": bucket_key,
+            "twitter": tw,
+            "reddit": rd,
+            "news": nw,
             "overall": overall
         })
+        
+        current_dt += step
+        
+        if (unit == "day" or unit == "week") and current_dt.date() > end_dt.date():
+            break
+        elif unit == "hour" and current_dt > end_dt:
+             break
+        
 
     return {"data": combined}
 
 
-# Helper function to calculate the mean score for any set of documents
+# Helper function to calculate the mean score for any set of documents (NO CHANGES)
 async def calculate_mean_score(collection, match_filter, hours=24):
     one_day_ago = (datetime.now() - timedelta(hours=hours)).isoformat()
     
@@ -299,7 +467,9 @@ async def calculate_mean_score(collection, match_filter, hours=24):
 
 @app.get("/api/sentiment/overview", summary="Get overall sentiment summary (FR06-04)")
 async def get_sentiment_overview():
-    overall_filter = {"coin": {"$in": TARGET_HASHTAGS}}
+    # Match both ticker and full names so DB values like "Bitcoin" are included
+    coin_match_list = list(set(TARGET_HASHTAGS + list(TICKER_TO_FULL_NAME.values())))
+    overall_filter = {"coin": {"$in": coin_match_list}}
 
     # 1. Calculate Individual Coin Scores (Used for overall average)
     coin_scores = list(raw_collection.aggregate([
@@ -361,74 +531,62 @@ async def get_sentiment_overview():
     }
 
     
-@app.get("/api/recent/reddit", summary="Get recent Reddit posts (FR06-05)")
-async def get_recent_reddit():
+
+
+# ... (your existing imports like from fastapi import ..., from pymongo import MongoClient, etc.)
+
+# CRITICAL: This is the function that the frontend's getReddit call is expecting
+# It should fetch individual recent posts, not the aggregate overview.
+@app.get("/api/recent/reddit", summary="Get recent Reddit posts for RecentList component")
+async def get_recent_reddit_posts(
+    limit: int = 25, 
+    coin: Optional[str] = None
+):
     try:
-        # Connect to Reddit database
         reddit_db = client["crypto_reddit_db"]
         reddit_collection = reddit_db["latest_reddit"]
+        
+        # 1. Define the query filter
+        filter_query = {}
+        if coin and coin.upper() != 'ALL':
+            filter_query["coin"] = coin.upper()
 
-        # Fetch latest 20 posts
-        reddit_posts = list(reddit_collection.find({}, {"_id": 0}).sort("_id", -1).limit(20))
+        # 2. Fetch the documents, newest first (use created_at which our scraper sets)
+        cursor = reddit_collection.find(filter_query).sort("created_at", -1).limit(limit)
+        
+        # 3. Process and format the results
+        posts = []
+        for doc in cursor:
+            created_at = (
+                doc.get("created_at")
+                or doc.get("created_utc")
+                or datetime.now(timezone.utc).isoformat()
+            )
 
-        # Optional: clean or format text fields
-        formatted_posts = [
-            {
-                "title": post.get("title", "No title"),
-                "content": post.get("content", ""),
-                "subreddit": post.get("subreddit", "Unknown"),
-                "polarity": post.get("polarity", 0.0),
-                "url": post.get("url", "#"),
-                "created_at": post.get("created_at", None)
-            }
-            for post in reddit_posts
-        ]
+            doc_id = str(doc.get("_id", ""))
 
-        return {"data": formatted_posts}
-
+            posts.append({
+                "id": doc_id,
+                "text": doc.get("text") or doc.get("title") or "No content",
+                "title": doc.get("title", "No Title"),
+                "url": f"https://reddit.com/{doc.get('permalink')}" if doc.get('permalink') else doc.get("url"),
+                "created_at": created_at,
+                "polarity": doc.get("polarity"),
+                "confidence": doc.get("polarity"),  # Use polarity as confidence for consistency
+                "coin": doc.get("coin"),
+                "source": "reddit",
+            })
+            
+        return {"data": posts}
+        
     except Exception as e:
-        return {"error": str(e)}
+        print(f"Error fetching recent Reddit posts: {e}")
+        return {"data": []}
 
-
-@app.get("/api/sentiment/reddit", summary="Get Reddit sentiment overview")
-async def get_reddit_sentiment():
-    reddit_db = client["crypto_reddit_db"]
-    reddit_collection = reddit_db["latest_reddit"]
-
-    pipeline = [
-        {
-            "$group": {
-                "_id": "$coin",
-                "avg_polarity": {"$avg": "$polarity"},
-            }
-        }
-    ]
-
-    results = list(reddit_collection.aggregate(pipeline))
-
-    # Format the response
-    sentiment_by_coin = {}
-    for item in results:
-        coin = item["_id"]
-        score = item["avg_polarity"]
-        label = "Positive" if score > 0.05 else "Negative" if score < -0.05 else "Neutral"
-        sentiment_by_coin[coin] = {"score": score, "label": label}
-
-    # Calculate overall average
-    if results:
-        overall_score = sum([r["avg_polarity"] for r in results]) / len(results)
-        overall_label = "Positive" if overall_score > 0.05 else "Negative" if overall_score < -0.05 else "Neutral"
-    else:
-        overall_score, overall_label = 0.0, "Neutral"
-
-    return {
-        "data": {
-            "overall": {"score": overall_score, "label": overall_label},
-            "by_coin": sentiment_by_coin
-        }
-    }
-
-@app.get("/api/sentiment/news", summary="Get News sentiment overview")
+# ----------------------------------------------------------------------
+# FIX 3: RENAME original /api/sentiment/news to /api/sentiment/news/overview
+# ----------------------------------------------------------------------
+@app.get("/api/sentiment/news/overview", summary="Get News sentiment overview")
 async def get_news_sentiment():
     try:
         # Connect to the news database
@@ -464,48 +622,211 @@ async def get_news_sentiment():
         return {"error": str(e)}
 
 
-# --- C. HEATMAP DATA ENDPOINT ---
+# --- C. HEATMAP DATA ENDPOINT (NO CHANGES) ---
+
+# =========================
+# ACCOUNT MANAGEMENT HELPERS (NO CHANGES)
+# ======================================================================
+def _get_user_by_identifier(user_id: Optional[str], email: Optional[str]):
+    q = None
+    if user_id:
+        try:
+            q = {"_id": ObjectId(user_id)}
+        except Exception:
+            raise HTTPException(status_code=400, detail={"message": "Invalid user_id"})
+    elif email:
+        q = {"email": email.lower()}
+    else:
+        raise HTTPException(status_code=400, detail={"message": "user_id or email is required"})
+
+    user = users_collection.find_one(q)
+    if not user:
+        raise HTTPException(status_code=404, detail={"message": "User not found"})
+    return user
+
+def _public_user(user_doc: dict) -> dict:
+    return {
+        "id": str(user_doc["_id"]),
+        "name": user_doc.get("name", ""),
+        "username": user_doc.get("username", ""),
+        "email": user_doc.get("email", ""),
+        "is_active": user_doc.get("is_active", True),
+        "created_at": user_doc.get("created_at"),
+        "updated_at": user_doc.get("updated_at"),
+        "deactivated_at": user_doc.get("deactivated_at"),
+    }
+# ----------------------------------------------------------------------
+# C. ACCOUNT MANAGEMENT ENDPOINTS (NO CHANGES)
+# ----------------------------------------------------------------------
+@app.get("/api/account/profile", summary="Get current profile")
+async def get_profile(user_id: Optional[str] = None, email: Optional[str] = None):
+    user = _get_user_by_identifier(user_id, email)
+    return {"data": _public_user(user)}
+
+@app.put("/api/account/profile", summary="Update profile (name, username, email)")
+async def update_profile(payload: ProfileUpdate):
+    user = _get_user_by_identifier(payload.user_id, payload.email)
+
+    updates = {}
+
+    if payload.username is not None:
+        # check unique username (excluding me)
+        existing = users_collection.find_one(
+            {"username": payload.username, "_id": {"$ne": user["_id"]}}
+        )
+        if existing:
+            raise HTTPException(status_code=400, detail={"message": "Username already taken"})
+        updates["username"] = payload.username.strip()
+
+    if payload.new_email is not None:
+        new_email_lower = payload.new_email.lower()
+        existing = users_collection.find_one(
+            {"email": new_email_lower, "_id": {"$ne": user["_id"]}}
+        )
+        if existing:
+            raise HTTPException(status_code=400, detail={"message": "Email already registered"})
+        updates["email"] = new_email_lower
+
+    if not updates:
+        return {"message": "Nothing to update", "data": _public_user(user)}
+
+    updates["updated_at"] = datetime.utcnow()
+    users_collection.update_one({"_id": user["_id"]}, {"$set": updates})
+    fresh = users_collection.find_one({"_id": user["_id"]})
+    return {"message": "Profile updated", "data": _public_user(fresh)}
+
+@app.put("/api/account/password", summary="Change password")
+async def change_password(payload: PasswordUpdate):
+    if len(payload.new_password) < 8:
+        raise HTTPException(status_code=400, detail={"message": "New password must be at least 8 characters"})
+
+    user = _get_user_by_identifier(payload.user_id, payload.email)
+
+    if "hashed_password" not in user:
+        raise HTTPException(status_code=400, detail={"message": "User has no password set"})
+
+    # verify current password
+    if not verify_password(payload.current_password, user["hashed_password"]):
+        raise HTTPException(status_code=401, detail={"message": "Current password is incorrect"})
+
+    new_hash = get_password_hash(payload.new_password)
+    users_collection.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"hashed_password": new_hash, "updated_at": datetime.utcnow()}}
+    )
+    return {"message": "Password updated successfully"}
+
+@app.post("/api/account/deactivate", summary="Temporarily deactivate account")
+async def deactivate_account(payload: DeactivateRequest):
+    user = _get_user_by_identifier(payload.user_id, payload.email)
+
+    users_collection.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"is_active": False, "deactivated_at": datetime.utcnow()}}
+    )
+    fresh = users_collection.find_one({"_id": user["_id"]})
+    return {"message": "Account deactivated", "data": _public_user(fresh)}
+
+@app.post("/api/account/reactivate", summary="Reactivate account")
+async def reactivate_account(payload: DeactivateRequest):
+    user = _get_user_by_identifier(payload.user_id, payload.email)
+
+    users_collection.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"is_active": True}, "$unset": {"deactivated_at": ""}}
+    )
+    fresh = users_collection.find_one({"_id": user["_id"]})
+    return {"message": "Account reactivated", "data": _public_user(fresh)}
+
+@app.delete("/api/account/delete", summary="Permanently delete account")
+async def delete_account(payload: DeleteRequest):
+    if not payload.confirm:
+        raise HTTPException(status_code=400, detail={"message": "Confirmation required"})
+
+    user = _get_user_by_identifier(payload.user_id, payload.email)
+    users_collection.delete_one({"_id": user["_id"]})
+    return {"message": "Account permanently deleted"}
+
+# --- Standard API Root ---
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to CryptoSent FastAPI"}
+
+# --- HEATMAP ENDPOINT (NO CHANGES) ---
 
 @app.get("/api/sentiment/heatmap", summary="Get multi-coin sentiment data for heatmap visualization")
 async def get_sentiment_heatmap(days: int = 30):
-    """
-    Calculates the average sentiment for each TARGET_HASHTAG (e.g., BTC, ETH) 
-    over the last 'days' (default 30), broken down by day.
-    """
     
-    # Calculate the starting date
-    start_date = (datetime.now() - timedelta(days=days))
+    start_date = datetime.now() - timedelta(days=days)
 
-    # Match documents for target coins and within the time frame
+    ticker_list = TARGET_HASHTAGS
+    full_names = ["Bitcoin", "Ethereum", "Solana"]
+    coin_match_list = list(set(ticker_list + full_names))
+
+    # 1) initial match
     match_stage = {
         "$match": {
-            "coin": {"$in": TARGET_HASHTAGS}, 
-            "sentiment.scores": {"$exists": True},
-            "scraped_at": {"$gte": start_date} # Assuming scraped_at is a datetime object
+            "coin": {"$in": coin_match_list},
+            "sentiment.scores": {"$exists": True}
         }
     }
 
-    # Group by coin and date (truncate to day)
+    # 2) convert scraped_at to a Date object: scraped_at_dt
+    add_fields_stage = {
+        "$addFields": {
+            "scraped_at_dt": {
+                "$cond": [
+                    {"$or": [
+                        {"$eq": [{"$type": "$scraped_at"}, "missing"]},
+                        {"$eq": [{"$type": "$scraped_at"}, "null"]}
+                    ]},
+                    # if scraped_at missing/null, try created_at (might be string or date)
+                    {
+                        "$cond": [
+                            {"$eq": [{"$type": "$created_at"}, "string"]},
+                            {"$toDate": "$created_at"},
+                            "$created_at"
+                        ]
+                    },
+                    # else if scraped_at exists
+                    {
+                        "$cond": [
+                            {"$eq": [{"$type": "$scraped_at"}, "string"]},
+                            {"$toDate": "$scraped_at"},
+                            "$scraped_at"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+
+    # 3) filter by date range using the computed scraped_at_dt
+    match_by_date_stage = {
+        "$match": {
+            "scraped_at_dt": {"$gte": start_date}
+        }
+    }
+
+    # 4) group by coin + day and compute average sentiment (pos - neg) and count
     group_stage = {
         "$group": {
             "_id": {
                 "coin": "$coin",
-                "date": {"$dateTrunc": {"date": "$scraped_at", "unit": "day"}}
+                "date": {"$dateTrunc": {"date": "$scraped_at_dt", "unit": "day"}}
             },
-            # Calculate the average sentiment score (Positive - Negative)
             "sentiment_score": {
                 "$avg": {
                     "$subtract": [
                         "$sentiment.scores.positive",
-                        "$sentiment.scores.negative",
+                        "$sentiment.scores.negative"
                     ]
                 }
             },
-            "count": {"$sum": 1} # Count posts for volume visualization (good practice)
+            "count": {"$sum": 1}
         }
     }
 
-    # Project the final document structure
     project_stage = {
         "$project": {
             "coin": "$_id.coin",
@@ -516,39 +837,242 @@ async def get_sentiment_heatmap(days: int = 30):
         }
     }
 
-    # Sort by coin and then by date
     sort_stage = {"$sort": {"coin": 1, "date": 1}}
 
     pipeline = [
         match_stage,
+        add_fields_stage,
+        match_by_date_stage,
         group_stage,
         project_stage,
         sort_stage
     ]
 
     try:
-        # The heatmap data comes from the raw tweets collection
-        heatmap_results = list(raw_collection.aggregate(pipeline))
-
-        # Format the dates to strings for easier frontend handling
-        formatted_results = [
-            {
-                "coin": r['coin'],
-                "date": r['date'].strftime('%Y-%m-%d'),
-                "score": r['score'],
-                "count": r['count']
-            }
-            for r in heatmap_results
-        ]
-        
-        return {"data": formatted_results}
-    
+        results = list(raw_collection.aggregate(pipeline))
     except Exception as e:
         print(f"Heatmap Aggregation Error: {e}")
-        # In a real app, you might raise an HTTPException
-        return {"error": "Failed to fetch heatmap data.", "details": str(e)}
+        return {"error": "Aggregation failed", "details": str(e)}
 
-# --- Standard API Root ---
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to CryptoSent FastAPI"}
+    # Format `date` to YYYY-MM-DD strings for frontend
+    formatted = []
+    for r in results:
+        date_obj = r.get("date")
+        if isinstance(date_obj, datetime):
+            date_str = date_obj.strftime("%Y-%m-%d")
+        else:
+            try:
+                date_str = str(date_obj)
+            except:
+                date_str = None
+        formatted.append({
+            "coin": r.get("coin"),
+            "date": date_str,
+            "score": r.get("score", 0),
+            "count": r.get("count", 0)
+        })
+
+    return {"data": formatted}
+
+
+from fastapi import Query
+
+@app.get("/api/sentiment/breakdown", summary="Get breakdown for a source (twitter|reddit|news|overall)")
+async def get_sentiment_breakdown(
+    source: str = Query(..., description="twitter | reddit | news | overall"),
+    coin: Optional[str] = Query(None, description="Coin ticker, e.g. BTC"),
+    top_n: int = Query(10, description="Number of top posts to return")
+):
+    """
+    Returns: { data: { positive, neutral, negative, avg_score, top_posts: [...], time_series: [...] } }
+    """
+    try:
+        src = source.lower()
+        coin_filter = None
+        if coin and coin.upper() != "ALL":
+            # match either ticker or full name as in other endpoints
+            # keep coin_filter as a list so later we can set {"$in": coin_filter}
+            coin_filter = [
+                TICKER_TO_FULL_NAME.get(coin.upper(), coin.upper()),
+                coin.upper(),
+                coin
+            ]
+
+        # Helper to format time string
+        def safe_str(dt):
+            try:
+                return dt.isoformat() if hasattr(dt, "isoformat") else str(dt)
+            except:
+                return str(dt)
+
+        # ---------- TWITTER (raw_collection) ----------
+        if src == "twitter":
+            q = {"sentiment.scores": {"$exists": True}, "is_irrelevant": False}
+            if coin_filter:
+                q["coin"] = {"$in": coin_filter}
+
+            # counts by label
+            pipeline_counts = [
+                {"$match": q},
+                {"$group": {"_id": {"label": "$sentiment.label"}, "count": {"$sum": 1}}},
+            ]
+            counts = list(raw_collection.aggregate(pipeline_counts))
+            total = sum([c["count"] for c in counts]) or 0
+
+            pos = next((c["count"] for c in counts if c["_id"]["label"].lower() == "positive"), 0)
+            neu = next((c["count"] for c in counts if c["_id"]["label"].lower() == "neutral"), 0)
+            neg = next((c["count"] for c in counts if c["_id"]["label"].lower() == "negative"), 0)
+
+            # avg score (pos - neg) using sentiment.scores if available
+            pipeline_avg = [
+                {"$match": q},
+                {"$group": {
+                    "_id": None,
+                    "avg_pos": {"$avg": "$sentiment.scores.positive"},
+                    "avg_neg": {"$avg": "$sentiment.scores.negative"}
+                }},
+                {"$project": {"score": {"$subtract": ["$avg_pos", "$avg_neg"]}, "_id": 0}}
+            ]
+            avg_res = list(raw_collection.aggregate(pipeline_avg))
+            avg_score = avg_res[0]["score"] if avg_res else 0.0
+
+            # top posts (recent)
+            top_cursor = raw_collection.find(q, {"_id": 0, "tweet_id":1, "text":1, "url":1, "created_at":1, "sentiment.label":1}).sort("scraped_at", -1).limit(top_n)
+            top_posts = []
+            for d in top_cursor:
+                top_posts.append({
+                    "id": d.get("tweet_id"),
+                    "title": (d.get("text") or "")[:200],
+                    "text": d.get("text"),
+                    "url": d.get("url"),
+                    "created_at": d.get("created_at"),
+                    "sentiment_label": d.get("sentiment", {}).get("label")
+                })
+
+            return {"data": {
+                "positive": (pos / total) if total else 0,
+                "neutral": (neu / total) if total else 0,
+                "negative": (neg / total) if total else 0,
+                "avg_score": round(avg_score, 4),
+                "top_posts": top_posts
+            }}
+
+        # ---------- REDDIT ----------
+        if src == "reddit":
+            reddit_collection = client["crypto_reddit_db"]["latest_reddit"]
+            q = {}
+            if coin and coin.upper() != "ALL":
+                q["coin"] = coin.upper()
+
+            cursor = reddit_collection.find(
+                q,
+                {"_id": 0, "title": 1, "text": 1, "polarity": 1, "created_at": 1, "created_utc": 1, "permalink": 1}
+            ).sort("created_at", -1).limit(500)
+
+            posts = list(cursor)
+            total = len(posts) or 0
+            pos = sum(1 for p in posts if p.get("polarity") is not None and p.get("polarity") > 0.05)
+            neg = sum(1 for p in posts if p.get("polarity") is not None and p.get("polarity") < -0.05)
+            neu = total - pos - neg
+
+            top_posts = []
+            for p in posts[:top_n]:
+                created_at = p.get("created_at") or p.get("created_utc")
+                top_posts.append({
+                    "id": str(p.get("_id", ""))[:20],
+                    "title": p.get("title") or (p.get("text") or "")[:80],
+                    "text": p.get("text") or p.get("title") or "",
+                    "url": f"https://reddit.com{p.get('permalink')}" if p.get("permalink") else None,
+                    "created_at": created_at,
+                    "sentiment_label": (
+                        "Positive" if p.get("polarity", 0) > 0.05
+                        else "Negative" if p.get("polarity", 0) < -0.05
+                        else "Neutral"
+                    ),
+                    "polarity": p.get("polarity")
+                })
+
+            avg_score = (sum(p.get("polarity", 0) for p in posts) / total) if total else 0.0
+
+            return {"data": {
+                "positive": (pos / total) if total else 0,
+                "neutral": (neu / total) if total else 0,
+                "negative": (neg / total) if total else 0,
+                "avg_score": round(avg_score, 4),
+                "top_posts": top_posts
+            }}
+
+        # ---------- NEWS ----------
+        if src == "news":
+            news_collection = client["crypto_news_db"]["latest_news"]
+            q = {"sentiment.score": {"$exists": True}}
+            if coin and coin.upper() != "ALL":
+                q["coin_tags"] = {"$in": [coin.upper(), TICKER_TO_FULL_NAME.get(coin.upper(), coin.upper())]}
+
+            pipeline_counts = [
+                {"$match": q},
+                {"$group": {"_id": {"label": "$sentiment.label"}, "count": {"$sum": 1}}},
+            ]
+            counts = list(news_collection.aggregate(pipeline_counts))
+            total = sum([c["count"] for c in counts]) or 0
+            pos = next((c["count"] for c in counts if c["_id"]["label"].lower() == "positive"), 0)
+            neu = next((c["count"] for c in counts if c["_id"]["label"].lower() == "neutral"), 0)
+            neg = next((c["count"] for c in counts if c["_id"]["label"].lower() == "negative"), 0)
+
+            pipeline_avg = [
+                {"$match": q},
+                {"$group": {"_id": None, "avg_score": {"$avg": "$sentiment.score"}}},
+                {"$project": {"score": "$avg_score", "_id": 0}}
+            ]
+            avg_res = list(news_collection.aggregate(pipeline_avg))
+            avg_score = avg_res[0]["score"] if avg_res else 0.0
+
+            top_cursor = news_collection.find(q, {"_id":0, "title":1, "url":1, "fetched_at":1, "sentiment.score":1}).sort("fetched_at", -1).limit(top_n)
+            top_posts = []
+            for d in top_cursor:
+                top_posts.append({
+                    "id": d.get("url"),
+                    "title": d.get("title"),
+                    "text": d.get("title"),
+                    "url": d.get("url"),
+                    "created_at": d.get("fetched_at"),
+                    "sentiment_label": d.get("sentiment", {}).get("label")
+                })
+
+            return {"data": {
+                "positive": (pos / total) if total else 0,
+                "neutral": (neu / total) if total else 0,
+                "negative": (neg / total) if total else 0,
+                "avg_score": round(avg_score, 4),
+                "top_posts": top_posts
+            }}
+
+        # ---------- OVERALL: combine sources ----------
+        if src == "overall":
+            # Reuse existing overview function to keep results consistent
+            overview = await get_sentiment_overview()
+            # get_sentiment_overview returns {"data": {...}}
+            od = overview.get("data", {})
+            return {"data": {
+                "positive": od.get("sentiment_counts", {}).get("positive", 0),
+                "neutral": od.get("sentiment_counts", {}).get("neutral", 0),
+                "negative": od.get("sentiment_counts", {}).get("negative", 0),
+                "avg_score": od.get("overall", {}).get("score", 0),
+                "top_posts": []  # not applicable for overall
+            }}
+
+        # unsupported source
+        return {"data": {}}
+
+    except Exception as e:
+        print(f"Breakdown fetch error ({source}, {coin}): {e}")
+        return {"data": {}}
+@app.get("/api/transactions/stats")
+async def transactions_stats():
+    pipeline = [
+        {"$group": {"_id": "$blockchain", "count": {"$sum": 1}, "sum_usd": {"$sum": {"$ifNull":["$value_usd", 0]}}}}
+    ]
+    results = list(db["transactions"].aggregate(pipeline))
+    # convert to dict
+    out = {r["_id"]: {"count": r["count"], "sum_usd": r["sum_usd"]} for r in results}
+    return {"data": out}

@@ -160,12 +160,11 @@ if __name__ == "__main__":
     aggregator = None
     try:
         aggregator = SentimentAggregator()
-        while True:
-            aggregator.run_aggregation()
-            print("\n⏳ Waiting 10 minutes before next update...\n")
-            time.sleep(600)  # 600 seconds = 10 minutes
+        aggregator.run_aggregation()  # Run only once
+        print("\n✅ Aggregation completed successfully.\n")
     except Exception as e:
         print(f"\n❌ Critical error: {e}")
     finally:
         if aggregator:
             aggregator.close()
+            print("🔒 Aggregator closed safely.")

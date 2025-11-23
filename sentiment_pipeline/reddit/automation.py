@@ -1,387 +1,644 @@
+#!/usr/bin/env python3
+"""
+Enhanced Reddit -> FinBERT pipeline with fixes:
+- safe unique index creation with duplicate detection
+- optional --dedupe run to remove duplicate 'id' docs (keeps newest)
+- snapshots CSV write no longer fails due to '_id'
+- VADER availability message & install hint
+- logs FinBERT id2label mapping
+- minor robustness improvements
+"""
 import os
+import re
 import json
 import time
-import pandas as pd
+import argparse
+import logging
 from datetime import datetime, timedelta
+from typing import List, Dict, Any, Optional
+
 import praw
 from dotenv import load_dotenv
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 
-# --- NEW IMPORTS ---
-from langdetect import detect, DetectorFactory
+# NLP / Sentiment
 import spacy
-# Set seed for langdetect stability
-DetectorFactory.seed = 0
-# -------------------
+from langdetect import detect, DetectorFactory
 
-# --- FINBERT IMPORTS ---
+# Transformers
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-# =========================
-# LOAD ENVIRONMENT VARIABLES
-# =========================
+# VADER (secondary sentiment)
+try:
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+except Exception:
+    SentimentIntensityAnalyzer = None
+
+# --- Initialize deterministic langdetect ---
+DetectorFactory.seed = 0
+
+# ---------- CONFIGURATION ----------
 load_dotenv()
 
-# (Environment variable checks remain the same)
-# ...
+# Required env vars (script will error if not found)
+REDDIT_CLIENT_ID = os.getenv("REDDIT_CLIENT_ID")
+REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET")
+REDDIT_USER_AGENT = os.getenv("REDDIT_USER_AGENT", "crypto-sentiment-bot/0.1")
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB", "crypto")
+MONGO_COLLECTION_POSTS = os.getenv("MONGO_COLLECTION_POSTS", "reddit_posts")
+MONGO_COLLECTION_SNAPSHOTS = os.getenv("MONGO_COLLECTION_SNAPSHOTS", "snapshots")
 
-# =========================
-# SETUP FINBERT, REDDIT API, MONGO & SPACY
-# =========================
+# Pipeline settings (tweakable)
+FETCH_INTERVAL = int(os.getenv("FETCH_INTERVAL", 1800))  # seconds
+SUBREDDITS = os.getenv("SUBREDDITS", "CryptoCurrency,Bitcoin,ethtrader,CryptoMarkets,Solana,sol").split(",")
+FINBERT_MODEL = os.getenv("FINBERT_MODEL", "ProsusAI/finbert")
+OUTPUT_POSTS = os.getenv("OUTPUT_POSTS", "reddit_crypto_posts.jsonl")
+OUTPUT_SNAPSHOTS = os.getenv("OUTPUT_SNAPSHOTS", "sentiment_snapshots.csv")
 
-# --- FINBERT SETUP (same as before) ---
-print("🧠 Loading FinBERT model and tokenizer...")
-FINBERT_MODEL = "ProsusAI/finbert"
+# Filters
+MIN_UPVOTES = int(os.getenv("MIN_UPVOTES", 5))
+MIN_TEXT_LENGTH = int(os.getenv("MIN_TEXT_LENGTH", 30))
+MIN_AUTHOR_ACCOUNT_AGE_DAYS = int(os.getenv("MIN_AUTHOR_ACCOUNT_AGE_DAYS", 7))
+MIN_AUTHOR_KARMA = int(os.getenv("MIN_AUTHOR_KARMA", 10))  # link + comment combined
+MAX_COMMENTS_TO_FETCH = int(os.getenv("MAX_COMMENTS_TO_FETCH", 5))
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", 8))
+HALF_LIFE_SECONDS = int(os.getenv("HALF_LIFE_SECONDS", 6 * 3600))  # for time-weighting snapshots
+
+# Bot-detection heuristics (simple)
+BOT_USERNAME_PATTERNS = [r"bot$", r"^bot", r"auto", r"feed", r"news", r"ticker"]
+BOT_REGEX = re.compile("|".join(BOT_USERNAME_PATTERNS), re.I)
+
+# Rate-limit between subreddits to be polite
+SLEEP_BETWEEN_SUBS = float(os.getenv("SLEEP_BETWEEN_SUBS", 1.0))
+
+# ---------- Logging ----------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+log = logging.getLogger("reddit-finbert")
+
+# ---------- Basic env validation ----------
+missing = [k for k, v in {
+    "REDDIT_CLIENT_ID": REDDIT_CLIENT_ID,
+    "REDDIT_CLIENT_SECRET": REDDIT_CLIENT_SECRET,
+    "MONGO_URI": MONGO_URI,
+}.items() if not v]
+if missing:
+    log.error("Missing required environment variables: %s", ", ".join(missing))
+    raise SystemExit(1)
+
+# ---------- Setup clients ----------
+reddit = praw.Reddit(
+    client_id=REDDIT_CLIENT_ID,
+    client_secret=REDDIT_CLIENT_SECRET,
+    user_agent=REDDIT_USER_AGENT,
+)
+
+mongo_client = MongoClient(MONGO_URI, tls=True, tlsAllowInvalidCertificates=True)
+db = mongo_client[MONGO_DB]
+posts_collection = db[MONGO_COLLECTION_POSTS]
+snapshots_collection = db[MONGO_COLLECTION_SNAPSHOTS]
+
+# ---------- Helper: dedupe existing duplicates (keeps newest per 'created_utc') ----------
+def dedupe_posts_collection(dry_run: bool = False) -> Dict[str, int]:
+    """
+    Finds duplicate 'id' values in posts_collection and deletes older docs keeping the newest.
+    Returns summary dict {checked: n, duplicates_fixed: m}
+    dry_run=True will log what would be removed without deleting.
+    """
+    log.info("Starting dedupe operation (dry_run=%s). This may take time for large collections.", dry_run)
+    pipeline = [
+        {"$group": {"_id": "$id", "count": {"$sum": 1}}},
+        {"$match": {"count": {"$gt": 1}}}
+    ]
+    dup_cursor = posts_collection.aggregate(pipeline, allowDiskUse=True)
+    checked = 0
+    fixed = 0
+    for dup in dup_cursor:
+        checked += 1
+        post_id = dup["_id"]
+        # fetch all docs with this id, sort by created_utc desc (newest first)
+        docs = list(posts_collection.find({"id": post_id}).sort("created_utc", -1))
+        if len(docs) <= 1:
+            continue
+        keep = docs[0]
+        to_remove = docs[1:]
+        remove_count = len(to_remove)
+        fixed += remove_count
+        if dry_run:
+            log.info("Would remove %d duplicates for id=%s (keeping _id=%s)", remove_count, post_id, keep.get("_id"))
+        else:
+            ids_to_remove = [d["_id"] for d in to_remove]
+            try:
+                posts_collection.delete_many({"_id": {"$in": ids_to_remove}})
+                log.info("Removed %d duplicates for id=%s (kept _id=%s)", remove_count, post_id, keep.get("_id"))
+            except Exception as e:
+                log.error("Error deleting duplicates for id=%s: %s", post_id, e)
+    log.info("Dedupe complete: checked %d duplicate groups, removed %d documents.", checked, fixed)
+    return {"checked_groups": checked, "removed_documents": fixed}
+
+# Create unique index on post ID to avoid duplicate inserts (safe attempt)
+def ensure_unique_index_on_id():
+    try:
+        posts_collection.create_index("id", unique=True)
+        log.info("Unique index on 'id' ensured.")
+    except Exception as e:
+        log.warning("Could not create unique index on 'id': %s", e)
+        # attempt to show a few duplicate id examples for debugging
+        try:
+            dup = posts_collection.aggregate([
+                {"$group": {"_id": "$id", "count": {"$sum": 1}}},
+                {"$match": {"count": {"$gt": 1}}},
+                {"$limit": 5}
+            ])
+            dup_list = list(dup)
+            if dup_list:
+                log.warning("Found duplicate id examples (first 5): %s", dup_list)
+            else:
+                log.warning("No duplicate groups found when checking sample, but index creation still failed.")
+        except Exception:
+            log.debug("Failed to enumerate duplicates while handling index creation error.", exc_info=True)
+
+# ---------- NLP models ----------
+# spaCy (for NER + lemmatization)
+try:
+    nlp = spacy.load("en_core_web_sm", disable=["parser"])  # keep NER + tagger + lemmatizer
+    log.info("spaCy loaded.")
+except OSError:
+    log.error("spaCy model 'en_core_web_sm' not found. Please install: python -m spacy download en_core_web_sm")
+    raise
+
+# VADER fallback
+vader = None
+if SentimentIntensityAnalyzer is not None:
+    try:
+        vader = SentimentIntensityAnalyzer()
+        log.info("VADER initialized.")
+    except Exception:
+        vader = None
+        log.warning("VADER import succeeded but initialization failed.")
+else:
+    log.warning("VADER not available. To enable, run: pip install nltk && run Python: import nltk; nltk.download('vader_lexicon')")
+
+# ---------- FinBERT / Transformers setup ----------
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+log.info("Device for PyTorch: %s", device)
+
+log.info("Loading FinBERT tokenizer and model '%s' (this may take a minute)...", FINBERT_MODEL)
 tokenizer = AutoTokenizer.from_pretrained(FINBERT_MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(FINBERT_MODEL)
-sentiment_labels = ['negative', 'neutral', 'positive']
+model.to(device)
+# safe label mapping from model config
+if hasattr(model.config, "id2label"):
+    sentiment_labels = [model.config.id2label[i] for i in sorted(model.config.id2label.keys())]
+else:
+    sentiment_labels = ["negative", "neutral", "positive"]
+log.info("Sentiment labels: %s", sentiment_labels)
+log.info("FinBERT id2label mapping: %s", getattr(model.config, "id2label", {}))
 
-# --- SPACY (NER) SETUP ---
-print("⚙️ Loading spaCy for Named Entity Recognition (NER)...")
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    print("⚠️ spaCy model 'en_core_web_sm' not found. Please run 'python -m spacy download en_core_web_sm'")
-    exit()
-
-# --- REDDIT/MONGO SETUP (same as before) ---
-reddit = praw.Reddit(
-    client_id=os.getenv("REDDIT_CLIENT_ID"),
-    client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-    user_agent=os.getenv("REDDIT_USER_AGENT"),
+# ---------- Utilities: text cleaning & preprocessing ----------
+URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
+MENTION_REGEX = re.compile(r"/u/\w+|u/\w+|@\w+")
+EXTRA_WHITESPACE = re.compile(r"\s+")
+EMOJI_REGEX = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"
+    "\U0001F300-\U0001F5FF"
+    "\U0001F680-\U0001F6FF"
+    "\U0001F1E0-\U0001F1FF"
+    "]+",
+    flags=re.UNICODE,
 )
 
-client = MongoClient(
-    os.getenv("MONGO_URI"),
-    tls=True,
-    tlsAllowInvalidCertificates=True
-)
+CONTRACTIONS = {
+    "can't": "cannot", "won't": "will not", "n't": " not", "'re": " are", "'s": " is", "'d": " would",
+    "'ll": " will", "'t": " not", "'ve": " have", "'m": " am"
+}
 
-db = client[os.getenv("MONGO_DB")]
-posts_collection = db[os.getenv("MONGO_COLLECTION_POSTS")]
-snapshots_collection = db[os.getenv("MONGO_COLLECTION_SNAPSHOTS")]
+NEGATION_WORDS = {"not", "no", "never", "n't", "cannot", "neither", "nor"}
 
-print("✅ Setup complete (FinBERT, spaCy, MongoDB connected)!\n")
 
-# =========================
-# CONFIG
-# =========================
-FETCH_INTERVAL = 1800
-OUTPUT_POSTS = "reddit_crypto_posts.jsonl"
-OUTPUT_SNAPSHOTS = "sentiment_snapshots.csv"
-SUBREDDITS = ["CryptoCurrency", "Bitcoin", "ethtrader", "CryptoMarkets", "Solana", "sol"]
+def expand_contractions(text: str) -> str:
+    for k, v in CONTRACTIONS.items():
+        text = re.sub(k, v, text, flags=re.I)
+    return text
 
-# --- NEW CONFIG/FILTERS ---
-MIN_UPVOTES = 5   # Filter by upvotes/engagements
-MAX_COMMENTS = 5  # Number of top comments to fetch
-MIN_TEXT_LENGTH = 20  # Minimum characters for non-spam posts
-# --------------------------
 
-# =========================
-# HELPER FUNCTIONS
-# =========================
+def simple_negation_mark(text: str) -> str:
+    tokens = text.split()
+    out = []
+    negate = False
+    for t in tokens:
+        if any(t.lower().startswith(n) for n in NEGATION_WORDS):
+            negate = True
+            out.append(t)
+            continue
+        if negate:
+            if any(ch in t for ch in ".!?;"):
+                out.append("NOT_" + t)
+                negate = False
+            else:
+                out.append("NOT_" + t)
+        else:
+            out.append(t)
+    return " ".join(out)
 
-def preprocess_text(text):
-    """
-    Cleans text and implements basic negation handling by prepending 
-    'NOT_' to words between a negation word and the next punctuation/stop word.
-    Example: "it is not good" -> "it is not NOT_good"
-    """
+
+def clean_and_lemmatize(text: str) -> str:
     if not text:
         return ""
-
-    # 1. Simple Cleaning
-    text = text.lower().strip()
-    # 2. Basic Negation Handling
-    negation_words = ["not", "no", "never", "don't", "isn't", "wasn't", "couldn't", "wouldn't", "shouldn't"]
-    tokens = text.split()
-    processed_tokens = []
-
-    negate = False
-    for token in tokens:
-        if token in negation_words:
-            negate = True
-            processed_tokens.append(token)
-            continue
-
-        if negate and token.isalpha():
-            processed_tokens.append("NOT_" + token)
-        else:
-            processed_tokens.append(token)
-
-        # Reset negation flag on punctuation/stop words
-        if not token.isalnum() or token in [".", ",", "!", "?", ";"]:
-            negate = False
-
-    return " ".join(processed_tokens)
-
-
-def get_top_comments(post, limit=MAX_COMMENTS):
-    """Fetches and cleans top comments."""
-    comments_text = []
-    try:
-        # PRAW command to get all comments, sorted by top
-        post.comments.replace_more(limit=0)
-        for comment in post.comments.list()[:limit]:
-            if comment.body:
-                comments_text.append(comment.body)
-    except Exception as e:
-        print(f"Error fetching comments for {post.id}: {e}")
-    return " ".join(comments_text)
-
-
-def get_ner_entities(text):
-    """Performs Named Entity Recognition (NER) on the text."""
+    text = URL_REGEX.sub(" ", text)
+    text = MENTION_REGEX.sub(" ", text)
+    text = EMOJI_REGEX.sub(" ", text)
+    text = expand_contractions(text)
+    text = EXTRA_WHITESPACE.sub(" ", text).strip()
+    text = text.lower()
     doc = nlp(text)
-    # Filter for entities relevant to finance/crypto
-    # ORG (Organization/Company), MONEY (Monetary Values), DATE, GPE (Geo-Political Entity)
-    relevant_entities = [ent.text for ent in doc.ents if ent.label_ in ("ORG", "MONEY", "DATE", "GPE")]
-    return ", ".join(relevant_entities)
+    lemmas = []
+    for token in doc:
+        if token.is_space or token.is_punct:
+            continue
+        lemmas.append(token.lemma_)
+    cleaned = " ".join(lemmas)
+    cleaned = simple_negation_mark(cleaned)
+    return cleaned
 
-# =========================
-# CORE FUNCTIONS
-# =========================
-
-def fetch_posts(limit=50):
-    COIN_KEYWORDS = {
-        "BTC": ["bitcoin", "btc"],
-        "ETH": ["ethereum", "eth", "ether"],
-        "SOL": ["solana", "sol"],
-    }
-
-    # Get previously scraped IDs to filter duplicates
-    scraped_ids = set(posts_collection.distinct("id"))
-
-    posts = []
-    for sub in SUBREDDITS:
-        for post in reddit.subreddit(sub).new(limit=limit):
-
-            # --- Duplicate Post Filter ---
-            if post.id in scraped_ids:
-                continue
-
-            # --- Engagement Filter & Spam Check ---
-            if post.score < MIN_UPVOTES:
-                continue
-
-            # Skip if title/text is empty (spam filter 1)
-            if not (post.title or post.selftext):
-                continue
-
-            # Combine post text and comments
-            post_text = (post.title or "") + " " + (post.selftext or "")
-            comments_text = get_top_comments(post)
-
-            # --- Non-English Filter ---
-            try:
-                if detect(post_text) != "en":
-                    continue
-            except Exception:
-                # Skip posts too short for language detection
-                continue
-
-            # --- Spam Filter 2 (Min Length) ---
-            if len(post_text) < MIN_TEXT_LENGTH:
-                continue
-
-            # Final text for sentiment analysis (Post + Comments)
-            full_text = preprocess_text(post_text + " " + comments_text)
-
-            text_lower = full_text.lower()
-            detected_coin = None
-            for coin, keywords in COIN_KEYWORDS.items():
-                if any(keyword in text_lower for keyword in keywords):
-                    detected_coin = coin
-                    break
-
-            posts.append({
-                "id": post.id,
-                "title": post.title,
-                "text_comments_raw": post_text + " " + comments_text,  # For display/storage
-                "text_for_finbert": full_text,  # Pre-processed text for the model
-                "created_utc": datetime.utcfromtimestamp(post.created_utc),  # datetime object
-                "subreddit": post.subreddit.display_name,
-                "url": post.url,
-                "permalink": getattr(post, "permalink", None),
-                "coin": detected_coin or "UNKNOWN",
-                # --- Reddit Metrics Included ---
-                "upvotes": post.score,
-                "num_comments": post.num_comments,
-                "NER_entities": get_ner_entities(post_text),
-            })
-
-            # Add to scraped_ids to prevent duplicates in the current loop
-            scraped_ids.add(post.id)
-
-    return posts
+# ---------- Helper functions for Reddit & Mongo ----------
+def is_author_valid(author) -> bool:
+    try:
+        if author is None:
+            return False
+        name = getattr(author, "name", None)
+        if not name or name.lower() in {"[deleted]", "automoderator"}:
+            return False
+        if BOT_REGEX.search(name):
+            return False
+        created_utc = getattr(author, "created_utc", None)
+        if created_utc:
+            acc_age_days = (datetime.utcnow() - datetime.utcfromtimestamp(created_utc)).days
+            if acc_age_days < MIN_AUTHOR_ACCOUNT_AGE_DAYS:
+                return False
+        link_karma = getattr(author, "link_karma", 0) or 0
+        comment_karma = getattr(author, "comment_karma", 0) or 0
+        if (link_karma + comment_karma) < MIN_AUTHOR_KARMA:
+            return False
+        return True
+    except Exception:
+        return False
 
 
-def add_sentiment(posts, batch_size=8):
-    texts = [post.get("text_for_finbert") for post in posts]
-    all_predictions = []
+def safe_fetch_comments(post, limit=MAX_COMMENTS_TO_FETCH) -> str:
+    comments_texts = []
+    try:
+        post.comment_sort = "top"
+        post.comments.replace_more(limit=0)
+        count = 0
+        for c in post.comments:
+            if count >= limit:
+                break
+            body = getattr(c, "body", None)
+            if body:
+                comments_texts.append(body)
+                count += 1
+    except Exception as e:
+        log.debug("Error fetching comments for %s: %s", getattr(post, "id", "unknown"), e)
+    return " ".join(comments_texts)
 
+
+def detect_english(text: str) -> bool:
+    try:
+        if len(text) < 50:
+            return False
+        return detect(text) == "en"
+    except Exception:
+        return False
+
+# ---------- Sentiment inference (FinBERT + VADER ensemble) ----------
+def finbert_predict(texts: List[str], batch_size: int = BATCH_SIZE) -> List[Dict[str, Any]]:
+    results = []
+    model.eval()
     with torch.no_grad():
         for i in range(0, len(texts), batch_size):
-            batch_texts = texts[i:i + batch_size]
-            inputs = tokenizer(batch_texts, padding=True, truncation=True, return_tensors="pt")
+            batch = texts[i:i + batch_size]
+            inputs = tokenizer(batch, padding=True, truncation=True, return_tensors="pt")
+            inputs = {k: v.to(device) for k, v in inputs.items()}
             outputs = model(**inputs)
-            probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
-            all_predictions.extend(probs)
-
-    for i, post in enumerate(posts):
-        scores = all_predictions[i].numpy()
-        predicted_class_idx = scores.argmax()
-        sentiment = sentiment_labels[predicted_class_idx]
-
-        # Polarity: Positive probability - Negative probability
-        polarity = scores[2] - scores[0]
-
-        post["sentiment"] = sentiment
-        post["polarity"] = float(polarity)
-        post["neg_prob"] = float(scores[0])
-        post["neu_prob"] = float(scores[1])
-        post["pos_prob"] = float(scores[2])
-
-    return posts
+            logits = outputs.logits
+            probs = torch.nn.functional.softmax(logits, dim=-1).cpu().numpy()
+            for p in probs:
+                neg, neu, pos = p[0], p[1], p[2]
+                eps = 1e-12
+                import math
+                entropy = -sum([x * math.log(x + eps) for x in p])
+                label = sentiment_labels[p.argmax()]
+                results.append({
+                    "label": label,
+                    "neg": float(neg),
+                    "neu": float(neu),
+                    "pos": float(pos),
+                    "entropy": float(entropy)
+                })
+    return results
 
 
-def save_posts(posts):
-    # Prepare posts for saving: remove temporary FinBERT text and format datetime
-    posts_to_save = []
-    for post in posts:
-        post_copy = {k: v for k, v in post.items() if k != "text_for_finbert"}
+def vader_predict(text: str) -> Dict[str, float]:
+    if vader is None:
+        return {"compound": 0.0, "neg": 0.0, "neu": 0.0, "pos": 0.0}
+    scores = vader.polarity_scores(text)
+    return scores
 
-        # --- Normalize created_utc / created_at to strings for JSON & Mongo ---
-        created_utc_val = post_copy.get("created_utc")
-        if isinstance(created_utc_val, datetime):
-            created_utc_str = created_utc_val.strftime("%Y-%m-%dT%H:%M:%S")
-        else:
-            created_utc_str = str(created_utc_val) if created_utc_val is not None else None
 
-        post_copy["created_utc"] = created_utc_str
-        post_copy["created_at"] = created_utc_str  # used by FastAPI /api/trends/{coin}
+def ensemble_decision(finbert_out: Dict[str, Any], raw_text: str) -> Dict[str, Any]:
+    polarity = finbert_out["pos"] - finbert_out["neg"]
+    fin_label = finbert_out["label"]
+    entropy = finbert_out["entropy"]
+    import math
+    max_entropy = math.log(3)
+    norm_entropy = min(entropy / max_entropy, 1.0)
+    base_conf = 1.0 - norm_entropy
 
-        # --- Normalize text field for frontend ---
-        post_copy["text"] = post_copy.pop("text_comments_raw")
+    vader_scores = vader_predict(raw_text)
+    vader_compound = vader_scores.get("compound", 0.0)
+    vader_sign = 1 if vader_compound > 0.05 else (-1 if vader_compound < -0.05 else 0)
+    fin_sign = 1 if polarity > 0.05 else (-1 if polarity < -0.05 else 0)
+    agreement = (vader_sign != 0 and vader_sign == fin_sign)
 
-        # --- Wrap sentiment like Twitter & news docs ---
-        original_label = post_copy.get("sentiment")
-        post_copy["sentiment"] = {
-            "label": original_label,
-            "scores": {
-                "positive": post_copy.get("pos_prob"),
-                "neutral": post_copy.get("neu_prob"),
-                "negative": post_copy.get("neg_prob"),
-            },
-        }
+    conf = base_conf
+    if agreement:
+        conf = min(1.0, conf + 0.15)
+    if not agreement and abs(vader_compound) > 0.25 and base_conf < 0.5:
+        conf = max(0.0, conf - 0.2)
 
-        posts_to_save.append(post_copy)
+    final_label = fin_label
 
-    # Save locally and to MongoDB
-    if posts_to_save:
-        with open(OUTPUT_POSTS, "a", encoding="utf-8") as f:
-            for post in posts_to_save:
-                f.write(json.dumps(post) + "\n")
+    return {
+        "label": final_label,
+        "polarity_score": polarity,
+        "confidence": float(conf),
+        "finbert": finbert_out,
+        "vader": vader_scores
+    }
+
+# ---------- Core pipeline functions ----------
+COIN_KEYWORDS = {
+    "BTC": ["bitcoin", "btc"],
+    "ETH": ["ethereum", "eth", "ether"],
+    "SOL": ["solana", "sol"],
+}
+
+def fetch_posts(limit_per_sub=50) -> List[Dict[str, Any]]:
+    try:
+        recent = list(posts_collection.find({}, {"id": 1}).sort("created_utc", -1).limit(2000))
+        scraped_ids = {d["id"] for d in recent if "id" in d}
+    except Exception:
+        scraped_ids = set()
+
+    posts_out = []
+    for sub in SUBREDDITS:
+        try:
+            subreddit = reddit.subreddit(sub.strip())
+        except Exception as e:
+            log.warning("Could not access subreddit %s: %s", sub, e)
+            continue
 
         try:
-            posts_collection.insert_many(posts_to_save)
-            print(f"💾 {len(posts_to_save)} posts saved to MongoDB collection.")
+            for post in subreddit.new(limit=limit_per_sub):
+                pid = getattr(post, "id", None)
+                if not pid or pid in scraped_ids:
+                    continue
+
+                if getattr(post, "crosspost_parent", None):
+                    continue
+                if getattr(post, "stickied", False):
+                    continue
+                if getattr(post, "removed_by_category", None):
+                    continue
+
+                if getattr(post, "score", 0) < MIN_UPVOTES:
+                    continue
+
+                author = getattr(post, "author", None)
+                if not is_author_valid(author):
+                    continue
+
+                post_text = (getattr(post, "title", "") or "") + " " + (getattr(post, "selftext", "") or "")
+                if len(post_text) < MIN_TEXT_LENGTH:
+                    comments_text = safe_fetch_comments(post, limit=MAX_COMMENTS_TO_FETCH)
+                    if len(post_text + " " + comments_text) < MIN_TEXT_LENGTH:
+                        continue
+                else:
+                    comments_text = safe_fetch_comments(post, limit=MAX_COMMENTS_TO_FETCH)
+
+                if not detect_english(post_text + " " + comments_text):
+                    continue
+
+                combined_raw = post_text + " " + comments_text
+                cleaned = clean_and_lemmatize(combined_raw)
+
+                low = cleaned.lower()
+                detected_coin = "UNKNOWN"
+                for coin, keys in COIN_KEYWORDS.items():
+                    if any(k in low for k in keys):
+                        detected_coin = coin
+                        break
+
+                posts_out.append({
+                    "id": pid,
+                    "title": getattr(post, "title", ""),
+                    "text_comments_raw": combined_raw,
+                    "text_for_finbert": cleaned,
+                    "created_utc": datetime.utcfromtimestamp(getattr(post, "created_utc", time.time())),
+                    "subreddit": getattr(post, "subreddit", "").display_name if getattr(post, "subreddit", None) else sub,
+                    "url": getattr(post, "url", None),
+                    "permalink": getattr(post, "permalink", None),
+                    "coin": detected_coin,
+                    "upvotes": getattr(post, "score", 0),
+                    "num_comments": getattr(post, "num_comments", 0),
+                    "author": getattr(author, "name", None) if author else None,
+                })
+                scraped_ids.add(pid)
+            time.sleep(SLEEP_BETWEEN_SUBS)
         except Exception as e:
-            print(f"⚠️ Could not save posts to MongoDB: {e}")
+            log.warning("Error iterating subreddit %s: %s", sub, e)
+    return posts_out
 
-
-def summarize(posts, label):
-    # Convert datetime objects to string for DataFrame before removal
-    posts_for_summary = []
-    for post in posts:
-        post_copy = {k: v for k, v in post.items() if k != "text_for_finbert"}
-        # here created_utc is still a datetime (we're using the in-memory 'posts')
-        post_copy["created_utc"] = post_copy["created_utc"].strftime("%Y-%m-%d %H:%M:%S")
-        posts_for_summary.append(post_copy)
-
-    if not posts_for_summary:
-        print(f"⚠️ No posts found for {label}")
-        return
-
-    df = pd.DataFrame(posts_for_summary)
-    df["created_utc"] = pd.to_datetime(df["created_utc"])
-
-    # --- Polarity by Coin and Time-Weighted Polarity ---
-    all_coin_snapshots = []
-    for coin in df["coin"].unique():
-        coin_df = df[df["coin"] == coin].copy()
-
-        # 1. Time-Weighted Polarity Calculation
-        now = datetime.utcnow()
-        # Define a half-life for the decay (e.g., 6 hours = 21600 seconds)
-        HALF_LIFE_SECONDS = 6 * 3600
-
-        # Time difference in seconds
-        coin_df["time_diff"] = (now - coin_df["created_utc"]).dt.total_seconds()
-
-        # Exponential decay weight: weight = 2 ^ (-time_diff / HALF_LIFE_SECONDS)
-        coin_df["weight"] = 2 ** (-coin_df["time_diff"] / HALF_LIFE_SECONDS)
-
-        # Time-Weighted Average Polarity
-        weighted_polarity = (coin_df["polarity"] * coin_df["weight"]).sum() / coin_df["weight"].sum()
-
-        # Polarity Distribution
-        summary = coin_df["sentiment"].value_counts(normalize=True) * 100
-
-        print(f"\n📊 Sentiment for **{coin}**:")
-        print(summary.round(2).to_string())
-        print(f"⏱️ Time-Weighted Polarity: {weighted_polarity:.4f}")
-
-        snapshot = {
-            "time": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "coin": coin,
-            "positive": summary.get("positive", 0),
-            "neutral": summary.get("neutral", 0),
-            "negative": summary.get("negative", 0),
-            "total_posts": len(coin_df),
-            "avg_polarity": coin_df["polarity"].mean(),
-            "time_weighted_polarity": weighted_polarity,
+def add_sentiment(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    if not posts:
+        return posts
+    texts = [p["text_for_finbert"] or "" for p in posts]
+    finbert_outs = finbert_predict(texts, batch_size=BATCH_SIZE)
+    for i, p in enumerate(posts):
+        fin = finbert_outs[i]
+        ensemble = ensemble_decision(fin, p["text_comments_raw"])
+        p["sentiment"] = {
+            "label": ensemble["label"],
+            "scores": {
+                "positive": ensemble["finbert"]["pos"],
+                "neutral": ensemble["finbert"]["neu"],
+                "negative": ensemble["finbert"]["neg"],
+            },
+            "polarity": float(ensemble["polarity_score"]),
+            "confidence": float(ensemble["confidence"]),
+            "vader": ensemble["vader"],
         }
-        all_coin_snapshots.append(snapshot)
+    return posts
 
-    # Save Snapshots
-    df_snap = pd.DataFrame(all_coin_snapshots)
-    file_exists = os.path.isfile(OUTPUT_SNAPSHOTS)
-    df_snap.to_csv(OUTPUT_SNAPSHOTS, mode="a", header=not file_exists, index=False)
+def save_posts(posts: List[Dict[str, Any]]):
+    if not posts:
+        return
+    posts_to_save = []
+    for p in posts:
+        doc = {k: v for k, v in p.items() if k != "text_for_finbert"}
+        created = doc.get("created_utc")
+        if isinstance(created, datetime):
+            created_str = created.strftime("%Y-%m-%dT%H:%M:%S")
+        else:
+            created_str = str(created)
+        doc["created_utc"] = created_str
+        doc["created_at"] = created_str
+        doc["text"] = doc.pop("text_comments_raw", "")
+        doc["_ingested_at"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+        posts_to_save.append(doc)
 
     try:
-        snapshots_collection.insert_many(all_coin_snapshots)
-        print("📸 Coin-specific snapshots saved to MongoDB.\n")
+        with open(OUTPUT_POSTS, "a", encoding="utf-8") as f:
+            for doc in posts_to_save:
+                f.write(json.dumps(doc, default=str) + "\n")
     except Exception as e:
-        print(f"⚠️ Could not save snapshots to MongoDB: {e}\n")
+        log.warning("Failed to write local JSONL: %s", e)
 
+    try:
+        posts_collection.insert_many(posts_to_save, ordered=False)
+        log.info("Saved %d posts to MongoDB.", len(posts_to_save))
+    except errors.BulkWriteError as bwe:
+        log.warning("BulkWriteError while inserting posts: %s", bwe.details)
+    except Exception as e:
+        log.error("Unexpected error inserting posts: %s", e)
 
-# =========================
-# MAIN LOOP (remains similar)
-# =========================
+def summarize_and_snapshot(posts: List[Dict[str, Any]]):
+    if not posts:
+        return
+    now = datetime.utcnow()
+    coin_groups = {}
+    for p in posts:
+        coin = p.get("coin", "UNKNOWN")
+        coin_groups.setdefault(coin, []).append(p)
+    snapshots = []
+    for coin, items in coin_groups.items():
+        values = []
+        for it in items:
+            created = it.get("created_utc")
+            if isinstance(created, datetime):
+                created_dt = created
+            else:
+                try:
+                    created_dt = datetime.strptime(str(created), "%Y-%m-%dT%H:%M:%S")
+                except Exception:
+                    created_dt = now
+            time_diff = (now - created_dt).total_seconds()
+            weight = 2 ** (-time_diff / HALF_LIFE_SECONDS)
+            polarity = float(it.get("sentiment", {}).get("polarity", 0.0))
+            values.append({"polarity": polarity, "weight": weight, "label": it.get("sentiment", {}).get("label")})
+        if not values:
+            continue
+        numerator = sum(v["polarity"] * v["weight"] for v in values)
+        denom = sum(v["weight"] for v in values) or 1.0
+        time_weighted_polarity = numerator / denom
+        from collections import Counter
+        labels = [v["label"] for v in values if v.get("label")]
+        counter = Counter(labels)
+        total = len(labels) or 1
+        snapshot = {
+            "time": now.strftime("%Y-%m-%dT%H:%M:%S"),
+            "coin": coin,
+            "positive": (counter.get("positive", 0) / total) * 100,
+            "neutral": (counter.get("neutral", 0) / total) * 100,
+            "negative": (counter.get("negative", 0) / total) * 100,
+            "total_posts": len(values),
+            "avg_polarity": sum(v["polarity"] for v in values) / len(values),
+            "time_weighted_polarity": float(time_weighted_polarity),
+        }
+        snapshots.append(snapshot)
+
+    if snapshots:
+        try:
+            snapshots_collection.insert_many(snapshots, ordered=False)
+            log.info("Saved %d snapshots to MongoDB.", len(snapshots))
+        except Exception as e:
+            log.warning("Could not save snapshots to MongoDB: %s", e)
+
+        # CSV append: only expected fields (strip _id or extra keys)
+        import csv
+        file_exists = os.path.isfile(OUTPUT_SNAPSHOTS)
+        fieldnames = ["time", "coin", "positive", "neutral", "negative", "total_posts", "avg_polarity", "time_weighted_polarity"]
+        try:
+            with open(OUTPUT_SNAPSHOTS, "a", newline="", encoding="utf-8") as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                if not file_exists:
+                    writer.writeheader()
+                for s in snapshots:
+                    row = {k: s.get(k, "") for k in fieldnames}
+                    writer.writerow(row)
+        except Exception as e:
+            log.warning("Could not write snapshots CSV: %s", e)
+
+# ---------- Main runner ----------
+def run_once(limit_per_sub=50):
+    log.info("Starting single-run fetch (limit_per_sub=%d)...", limit_per_sub)
+    posts = fetch_posts(limit_per_sub=limit_per_sub)
+    log.info("Fetched %d candidate posts.", len(posts))
+    if not posts:
+        log.info("No posts after filtering.")
+        return
+    posts = add_sentiment(posts)
+    save_posts(posts)
+    summarize_and_snapshot(posts)
+    log.info("Single-run complete. Processed %d posts.", len(posts))
+
+def run_loop(limit_per_sub=50, sleep_interval=FETCH_INTERVAL):
+    log.info("Starting main loop: fetch every %d seconds.", sleep_interval)
+    try:
+        while True:
+            try:
+                run_once(limit_per_sub=limit_per_sub)
+            except Exception as e:
+                log.exception("Unhandled error during run_once: %s", e)
+            log.info("Sleeping for %d seconds...", sleep_interval)
+            time.sleep(sleep_interval)
+    except KeyboardInterrupt:
+        log.info("Shutting down on user interrupt.")
+
+# ---------- CLI ----------
 if __name__ == "__main__":
-    print("🕒 Starting crypto sentiment tracking loop — runs every hour.\n")
+    parser = argparse.ArgumentParser(description="Reddit FinBERT Sentiment Pipeline (enhanced)")
+    parser.add_argument("--once", action="store_true", help="Run single iteration and exit")
+    parser.add_argument("--limit", type=int, default=50, help="Posts per subreddit to fetch (default:50)")
+    parser.add_argument("--interval", type=int, default=FETCH_INTERVAL, help="Loop interval in seconds")
+    parser.add_argument("--dedupe", action="store_true", help="Run dedupe routine on posts collection (keeps newest by created_utc) and exit")
+    parser.add_argument("--dedupe-dry", action="store_true", help="Run dedupe dry-run (log removals) and exit")
+    args = parser.parse_args()
 
-    while True:
-        print(f"⏰ Fetching new data at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} ...")
-
-        # 1. Fetch, Filter, and Pre-process
-        new_posts = fetch_posts(limit=100)  # Increased limit to ensure more posts are analyzed
-
-        if new_posts:
-            # 2. Add Sentiment (using text_for_finbert)
-            new_posts = add_sentiment(new_posts)
-
-            # 3. Save Posts (including new metrics and NER)
-            save_posts(new_posts)
-
-            # 4. Summarize (Polarity by Coin, Time-Weighted)
-            summarize(new_posts, "latest batch")
-
-            print(f"✅ Processed and saved {len(new_posts)} new posts successfully.\n")
+    # If user requests dedupe, do it first and exit (or continue if you want)
+    if args.dedupe or args.dedupe_dry:
+        dry = bool(args.dedupe_dry)
+        res = dedupe_posts_collection(dry_run=dry)
+        # After dedupe attempt to create the unique index
+        ensure_unique_index_on_id()
+        log.info("Dedupe finished: %s", res)
+        if args.dedupe:
+            log.info("Dedupe completed. Exiting as requested (--dedupe).")
+            raise SystemExit(0)
         else:
-            print("⚠️ No new posts found to analyze after applying all filters.\n")
+            log.info("Dedupe dry-run completed. Exiting as requested (--dedupe-dry).")
+            raise SystemExit(0)
 
-        print("😴 Sleeping for 1 hour...\n")
-        time.sleep(FETCH_INTERVAL)
+    # Ensure unique index now (attempt; may warn and show duplicates)
+    ensure_unique_index_on_id()
+
+    if args.once:
+        run_once(limit_per_sub=args.limit)
+    else:
+        run_loop(limit_per_sub=args.limit, sleep_interval=args.interval)

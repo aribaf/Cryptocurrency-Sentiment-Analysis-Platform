@@ -63,6 +63,8 @@ function AppRoutes() {
     <Route path="/breakdown/:source" element={<Breakdown />} />
 
     <Route path="*" element={<Navigate to="/" replace />} />
+
+    
   </Routes>
 );
 

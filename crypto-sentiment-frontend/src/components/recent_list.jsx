@@ -26,7 +26,8 @@ const sourceLabels = {
 // Normalize sentiment + color
 const getSentimentDetails = (item) => {
   let label = item.sentiment_label || item.label || "Neutral";
-  let confidence = item.confidence ?? item.sentiment_score ?? item.polarity ?? null;
+  let confidence =
+    item.confidence ?? item.sentiment_score ?? item.polarity ?? null;
 
   let colorClass = "text-amber-300";
 
@@ -39,7 +40,9 @@ const getSentimentDetails = (item) => {
     else if (confidence < -0.3) colorClass = "text-cp-magenta";
   }
 
-  label = label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+  label =
+    label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+
   return { label, confidence, colorClass };
 };
 
@@ -74,6 +77,8 @@ export default function RecentList({
   sources = null,
   limit = 20,
   availableCoins = ["ALL", "BTC", "ETH", "SOLANA"],
+  // auto-refresh interval in ms (default 60s)
+  refreshIntervalMs = 60000,
 }) {
   const [fetched, setFetched] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -85,7 +90,9 @@ export default function RecentList({
       const fromLs = localStorage.getItem(SOURCE_KEY);
       if (fromLs) return JSON.parse(fromLs);
     } catch {}
-    return sources && Array.isArray(sources) ? sources : defaultSourceOrder;
+    return sources && Array.isArray(sources)
+      ? sources
+      : defaultSourceOrder;
   });
 
   // Coin preference (persisted)
@@ -109,7 +116,10 @@ export default function RecentList({
   // Persist prefs
   useEffect(() => {
     try {
-      localStorage.setItem(SOURCE_KEY, JSON.stringify(selectedSources));
+      localStorage.setItem(
+        SOURCE_KEY,
+        JSON.stringify(selectedSources)
+      );
     } catch {}
   }, [selectedSources]);
 
@@ -119,21 +129,24 @@ export default function RecentList({
     } catch {}
   }, [localCoin]);
 
-  const effectiveCoin = propCoin ?? localCoin;
   const finalCoin = propCoin ? propCoin : localCoin;
 
   // Unify incoming items from different APIs
   const unifyItems = (rawItems, source) =>
     (rawItems || []).map((it) => {
-      const title = it.title || it.text || it.content || it.tweet || "";
-      const url = it.url || it.permalink || it.link || it.tweet_url || null;
+      const title =
+        it.title || it.text || it.content || it.tweet || "";
+      const url =
+        it.url || it.permalink || it.link || it.tweet_url || null;
       const id = it.id || it._id || it.tweet_id || url || title;
+
       const created =
         it.created_at ||
         it.created_utc ||
         it.published_at ||
         it.date ||
         it.time ||
+        it.scraped_at ||
         null;
 
       let safeCreatedDate = null;
@@ -154,44 +167,44 @@ export default function RecentList({
       };
     });
 
-  // Fetch logic
+  // Fetch logic (no filters in deps; filters are client-side only)
   const fetchData = useCallback(async () => {
-    if (items) return;
+    if (items) return; // parent is controlling items
 
     setLoading(true);
     setError(null);
-    setFetched([]);
 
-    let controller = new AbortController();
-    const signal = controller.signal;
     const isAllCoins = finalCoin === "ALL";
 
     const fetchPromises = [];
-    const fetchLimit = Math.ceil(limit / selectedSources.length);
+    const fetchLimit = Math.ceil(
+      limit / (selectedSources.length || 1)
+    );
 
     if (selectedSources.includes("twitter")) {
       fetchPromises.push(
-        getTwitter(fetchLimit, isAllCoins ? null : finalCoin, signal).then(
+        getTwitter(fetchLimit, isAllCoins ? null : finalCoin).then(
           (res) => unifyItems(res, "twitter")
         )
       );
     }
     if (selectedSources.includes("reddit")) {
       fetchPromises.push(
-        getReddit(fetchLimit, isAllCoins ? null : finalCoin, signal).then(
+        getReddit(fetchLimit, isAllCoins ? null : finalCoin).then(
           (res) => unifyItems(res, "reddit")
         )
       );
     }
     if (selectedSources.includes("news")) {
       fetchPromises.push(
-        getNews(fetchLimit, isAllCoins ? null : finalCoin, signal).then((res) =>
-          unifyItems(res, "news")
+        getNews(fetchLimit, isAllCoins ? null : finalCoin).then(
+          (res) => unifyItems(res, "news")
         )
       );
     }
 
     if (fetchPromises.length === 0) {
+      setFetched([]);
       setLoading(false);
       return;
     }
@@ -207,15 +220,30 @@ export default function RecentList({
     } finally {
       setLoading(false);
     }
-
-    return () => controller.abort();
   }, [items, finalCoin, limit, selectedSources]);
 
+  // Auto-refresh: initial fetch + poll every `refreshIntervalMs`
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (items) return;
 
-  // Filtering + sorting
+    let isMounted = true;
+
+    const run = async () => {
+      if (!isMounted) return;
+      await fetchData();
+    };
+
+    run(); // initial
+
+    const intervalId = setInterval(run, refreshIntervalMs);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [fetchData, refreshIntervalMs, items]);
+
+  // Filtering + sorting (client-side, on top of fetched data)
   const filteredAndSortedItems = useMemo(() => {
     const data = items || fetched;
 
@@ -234,7 +262,9 @@ export default function RecentList({
       return true;
     });
 
-    const lowerSearchTerm = debouncedSearchTerm.toLowerCase().trim();
+    const lowerSearchTerm = debouncedSearchTerm
+      .toLowerCase()
+      .trim();
     const searchFiltered = lowerSearchTerm
       ? sentimentFiltered.filter(
           (item) =>
@@ -248,8 +278,12 @@ export default function RecentList({
       let valA, valB;
 
       if (sortKey === "date") {
-        valA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        valB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        valA = a.created_at
+          ? new Date(a.created_at).getTime()
+          : 0;
+        valB = b.created_at
+          ? new Date(b.created_at).getTime()
+          : 0;
       } else if (sortKey === "sentiment") {
         valA = getSentimentDetails(a).confidence ?? 0;
         valB = getSentimentDetails(b).confidence ?? 0;
@@ -273,7 +307,9 @@ export default function RecentList({
 
   const toggleSource = (source) => {
     setSelectedSources((prev) =>
-      prev.includes(source) ? prev.filter((s) => s !== source) : [...prev, source]
+      prev.includes(source)
+        ? prev.filter((s) => s !== source)
+        : [...prev, source]
     );
   };
 
@@ -390,7 +426,9 @@ export default function RecentList({
 
       {/* Sources + slider */}
       <div className="flex flex-wrap gap-3 items-center mb-4">
-        <span className="text-sm font-medium text-gray-300">Sources:</span>
+        <span className="text-sm font-medium text-gray-300">
+          Sources:
+        </span>
         {defaultSourceOrder.map((source) => (
           <label
             key={source}
@@ -423,7 +461,9 @@ export default function RecentList({
             max="1"
             step="0.1"
             value={minConfidence}
-            onChange={(e) => setMinConfidence(parseFloat(e.target.value))}
+            onChange={(e) =>
+              setMinConfidence(parseFloat(e.target.value))
+            }
             className="
               w-20 h-1.5 rounded-lg appearance-none cursor-pointer
               bg-cp-bg/70
@@ -473,15 +513,18 @@ export default function RecentList({
 
         {!loading && !error && filteredAndSortedItems.length === 0 && (
           <div className="text-center text-gray-400 py-6 text-sm">
-            No recent posts found for the current coin, sources, and filters.
+            No recent posts found for the current coin, sources, and
+            filters.
           </div>
         )}
 
         {!loading &&
           !error &&
           filteredAndSortedItems.map((p) => {
-            const { label, confidence, colorClass } = getSentimentDetails(p);
-            const sourceDetails = sourceLabels[p.source] || sourceLabels.news;
+            const { label, confidence, colorClass } =
+              getSentimentDetails(p);
+            const sourceDetails =
+              sourceLabels[p.source] || sourceLabels.news;
 
             return (
               <div

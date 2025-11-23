@@ -1,0 +1,4 @@
+cryptocurrency,current_price,predicted_next_price,market_trend,short_term_acc,mid_term_acc,long_term_acc,overall_acc,confidence,twitter_score,reddit_score,news_score,generated_at
+Bitcoin,43669.49,44263.55,Bullish,100.0%,100.0%,57.14%,85.71%,85.71,0.5023662346531407,0.0,0.0,2025-11-19T13:37:02.536298
+Ethereum,3312.56,3254.45,Bearish,100.0%,100.0%,85.71%,95.24%,95.24,0.5532642691267736,0.0,0.0,2025-11-19T13:37:02.536298
+Solana,78.65,83.98,Bullish,100.0%,100.0%,71.43%,90.48%,90.48,0.47246612904169016,0.0,0.0,2025-11-19T13:37:02.536298

@@ -1,4 +1,4 @@
-// src/components/auth/Login.jsx (or wherever you keep it)
+// src/components/auth/Login.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -48,11 +48,25 @@ export default function Login() {
         }),
         {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          // optionally include withCredentials: true if your backend uses cookies
         }
       );
 
       const data = response.data;
 
+      // If backend uses 202 to indicate "password OK — OTP sent"
+      if (response.status === 202) {
+        setMessage({
+          text: data.message || "Verification code sent to your email.",
+          type: "success",
+        });
+
+        // Navigate to OTP screen and pass the email so the OTP screen knows who to verify
+        navigate("/verify-otp", { state: { email: formData.email } });
+        return; // Important: do not set session until OTP verified
+      }
+
+      // Fallback: if backend returned final login data (no OTP)
       localStorage.setItem("userLoggedIn", "true");
       localStorage.setItem("userEmail", formData.email);
 
@@ -96,11 +110,9 @@ export default function Login() {
           overflow-hidden
         "
       >
-        {/* subtle neon border accent */}
         <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-cp-purple via-cp-neon to-cp-magenta opacity-70" />
 
         <div className="p-6 sm:p-8 text-gray-200">
-          {/* Back Button */}
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -114,7 +126,6 @@ export default function Login() {
             Go Back
           </button>
 
-          {/* Heading */}
           <div className="text-center mb-6">
             <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-2">
               Welcome back
@@ -127,7 +138,6 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Message */}
           {message.text && (
             <div
               className={`
@@ -144,9 +154,7 @@ export default function Login() {
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -176,7 +184,6 @@ export default function Login() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -224,7 +231,6 @@ export default function Login() {
               </Link>
             </div>
 
-            {/* CTA */}
             <button
               type="submit"
               disabled={isLoading}
@@ -247,16 +253,11 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Footer */}
           <div className="mt-7 text-center text-xs sm:text-sm text-gray-400">
             Don&apos;t have an account?
             <Link
               to="/register"
-              className="
-                ml-1 font-medium text-cp-neon
-                hover:text-cp-neon/80
-                transition-colors
-              "
+              className="ml-1 font-medium text-cp-neon hover:text-cp-neon/80 transition-colors"
             >
               Create Account
             </Link>

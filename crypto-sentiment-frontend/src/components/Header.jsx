@@ -12,7 +12,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <img src={Logo} alt="logo" className="w-10 h-10 object-contain" />
           {/* Accent the site name with the Neon color */}
-          <div className="text-cp-neon font-black text-xl tracking-widest uppercase font-display">
+          <div className="text-cp-neon font-white text-xl tracking-widest uppercase font-display">
                 CRYPTOSENT
             </div>
         </div>

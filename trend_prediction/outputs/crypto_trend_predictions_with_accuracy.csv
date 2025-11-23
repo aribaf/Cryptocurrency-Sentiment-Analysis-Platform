@@ -1,0 +1,4 @@
+cryptocurrency,current_price,predicted_next_price,market_trend,short_term_acc,mid_term_acc,long_term_acc,overall_acc,confidence,generated_at
+Bitcoin,43669.49,44192.47,Bullish,100.0%,100.0%,57.14%,85.71%,85.71,2025-11-19T12:02:27.422666
+Ethereum,3312.56,3259.05,Bearish,100.0%,100.0%,85.71%,95.24%,95.24,2025-11-19T12:02:27.422666
+Solana,78.65,83.46,Bullish,100.0%,100.0%,71.43%,90.48%,90.48,2025-11-19T12:02:27.422666

@@ -1,202 +1,152 @@
-// src/pages/trend_prediction.jsx
-import React, { useState, useEffect } from "react";
-import { Search, Bell } from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
 
-const KpiCard = ({ title, accuracy, change }) => (
-  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 text-center">
-    <h4 className="text-sm font-medium text-gray-500">{title}</h4>
-    <p className="text-2xl font-bold text-gray-800 mt-1">{accuracy}</p>
-    <p
-      className={`text-xs font-medium mt-1 ${
-        change.startsWith("+") ? "text-green-600" : "text-red-600"
-      }`}
-    >
-      {change} from last month
-    </p>
-  </div>
-);
+import AccuracyCards from "../trend/AccuracyCards";
+import TrendCard from "../trend/TrendCard";
+import Sidebar from "../trend/Sidebar";
+import HistoricalChart from "../trend/HistoricalChart";
+import TrendRealtime from "../trend/TrendRealTime";
 
-const PredictionCard = ({ coin, trend, confidence }) => (
-  <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-    <div className="flex justify-between items-center mb-2">
-      <h3 className="text-sm font-semibold text-gray-700">{coin}</h3>
-      <span
-        className={`text-sm font-medium ${
-          trend === "Bullish"
-            ? "text-green-600"
-            : trend === "Bearish"
-            ? "text-red-600"
-            : "text-yellow-600"
-        }`}
-      >
-        {trend} {trend === "Bullish" ? "↗" : trend === "Bearish" ? "↘" : "–"}
-      </span>
-    </div>
-    <div className="w-full bg-gray-100 rounded-full h-2 mt-2">
-      <div
-        className={`h-2 rounded-full ${
-          confidence > 80
-            ? "bg-green-500"
-            : confidence > 60
-            ? "bg-yellow-400"
-            : "bg-red-400"
-        }`}
-        style={{ width: `${confidence}%` }}
-      ></div>
-    </div>
-    <p className="text-xs text-gray-500 mt-2">
-      Confidence: <span className="font-semibold">{confidence}%</span>
-    </p>
-  </div>
-);
+import { fetchTrends, fetchTrendHistory } from "../../api/api.js";
 
 export default function TrendPrediction() {
-  const [timeframe, setTimeframe] = useState("Short-term (24h)");
-  const [alertThreshold, setAlertThreshold] = useState("High Confidence Only");
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCoin, setActiveCoin] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [timeframe, setTimeframe] = useState("short");
+  const [filter, setFilter] = useState("");
+  const [stats, setStats] = useState({});
 
-  const coins = [
-    { coin: "Bitcoin", trend: "Bullish", confidence: 92 },
-    { coin: "Ethereum", trend: "Bullish", confidence: 87 },
-    { coin: "Solana", trend: "Bullish", confidence: 83 },
-    { coin: "Cardano", trend: "Neutral", confidence: 65 },
-    { coin: "Dogecoin", trend: "Bearish", confidence: 78 },
-    { coin: "Polkadot", trend: "Neutral", confidence: 61 },
-  ];
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await fetchTrends();
+      const list = Array.isArray(data) ? data : [];
+      setItems(list);
+
+      // compute quick accuracy cards from the first item or aggregate
+      if (list.length) {
+        // try to find a representative item (Bitcoin / first)
+        const rep = list[0] || {};
+        const short = rep.short_term_acc ?? rep.short_term_accuracy ?? rep.short_term ?? null;
+        const mid = rep.mid_term_acc ?? rep.mid_term_accuracy ?? rep.mid_term ?? null;
+        const long = rep.long_term_acc ?? rep.long_term_accuracy ?? rep.long_term ?? null;
+        const overall =
+          rep.overall_acc ?? rep.overall_accuracy ?? rep.confidence ?? rep.confidence_pct ?? null;
+        setStats({ short, mid, long, overall });
+      } else {
+        setStats({});
+      }
+    } catch (e) {
+      console.error("fetchTrends error", e);
+      setItems([]);
+      setStats({});
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => load(), 30_000); // poll every 30s
+    return () => clearInterval(interval);
+  }, [load]);
+
+  useEffect(() => {
+    // when active coin changes load history
+    async function loadHistory() {
+      if (!activeCoin) return setHistory([]);
+      try {
+        const h = await fetchTrendHistory(activeCoin, 90);
+        setHistory(Array.isArray(h) ? h : []);
+      } catch (err) {
+        console.error("fetchTrendHistory error", err);
+        setHistory([]);
+      }
+    }
+    loadHistory();
+  }, [activeCoin]);
+
+  const onViewHistory = async (coin) => {
+    setActiveCoin(coin);
+    try {
+      const h = await fetchTrendHistory(coin, 90);
+      setHistory(Array.isArray(h) ? h : []);
+    } catch (err) {
+      console.error("fetchTrendHistory:", err);
+      setHistory([]);
+    }
+  };
+
+  const onSearch = (q) => {
+    setFilter(q?.trim()?.toLowerCase() || "");
+  };
+
+  const onExport = () => {
+    const base = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+    const href = base ? `${base}/api/trends/download/csv` : "/api/trends/download/csv";
+    window.open(href, "_blank");
+  };
+
+  const visible = items.filter((it) => {
+    if (!filter) return true;
+    return (it.cryptocurrency || "").toLowerCase().includes(filter);
+  });
 
   return (
-    <div className="font-sans">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Trend Prediction</h1>
-        <button className="text-sm px-3 py-1 bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
-          Export Data
-        </button>
-      </div>
+    <div className="max-w-7xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Trend Prediction</h1>
 
-      {/* KPI Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KpiCard title="Short-term Predictions" accuracy="85% Accuracy" change="+5%" />
-        <KpiCard title="Mid-term Predictions" accuracy="78% Accuracy" change="+2%" />
-        <KpiCard title="Long-term Predictions" accuracy="72% Accuracy" change="-3%" />
-        <KpiCard title="Overall Accuracy" accuracy="79% Accuracy" change="+1%" />
-      </div>
+      <AccuracyCards stats={stats} />
 
-      {/* Predictions Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Prediction List */}
-        <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-lg font-semibold text-gray-800">
-              Trend Predictions
-            </h4>
-            <div className="flex space-x-2">
-              {["Short-term (24h)", "Mid-term (7d)", "Long-term (30d)"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTimeframe(t)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    timeframe === t
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Predictions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {coins.map((c) => (
-              <PredictionCard
-                key={c.coin}
-                coin={c.coin}
-                trend={c.trend}
-                confidence={c.confidence}
-              />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3 space-y-4">
+          <div className="space-y-4">
+            {loading && <div className="text-gray-400">Loading predictions...</div>}
+            {!loading && visible.length === 0 && (
+              <div className="text-gray-500">No predictions found.</div>
+            )}
+            {visible.map((item) => (
+              <TrendCard key={item.cryptocurrency} item={item} onViewHistory={onViewHistory} />
             ))}
           </div>
 
-          {/* Historical Accuracy Placeholder */}
-          <div className="mt-8">
-            <h4 className="text-md font-semibold text-gray-800 mb-3">
-              Historical Accuracy
-            </h4>
-            <div className="bg-gray-50 h-48 border border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-sm">
-              Historical accuracy chart will appear here
-            </div>
-          </div>
+          {/* Live realtime panel */}
+<div className="mt-6">
+  <TrendRealtime />
+</div>
+
+{/* Historical accuracy below it */}
+<div className="mt-6">
+  <h2 className="text-lg font-semibold mb-3">Historical Accuracy</h2>
+  <HistoricalChart data={history} metric="confidence" />
+</div>
+
         </div>
 
-        {/* Right Sidebar */}
-        <div className="space-y-6">
-          {/* Search Filter */}
-          <div className="bg-white rounded-xl p-5 shadow-md border border-gray-200">
-            <h4 className="text-md font-semibold text-gray-800 mb-3">Search</h4>
-            <div className="flex items-center space-x-2 mb-3">
-              <Search className="w-4 h-4 text-gray-500" />
-              <input
-                type="text"
-                placeholder="Bitcoin, Ethereum, etc."
-                className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-              />
-            </div>
-
-            <label className="block text-sm text-gray-600 mb-1">
-              Prediction Timeframe
-            </label>
-            <select
-              className="w-full border border-gray-300 rounded-md p-2 text-sm mb-3"
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value)}
-            >
-              <option>Short-term (24h)</option>
-              <option>Mid-term (7d)</option>
-              <option>Long-term (30d)</option>
-            </select>
-
-            <label className="block text-sm text-gray-600 mb-1">
-              Confidence Threshold
-            </label>
-            <select className="w-full border border-gray-300 rounded-md p-2 text-sm mb-4">
-              <option>All Predictions</option>
-              <option>High Confidence Only</option>
-              <option>Medium Confidence</option>
-            </select>
-
-            <button className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-md hover:bg-blue-700 transition-colors">
-              Apply Filters
-            </button>
+        <aside className="lg:col-span-1">
+          <Sidebar
+            onSearch={onSearch}
+            onTimeframe={setTimeframe}
+            timeframe={timeframe}
+            onExport={onExport}
+          />
+          <div className="mt-4">
+            {activeCoin ? (
+              <div className="bg-black/30 p-4 rounded border border-gray-800">
+                <div className="text-sm text-gray-400 mb-2">History for</div>
+                <div className="text-lg font-semibold">{activeCoin}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Showing last {history.length} points
+                </div>
+              </div>
+            ) : (
+              <div className="bg-black/30 p-4 rounded border border-gray-800 text-sm text-gray-400">
+                Select a coin's “View History” to inspect its recent predictions.
+              </div>
+            )}
           </div>
-
-          {/* Alert Settings */}
-          <div className="bg-white rounded-xl p-5 shadow-md border border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-md font-semibold text-gray-800">
-                Alert Settings
-              </h4>
-              <Bell className="w-5 h-5 text-gray-500" />
-            </div>
-
-            <label className="block text-sm text-gray-600 mb-1">
-              Alert Threshold
-            </label>
-            <select
-              className="w-full border border-gray-300 rounded-md p-2 text-sm mb-4"
-              value={alertThreshold}
-              onChange={(e) => setAlertThreshold(e.target.value)}
-            >
-              <option>High Confidence Only</option>
-              <option>Medium & High</option>
-              <option>All Predictions</option>
-            </select>
-
-            <button className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-md hover:bg-blue-700 transition-colors">
-              Save Alert Settings
-            </button>
-          </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

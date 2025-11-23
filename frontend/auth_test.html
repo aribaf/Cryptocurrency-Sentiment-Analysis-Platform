@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Auth Test</title>
+</head>
+<body>
+  <h2>OTP request</h2>
+  <form id="req">
+    <input id="email" type="email" placeholder="you@mail.com" required />
+    <button>Request OTP</button>
+  </form>
+
+  <h2>Verify OTP</h2>
+  <form id="ver">
+    <input id="email2" type="email" placeholder="you@mail.com" required />
+    <input id="otp" placeholder="123456" required />
+    <button>Verify OTP</button>
+  </form>
+
+  <h2>Google login</h2>
+<a id="google-btn" href="http://localhost:8000/api/auth/google">Sign in with Google</a>
+
+
+ <script>
+async function safeFetchJson(url, options) {
+  const res = await fetch(url, options);
+  const text = await res.text();                 // always read as text first
+  // try parse JSON, otherwise return text and status
+  try {
+    const json = JSON.parse(text);
+    return { ok: res.ok, status: res.status, body: json, raw: text };
+  } catch (err) {
+    return { ok: res.ok, status: res.status, body: null, raw: text };
+  }
+}
+
+document.getElementById('req').onsubmit = async e => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  try {
+    const result = await safeFetchJson('http://localhost:8000/api/auth/otp/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    console.log('status', result.status);
+    console.log('raw response:', result.raw);
+    if (result.body) {
+      alert(result.body.detail || JSON.stringify(result.body));
+    } else {
+      alert('Server did not return JSON. See console for raw HTML/text.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Network error: ' + err.message);
+  }
+};
+
+// verify form uses same helper
+document.getElementById('ver').onsubmit = async e => {
+  e.preventDefault();
+  const email = document.getElementById('email2').value;
+  const otp = document.getElementById('otp').value;
+  try {
+    const result = await safeFetchJson('http://localhost:8000/api/auth/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp })
+    });
+    console.log('status', result.status);
+    console.log('raw response:', result.raw);
+    if (result.ok && result.body) {
+      localStorage.setItem('token', result.body.access_token);
+      alert('Logged in! token stored in localStorage');
+    } else {
+      alert('Error: ' + (result.raw || JSON.stringify(result.body)));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Network error: ' + err.message);
+  }
+};
+</script>
+
+</body>
+</html>

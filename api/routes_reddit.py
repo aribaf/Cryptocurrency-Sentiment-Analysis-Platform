@@ -10,15 +10,35 @@ router = APIRouter(tags=["reddit"])
 reddit_db = client["crypto_reddit_db"]
 reddit_collection = reddit_db["latest_reddit"]
 
+# routes_reddit.py (Conceptual Change)
 @router.get("/recent/reddit", summary="Get recent Reddit posts for RecentList component")
-async def get_recent_reddit_posts(limit: int = 25, coin: Optional[str] = None):
+async def get_recent_reddit_posts(
+    limit: int = 25, 
+    coin: Optional[str] = None,
+    sentiment_label: Optional[str] = None # <-- NEW PARAMETER
+):
     try:
         filter_query = {}
         if coin and coin.upper() != 'ALL':
             filter_query["coin"] = coin.upper()
 
+        # Add sentiment filter logic
+        if sentiment_label and sentiment_label.lower() != 'all':
+             # Note: Reddit posts use a polarity score, not a direct label in the DB
+             # Need to infer the score range based on the label, similar to calculate_mean_score or get_sentiment_breakdown thresholds
+             
+             # The existing polarity thresholds in routes_sentiment.py are 0.05 and -0.05
+             THRESHOLD = 0.05 
+             
+             if sentiment_label.lower() == 'positive':
+                 filter_query["polarity"] = {"$gt": THRESHOLD}
+             elif sentiment_label.lower() == 'negative':
+                 filter_query["polarity"] = {"$lt": -THRESHOLD}
+             elif sentiment_label.lower() == 'neutral':
+                 filter_query["polarity"] = {"$gte": -THRESHOLD, "$lte": THRESHOLD}
+            
         cursor = reddit_collection.find(filter_query).sort("created_at", -1).limit(limit)
-
+        # ... (rest of the code)
         posts = []
         for doc in cursor:
             created_at = (

@@ -1,4 +1,9 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
 import { getTwitter, getReddit, getNews } from "../api/api";
 
 // --- Custom Debounce Hook ---
@@ -25,25 +30,47 @@ const sourceLabels = {
 
 // Normalize sentiment + color
 const getSentimentDetails = (item) => {
-  let label = item.sentiment_label || item.label || "Neutral";
-  let confidence =
+  // base label & raw confidence
+  let rawLabel = item.sentiment_label || item.label || "Neutral";
+  let confidenceRaw =
     item.confidence ?? item.sentiment_score ?? item.polarity ?? null;
 
-  let colorClass = "text-amber-300";
-
-  if (label.toLowerCase().includes("positive")) {
-    colorClass = "text-cp-neon";
-  } else if (label.toLowerCase().includes("negative")) {
-    colorClass = "text-cp-magenta";
-  } else if (confidence !== null) {
-    if (confidence > 0.3) colorClass = "text-cp-neon";
-    else if (confidence < -0.3) colorClass = "text-cp-magenta";
+  // Derive label from polarity specifically for Reddit if needed
+  if (item.source === "reddit" && item.polarity != null) {
+    const p = Number(item.polarity);
+    if (p > 0.05) rawLabel = "Positive";
+    else if (p < -0.05) rawLabel = "Negative";
+    else rawLabel = "Neutral";
   }
 
-  label =
-    label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+  let label = (rawLabel || "Neutral").trim();
+  const lower = label.toLowerCase();
 
-  return { label, confidence, colorClass };
+  // Turn confidence into a *signed* score
+  let score;
+  if (confidenceRaw == null) {
+    score = 0;
+  } else if (lower.includes("positive")) {
+    score = Math.abs(Number(confidenceRaw));
+  } else if (lower.includes("negative")) {
+    score = -Math.abs(Number(confidenceRaw));
+  } else {
+    // neutral / unknown → just use the numeric value as-is (e.g., polarity)
+    score = Number(confidenceRaw);
+  }
+
+  let colorClass = "text-amber-300";
+  if (lower.includes("positive") || score > 0.05) {
+    colorClass = "text-cp-neon";
+  } else if (lower.includes("negative") || score < -0.05) {
+    colorClass = "text-cp-magenta";
+  }
+
+  // Nicely capitalized label
+  label = label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+
+  // Return signed score as `confidence`
+  return { label, confidence: score, colorClass };
 };
 
 const timeSince = (date) => {
@@ -105,7 +132,6 @@ export default function RecentList({
   });
 
   const [sentimentFilter, setSentimentFilter] = useState("all");
-  const [minConfidence, setMinConfidence] = useState(0);
   const [compactMode, setCompactMode] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -116,10 +142,7 @@ export default function RecentList({
   // Persist prefs
   useEffect(() => {
     try {
-      localStorage.setItem(
-        SOURCE_KEY,
-        JSON.stringify(selectedSources)
-      );
+      localStorage.setItem(SOURCE_KEY, JSON.stringify(selectedSources));
     } catch {}
   }, [selectedSources]);
 
@@ -177,27 +200,26 @@ export default function RecentList({
     const isAllCoins = finalCoin === "ALL";
 
     const fetchPromises = [];
-    const fetchLimit = Math.ceil(
-      limit / (selectedSources.length || 1)
-    );
+    // ✅ At least 20 posts per source
+    const fetchPerSource = Math.max(limit, 20);
 
     if (selectedSources.includes("twitter")) {
       fetchPromises.push(
-        getTwitter(fetchLimit, isAllCoins ? null : finalCoin).then(
+        getTwitter(fetchPerSource, isAllCoins ? null : finalCoin).then(
           (res) => unifyItems(res, "twitter")
         )
       );
     }
     if (selectedSources.includes("reddit")) {
       fetchPromises.push(
-        getReddit(fetchLimit, isAllCoins ? null : finalCoin).then(
+        getReddit(fetchPerSource, isAllCoins ? null : finalCoin).then(
           (res) => unifyItems(res, "reddit")
         )
       );
     }
     if (selectedSources.includes("news")) {
       fetchPromises.push(
-        getNews(fetchLimit, isAllCoins ? null : finalCoin).then(
+        getNews(fetchPerSource, isAllCoins ? null : finalCoin).then(
           (res) => unifyItems(res, "news")
         )
       );
@@ -248,11 +270,8 @@ export default function RecentList({
     const data = items || fetched;
 
     const sentimentFiltered = data.filter((item) => {
-      const { label, confidence } = getSentimentDetails(item);
+      const { confidence } = getSentimentDetails(item);
       const score = confidence ?? 0;
-
-      const meetsConfidence = Math.abs(score) >= minConfidence;
-      if (!meetsConfidence) return false;
 
       if (sentimentFilter === "all") return true;
       if (sentimentFilter === "positive") return score > 0;
@@ -262,9 +281,7 @@ export default function RecentList({
       return true;
     });
 
-    const lowerSearchTerm = debouncedSearchTerm
-      .toLowerCase()
-      .trim();
+    const lowerSearchTerm = debouncedSearchTerm.toLowerCase().trim();
     const searchFiltered = lowerSearchTerm
       ? sentimentFiltered.filter(
           (item) =>
@@ -299,7 +316,6 @@ export default function RecentList({
     items,
     fetched,
     sentimentFilter,
-    minConfidence,
     debouncedSearchTerm,
     sortKey,
     sortDirection,
@@ -316,7 +332,6 @@ export default function RecentList({
   const clearFilters = () => {
     setSearchTerm("");
     setSentimentFilter("all");
-    setMinConfidence(0);
     setSortKey("date");
     setSortDirection("desc");
     setSelectedSources(defaultSourceOrder);
@@ -324,30 +339,44 @@ export default function RecentList({
 
   const activeFiltersCount =
     (sentimentFilter !== "all" ? 1 : 0) +
-    (minConfidence > 0 ? 1 : 0) +
     (searchTerm ? 1 : 0) +
     (selectedSources.length < defaultSourceOrder.length ? 1 : 0);
 
   // --- Render ---
   return (
-    <div className="bg-cp-panel/90 rounded-xl p-6 shadow-md border border-white/5 text-white">
-      <h3 className="text-xl font-display font-semibold mb-4">
-        Recent Posts
-        {finalCoin && finalCoin !== "ALL" && (
-          <span className="ml-2 text-cp-neon text-sm align-middle">
-            ({finalCoin})
-          </span>
+    <div className="bg-cp-panel/90 rounded-xl p-5 sm:p-6 shadow-lg border border-white/5 text-white backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h3 className="text-lg sm:text-xl font-display font-semibold">
+          Recent Posts
+          {finalCoin && finalCoin !== "ALL" && (
+            <span className="ml-2 text-cp-neon text-sm align-middle">
+              ({finalCoin})
+            </span>
+          )}
+        </h3>
+
+        {activeFiltersCount > 0 && (
+          <button
+            onClick={clearFilters}
+            className="
+              text-xs sm:text-sm px-3 py-1.5 rounded-full
+              border border-cp-magenta/60 bg-cp-magenta/10
+              text-cp-magenta hover:bg-cp-magenta/20 transition-colors
+            "
+          >
+            Clear Filters{activeFiltersCount > 0 && ` (${activeFiltersCount})`}
+          </button>
         )}
-      </h3>
+      </div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <div className="grid gap-3 mb-4 md:grid-cols-2 xl:grid-cols-4">
         {!propCoin && (
           <select
             value={localCoin}
             onChange={(e) => setLocalCoin(e.target.value)}
             className="
-              px-3 py-2 rounded-md text-sm w-full sm:w-auto
+              px-3 py-2 rounded-md text-sm w-full
               bg-cp-bg/80 border border-white/10 text-gray-100
               focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
             "
@@ -366,7 +395,7 @@ export default function RecentList({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="
-            px-3 py-2 rounded-md text-sm flex-grow
+            px-3 py-2 rounded-md text-sm w-full
             bg-cp-bg/80 border border-white/10 text-gray-100
             placeholder:text-gray-500
             focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
@@ -377,7 +406,7 @@ export default function RecentList({
           value={sentimentFilter}
           onChange={(e) => setSentimentFilter(e.target.value)}
           className="
-            px-3 py-2 rounded-md text-sm w-full sm:w-auto
+            px-3 py-2 rounded-md text-sm w-full
             bg-cp-bg/80 border border-white/10 text-gray-100
             focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
           "
@@ -396,7 +425,7 @@ export default function RecentList({
             setSortDirection(direction);
           }}
           className="
-            px-3 py-2 rounded-md text-sm w-full sm:w-auto
+            px-3 py-2 rounded-md text-sm w-full
             bg-cp-bg/80 border border-white/10 text-gray-100
             focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
           "
@@ -406,33 +435,17 @@ export default function RecentList({
           <option value="sentiment-desc">Highest Sentiment</option>
           <option value="sentiment-asc">Lowest Sentiment</option>
         </select>
-
-        <button
-          onClick={clearFilters}
-          disabled={activeFiltersCount === 0}
-          className={`
-            px-3 py-2 text-sm rounded-md border w-full sm:w-auto transition-colors
-            ${
-              activeFiltersCount > 0
-                ? "bg-cp-magenta/10 text-cp-magenta border-cp-magenta/60 hover:bg-cp-magenta/20"
-                : "bg-cp-bg/60 text-gray-500 border-white/10 cursor-not-allowed"
-            }
-          `}
-        >
-          Clear Filters{" "}
-          {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-        </button>
       </div>
 
-      {/* Sources + slider */}
-      <div className="flex flex-wrap gap-3 items-center mb-4">
+      {/* Sources + compact toggle */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <span className="text-sm font-medium text-gray-300">
           Sources:
         </span>
         {defaultSourceOrder.map((source) => (
           <label
             key={source}
-            className="flex items-center space-x-2 text-sm text-gray-200 cursor-pointer"
+            className="flex items-center space-x-2 text-xs sm:text-sm text-gray-200 cursor-pointer"
           >
             <input
               type="checkbox"
@@ -447,57 +460,25 @@ export default function RecentList({
           </label>
         ))}
 
-        <div className="flex items-center space-x-2 text-sm ml-auto">
-          <label
-            htmlFor="confidence-slider"
-            className="font-medium text-gray-300 whitespace-nowrap"
-          >
-            Min Conf:
-          </label>
-          <input
-            id="confidence-slider"
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={minConfidence}
-            onChange={(e) =>
-              setMinConfidence(parseFloat(e.target.value))
-            }
-            className="
-              w-20 h-1.5 rounded-lg appearance-none cursor-pointer
-              bg-cp-bg/70
-              [&::-webkit-slider-thumb]:appearance-none
-              [&::-webkit-slider-thumb]:h-4
-              [&::-webkit-slider-thumb]:w-4
-              [&::-webkit-slider-thumb]:rounded-full
-              [&::-webkit-slider-thumb]:bg-cp-neon
-              [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(217,255,47,0.6)]
-            "
-          />
-          <span className="font-semibold text-cp-neon">
-            {minConfidence.toFixed(1)}
-          </span>
-          <button
-            onClick={() => setCompactMode((p) => !p)}
-            className="
-              text-xs border px-2 py-1 rounded
-              text-gray-300 border-white/15
-              hover:border-cp-purple hover:text-cp-purple
-              transition-colors
-            "
-            title="Toggle compact view"
-          >
-            {compactMode ? "Expand" : "Compact"}
-          </button>
-        </div>
+        <button
+          onClick={() => setCompactMode((p) => !p)}
+          className="
+            ml-auto text-[11px] sm:text-xs border px-3 py-1.5 rounded-full
+            text-gray-300 border-white/15
+            hover:border-cp-purple hover:text-cp-purple
+            transition-colors
+          "
+          title="Toggle compact view"
+        >
+          {compactMode ? "Expand View" : "Compact View"}
+        </button>
       </div>
 
       {/* List */}
       <div
         className={`mt-3 space-y-3 ${
-          compactMode ? "max-h-[500px]" : "max-h-[700px]"
-        } overflow-y-auto pr-2`}
+          compactMode ? "max-h-[480px]" : "max-h-[720px]"
+        } overflow-y-auto pr-1 sm:pr-2 custom-scrollbar`}
       >
         {loading && (
           <div className="text-center text-cp-neon py-6 text-sm">
@@ -513,8 +494,7 @@ export default function RecentList({
 
         {!loading && !error && filteredAndSortedItems.length === 0 && (
           <div className="text-center text-gray-400 py-6 text-sm">
-            No recent posts found for the current coin, sources, and
-            filters.
+            No recent posts found for the current coin, sources, and filters.
           </div>
         )}
 
@@ -530,13 +510,12 @@ export default function RecentList({
               <div
                 key={p.id}
                 className={`
-                  p-3 rounded-lg border border-white/8 bg-cp-bg/40
-                  transition-shadow transition-colors
-                  ${
-                    compactMode
-                      ? "text-sm"
-                      : "hover:shadow-[0_0_20px_rgba(0,0,0,0.6)] hover:border-cp-purple/70"
-                  }
+                  group
+                  p-3 sm:p-4 rounded-lg border border-white/8 bg-cp-bg/40
+                  transition-all duration-150
+                  hover:shadow-[0_0_24px_rgba(0,0,0,0.7)]
+                  hover:border-cp-purple/80 hover:-translate-y-[1px]
+                  ${compactMode ? "text-sm" : ""}
                 `}
               >
                 <a
@@ -546,7 +525,7 @@ export default function RecentList({
                   className={`
                     block leading-snug font-medium
                     ${compactMode ? "text-sm" : "text-base"}
-                    text-gray-100 hover:text-cp-neon transition-colors
+                    text-gray-100 group-hover:text-cp-neon transition-colors
                   `}
                   title={p.title || p.text}
                 >
@@ -556,7 +535,7 @@ export default function RecentList({
                 <div
                   className={`
                     flex flex-wrap items-center gap-2
-                    ${compactMode ? "text-xs mt-1" : "text-sm mt-2"}
+                    ${compactMode ? "text-[11px] mt-1" : "text-sm mt-2"}
                   `}
                 >
                   <span
@@ -569,11 +548,9 @@ export default function RecentList({
                     Sentiment: {label}
                   </span>
 
-                  {confidence !== null && (
-                    <span className="text-gray-300">
-                      Conf: {confidence.toFixed(3)}
-                    </span>
-                  )}
+                  <span className="text-gray-300">
+                    Conf: {Math.abs(confidence ?? 0).toFixed(3)}
+                  </span>
 
                   <span className="text-gray-400 ml-auto whitespace-nowrap">
                     {p.created_at ? timeSince(p.created_at) : "Date N/A"}

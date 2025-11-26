@@ -1,267 +1,176 @@
-// src/components/auth/Login.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://127.0.0.1:8000/api";
-
-const ArrowLeftIcon = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-    stroke="currentColor"
-    className="w-5 h-5"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M10.5 19.5L3 12m0 0 7.5-7.5M3 12h18"
-    />
-  </svg>
-);
+// Safe access to env: prevents "process is not defined" in some bundlers
+const safeEnv = typeof process !== "undefined" && process.env ? process.env : {};
+const API_BASE = safeEnv.REACT_APP_API_BASE || "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev/api";
+const OAUTH_HOST = safeEnv.REACT_APP_OAUTH_HOST || "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev";
 
 export default function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState({ text: "", type: "" });
+  const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setMessage({ text: "", type: "" });
+  const handleChange = e => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleLogin = async (e) => {
+  // Password login
+  const handleSubmit = async e => {
     e.preventDefault();
-    setMessage({ text: "", type: "" });
     setIsLoading(true);
-
+    setMessage(null);
     try {
-      const response = await axios.post(
-        `${API_BASE}/login`,
-        new URLSearchParams({
-          username: formData.email,
-          password: formData.password,
-        }),
-        {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          // optionally include withCredentials: true if your backend uses cookies
-        }
-      );
-
-      const data = response.data;
-
-      // If backend uses 202 to indicate "password OK — OTP sent"
-      if (response.status === 202) {
-        setMessage({
-          text: data.message || "Verification code sent to your email.",
-          type: "success",
-        });
-
-        // Navigate to OTP screen and pass the email so the OTP screen knows who to verify
-        navigate("/verify-otp", { state: { email: formData.email } });
-        return; // Important: do not set session until OTP verified
+      const res = await axios.post(`${API_BASE}/auth/login`, formData);
+      if (res.status === 200 && res.data.access_token) {
+        localStorage.setItem("token", res.data.access_token);
+        setMessage({ type: "success", text: "Login successful! Redirecting..." });
+        navigate("/");
       }
-
-      // Fallback: if backend returned final login data (no OTP)
-      localStorage.setItem("userLoggedIn", "true");
-      localStorage.setItem("userEmail", formData.email);
-
-      if (data.user_id) {
-        localStorage.setItem("userId", data.user_id);
-      }
-      if (data.user) {
-        localStorage.setItem("username", data.user);
-      }
-
-      setMessage({
-        text: data.message || "Login successful!",
-        type: "success",
-      });
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 500);
     } catch (error) {
-      const errorMsg =
-        error.response?.data?.detail?.message ||
-        error.response?.data?.message ||
-        "Login failed. Please check your credentials.";
-
-      setMessage({ text: errorMsg, type: "error" });
+      const errorMsg = error.response?.data?.detail || "Authentication Failed. Check credentials.";
+      setMessage({ type: "error", text: errorMsg });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // OTP request
+  const requestOtp = async () => {
+    if (!formData.email) {
+      setMessage({ type: "error", text: "Please enter your email to request an OTP." });
+      return;
+    }
+    setIsLoading(true);
+    setMessage(null);
+    try {
+      const res = await axios.post(`${API_BASE}/auth/otp/request`, { email: formData.email });
+      setMessage({ type: "success", text: res.data.detail || "OTP sent to your email." });
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || "Failed to request OTP.";
+      setMessage({ type: "error", text: errorMsg });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Google Sign-In
+  const googleSignIn = () => {
+    window.location.href = `${OAUTH_HOST}/api/auth/google/login`;
+  };
+
+  // --- THEME CONSTANTS ---
+  const ACCENT_RED_ORANGE = 'bg-red-600 hover:bg-red-500 shadow-lg shadow-red-600/60';
+  const ACCENT_NEON_YELLOW = 'text-lime-400 border-lime-400 hover:bg-lime-400 hover:text-black';
+  const INPUT_STYLE = 'w-full p-4 bg-gray-700/50 text-white border-b-2 border-transparent focus:outline-none focus:border-red-600 transition duration-300 placeholder-gray-500 text-base';
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cp-bg px-4">
-      <div
-        className="
-          w-full max-w-md
-          rounded-2xl
-          bg-cp-panel
-          border border-white/10
-          shadow-[0_0_40px_rgba(0,0,0,0.7)]
-          relative
-          overflow-hidden
-        "
-      >
-        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-cp-purple via-cp-neon to-cp-magenta opacity-70" />
+    // Outer container: Deep Black background, p-4 ensures padding on small screens
+    <div className="flex items-center justify-center min-h-screen bg-black p-4 font-sans antialiased text-white relative overflow-hidden">
+      
+      {/* Pseudo-elements for background design (retained for visual flair) */}
+      <div className="absolute top-10 left-10 w-4 h-4 bg-lime-400 transform rotate-45"></div>
+      <div className="absolute bottom-20 right-20 w-4 h-4 bg-red-600 transform rotate-45"></div>
+      <div className="absolute top-1/2 left-1/4 w-3 h-3 bg-indigo-500 transform rotate-45 opacity-50 hidden md:block"></div> {/* Hidden on small screens */}
 
-        <div className="p-6 sm:p-8 text-gray-200">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="
-              inline-flex items-center gap-1 text-xs font-medium
-              text-gray-400 hover:text-cp-neon
-              transition-colors mb-4
-            "
+      {/* 1. LOGIN CARD WIDTH CHANGE: max-w-md (larger) */}
+      <div className="w-full max-w-md bg-gray-900/90 backdrop-blur-sm p-8 md:p-12 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-gray-800 relative z-10">
+        
+        {/* Logo/System Name */}
+        <p className="text-sm tracking-[0.3em] text-center mb-8 text-red-600 font-bold uppercase">
+          @CRYPTOSWNT
+        </p>
+
+        {/* Main Heading: Scaled for responsiveness */}
+        <h1 className="text-2xl sm:text-3xl font-extrabold mb-10 text-center uppercase leading-tight">
+          ACCESS YOUR <br />
+          <span className="text-red-600 tracking-widest">DIGITAL IDENTITY</span>
+        </h1>
+
+        {/* Message Alert */}
+        {message && (
+          <div className={`p-3 mb-6 rounded border-l-4 font-medium text-sm ${
+            message.type === 'error' 
+              ? 'bg-red-900/40 text-red-300 border-red-600' 
+              : 'bg-lime-900/40 text-lime-300 border-lime-400'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email Input */}
+          <div>
+            <label className="block mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email Address</label>
+            <input
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              type="email"
+              placeholder="your@email.com"
+              className={INPUT_STYLE}
+              required
+            />
+          </div>
+
+          {/* Password Input */}
+          <div>
+            <label className="block mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Password</label>
+            <input
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              type="password"
+              placeholder="••••••••"
+              className={INPUT_STYLE}
+            />
+          </div>
+
+          {/* Login Button - Full width, prominent */}
+          <button 
+            type="submit" 
+            className={`w-full py-4 mt-6 text-white rounded-md font-bold uppercase tracking-widest transition disabled:bg-gray-700 disabled:shadow-none ${ACCENT_RED_ORANGE}`} 
+            disabled={isLoading}
           >
-            <ArrowLeftIcon />
-            Go Back
+            {isLoading ? "INITIATING..." : "-- ACCESS ACCOUNT --"}
           </button>
+        </form>
 
-          <div className="text-center mb-6">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-2">
-              Welcome back
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">
-              Access Account
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-400 mt-2">
-              Enter your credentials to access your sentiment dashboard.
-            </p>
-          </div>
-
-          {message.text && (
-            <div
-              className={`
-                p-3 mb-5 rounded-md text-xs sm:text-sm font-mono
-                border
-                ${
-                  message.type === "error"
-                    ? "bg-red-900/40 text-red-200 border-red-700/70"
-                    : "bg-emerald-900/40 text-emerald-200 border-emerald-700/70"
-                }
-              `}
-            >
-              {message.text}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-medium text-gray-300 mb-1.5"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="user@example.com"
-                className="
-                  block w-full px-3.5 py-2.5
-                  bg-cp-bg/90
-                  border border-gray-700
-                  rounded-lg
-                  text-sm text-white
-                  placeholder:text-gray-500
-                  focus:outline-none focus:border-cp-purple focus:ring-1 focus:ring-cp-purple
-                  transition-all
-                "
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-xs font-medium text-gray-300 mb-1.5"
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                autoComplete="current-password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="********"
-                className="
-                  block w-full px-3.5 py-2.5
-                  bg-cp-bg/90
-                  border border-gray-700
-                  rounded-lg
-                  text-sm text-white
-                  placeholder:text-gray-500
-                  focus:outline-none focus:border-cp-purple focus:ring-1 focus:ring-cp-purple
-                  transition-all
-                "
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-gray-400">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500/70" />
-                <span>Secure OAuth2 login</span>
-              </div>
-
-              <Link
-                to="/forgot-password"
-                className="
-                  font-medium text-cp-neon
-                  hover:text-cp-neon/80
-                  transition-colors
-                "
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            <button
-              type="submit"
+        {/* Links and secondary actions: Adjusted for better mobile layout */}
+        <div className="mt-8 text-center space-y-4">
+          
+          {/* Register Link */}
+          <p className="text-sm text-gray-400">
+            No account yet? <a href="/register" className="text-lime-400 font-bold hover:underline transition">Register now</a>
+          </p>
+          
+          {/* OTP and Google Sign-in: Use flex-col on mobile, then space-x on larger screens */}
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
+            <button 
+              type="button" 
+              onClick={requestOtp} 
+              // Responsive button sizing
+              className={`text-xs w-full sm:w-auto px-4 py-2 border rounded-full font-bold transition ${ACCENT_NEON_YELLOW}`}
               disabled={isLoading}
-              className="
-                w-full mt-2
-                py-2.5 px-4
-                rounded-lg
-                text-xs sm:text-sm font-bold
-                tracking-[0.15em] uppercase
-                bg-cp-orange text-white
-                shadow-lg shadow-cp-orange/30
-                hover:bg-cp-orange/90
-                disabled:opacity-60 disabled:cursor-not-allowed
-                focus:outline-none focus:ring-2 focus:ring-offset-2
-                focus:ring-cp-orange focus:ring-offset-cp-panel
-                transition-all
-              "
             >
-              {isLoading ? "Processing..." : "Login"}
+              Send OTP
             </button>
-          </form>
-
-          <div className="mt-7 text-center text-xs sm:text-sm text-gray-400">
-            Don&apos;t have an account?
-            <Link
-              to="/register"
-              className="ml-1 font-medium text-cp-neon hover:text-cp-neon/80 transition-colors"
+            <button
+              onClick={googleSignIn}
+              // Responsive button sizing
+              className="text-xs w-full sm:w-auto px-4 py-2 border border-gray-600 text-gray-300 rounded-full hover:border-white transition"
             >
-              Create Account
-            </Link>
+              Sign In with Google
+            </button>
           </div>
+        </div>
+
+        {/* Footer Security Tags */}
+        <div className="mt-12 flex flex-wrap justify-center space-x-3 text-xs font-mono text-gray-500">
+          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">256-BIT SECURED</span>
+          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">DECENTRALIZED</span>
         </div>
       </div>
     </div>

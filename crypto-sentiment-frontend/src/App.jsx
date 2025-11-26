@@ -4,7 +4,7 @@ import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 /* Layouts / common components */
 import Sidebar from "./components/sidebar";
-
+import AuthSuccess from "./components/pages/AuthSucces";
 /* Public pages */
 import Home from "./components/pages/Home";
 import Login from "./components/pages/Login";
@@ -65,6 +65,7 @@ function AppRoutes() {
     <Route path="*" element={<Navigate to="/" replace />} />
 
     
+<Route path="/auth/success" element={<AuthSuccess />} />
   </Routes>
 );
 

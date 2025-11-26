@@ -28,46 +28,61 @@ class RecentTweet(BaseModel):
   confidence: Optional[float] = 0.0
 
 
-from datetime import timezone
+from datetime import datetime, timezone
 
 def normalize_created_at(doc):
-    raw = doc.get("created_at") or doc.get("scraped_at")
-    if not raw:
-        return ""
+    raw_created = doc.get("created_at")
+    raw_scraped = doc.get("scraped_at")
 
-    try:
-        if hasattr(raw, "isoformat"):  # datetime from Mongo
+    def parse_any(raw):
+        if not raw:
+            return None
+
+        # already a datetime object from Mongo
+        if hasattr(raw, "isoformat"):
             dt = raw
         else:
-            # raw is already a string; Mongo driver's fromisoformat usually gives datetime,
-            # but this keeps it simple
-            from datetime import datetime
-            dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            s = str(raw).strip()
+            # 1) try ISO-ish first
+            try:
+                dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+            except Exception:
+                # 2) try Twitter string: "Nov 22, 2025 - 10:00 PM UTC"
+                try:
+                    dt = datetime.strptime(s, "%b %d, %Y - %I:%M %p %Z")
+                except Exception:
+                    return None
 
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
 
         dt = dt.replace(microsecond=0)
         return dt.isoformat().replace("+00:00", "Z")
-    except Exception:
-        # fallback: just return string
-        return str(raw)
+
+    # prefer real tweet time; if that fails, use scraped_at
+    iso = parse_any(raw_created) or parse_any(raw_scraped)
+    return iso
 
 
 
 def extract_sentiment(doc):
-  """
-  Sentiment is optional. If missing, return Neutral / 0.0.
-  """
-  sent = doc.get("sentiment") or {}
-  label = sent.get("label") or "Neutral"
-  scores = sent.get("scores") or {}
-  key = label.lower()
-  try:
-    conf = float(scores.get(key, 0.0))
-  except Exception:
-    conf = 0.0
-  return label, conf
+    sent = doc.get("sentiment") or {}
+    scores = sent.get("scores") or {}
+
+    pos = float(scores.get("positive", 0))
+    neg = float(scores.get("negative", 0))
+
+    # Proper sentiment score
+    score = pos - neg
+
+    if score > 0.05:
+        label = "Positive"
+    elif score < -0.05:
+        label = "Negative"
+    else:
+        label = "Neutral"
+
+    return label, score
 
 
 def base_query(coin: Optional[str] = None):

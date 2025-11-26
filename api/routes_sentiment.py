@@ -181,29 +181,26 @@ async def get_sentiment_overview():
     }
 
 
-@router.get("/sentiment/breakdown", summary="Get breakdown for a source (twitter|reddit|news|overall)")
+@router.get(
+    "/sentiment/breakdown",
+    summary="Get breakdown for a source (twitter|reddit|news|overall)",
+)
 async def get_sentiment_breakdown(
     source: str = Query(..., description="twitter | reddit | news | overall"),
     coin: Optional[str] = Query(None, description="Coin ticker, e.g. BTC"),
-    top_n: int = Query(10, description="Number of top posts to return")
+    top_n: int = Query(10, description="Number of top posts to return"),
 ):
     try:
         src = source.lower()
         coin_filter = None
         if coin and coin.upper() != "ALL":
-            # search for either ticker, full name, or coin literal
             coin_filter = [
                 TICKER_TO_FULL_NAME.get(coin.upper(), coin.upper()),
                 coin.upper(),
-                coin
+                coin,
             ]
 
-        def safe_str(dt):
-            try:
-                return dt.isoformat() if hasattr(dt, "isoformat") else str(dt)
-            except:
-                return str(dt)
-
+        # ---------- TWITTER ----------
         if src == "twitter":
             q = {"sentiment.scores": {"$exists": True}, "is_irrelevant": False}
             if coin_filter:
@@ -211,174 +208,334 @@ async def get_sentiment_breakdown(
 
             pipeline_counts = [
                 {"$match": q},
-                {"$group": {"_id": {"label": "$sentiment.label"}, "count": {"$sum": 1}}}
+                {
+                    "$group": {
+                        "_id": {"label": "$sentiment.label"},
+                        "count": {"$sum": 1},
+                    }
+                },
             ]
             counts = list(raw_collection.aggregate(pipeline_counts))
-            total = sum([c["count"] for c in counts]) or 0
+            total = sum(c["count"] for c in counts) or 0
 
-            pos = next((c["count"] for c in counts if c["_id"]["label"].lower() == "positive"), 0)
-            neu = next((c["count"] for c in counts if c["_id"]["label"].lower() == "neutral"), 0)
-            neg = next((c["count"] for c in counts if c["_id"]["label"].lower() == "negative"), 0)
+            pos = next(
+                (
+                    c["count"]
+                    for c in counts
+                    if c["_id"]["label"].lower() == "positive"
+                ),
+                0,
+            )
+            neu = next(
+                (
+                    c["count"]
+                    for c in counts
+                    if c["_id"]["label"].lower() == "neutral"
+                ),
+                0,
+            )
+            neg = next(
+                (
+                    c["count"]
+                    for c in counts
+                    if c["_id"]["label"].lower() == "negative"
+                ),
+                0,
+            )
 
             pipeline_avg = [
                 {"$match": q},
-                {"$group": {
-                    "_id": None,
-                    "avg_pos": {"$avg": "$sentiment.scores.positive"},
-                    "avg_neg": {"$avg": "$sentiment.scores.negative"}
-                }},
-                {"$project": {"score": {"$subtract": ["$avg_pos", "$avg_neg"]}, "_id": 0}}
+                {
+                    "$group": {
+                        "_id": None,
+                        "avg_pos": {"$avg": "$sentiment.scores.positive"},
+                        "avg_neg": {"$avg": "$sentiment.scores.negative"},
+                    }
+                },
+                {
+                    "$project": {
+                        "score": {
+                            "$subtract": ["$avg_pos", "$avg_neg"]
+                        },
+                        "_id": 0,
+                    }
+                },
             ]
             avg_res = list(raw_collection.aggregate(pipeline_avg))
             avg_score = avg_res[0]["score"] if avg_res else 0.0
 
-            top_cursor = raw_collection.find(q, {"_id": 0, "tweet_id":1, "text":1, "url":1, "created_at":1, "sentiment.label":1}).sort("scraped_at", -1).limit(top_n)
+            top_cursor = raw_collection.find(
+                q,
+                {
+                    "_id": 0,
+                    "tweet_id": 1,
+                    "text": 1,
+                    "url": 1,
+                    "created_at": 1,
+                    "sentiment.label": 1,
+                },
+            ).sort("scraped_at", -1).limit(top_n)
+
             top_posts = []
             for d in top_cursor:
-                top_posts.append({
-                    "id": d.get("tweet_id"),
-                    "title": (d.get("text") or "")[:200],
-                    "text": d.get("text"),
-                    "url": d.get("url"),
-                    "created_at": d.get("created_at"),
-                    "sentiment_label": d.get("sentiment", {}).get("label")
-                })
+                top_posts.append(
+                    {
+                        "id": d.get("tweet_id"),
+                        "title": (d.get("text") or "")[:200],
+                        "text": d.get("text"),
+                        "url": d.get("url"),
+                        "created_at": d.get("created_at"),
+                        "sentiment_label": (d.get("sentiment") or {}).get(
+                            "label"
+                        ),
+                    }
+                )
 
-            return {"data": {
-                "positive": (pos / total) if total else 0,
-                "neutral": (neu / total) if total else 0,
-                "negative": (neg / total) if total else 0,
-                "avg_score": round(avg_score, 4),
-                "top_posts": top_posts
-            }}
+            return {
+                "data": {
+                    "positive": (pos / total) if total else 0,
+                    "neutral": (neu / total) if total else 0,
+                    "negative": (neg / total) if total else 0,
+                    "avg_score": round(avg_score, 4),
+                    "top_posts": top_posts,
+                }
+            }
 
-        if src == "reddit":
+        # ---------- REDDIT ----------
+        elif src == "reddit":
             reddit_collection = client["crypto_reddit_db"]["latest_reddit"]
-            q = {}
+            q: Dict[str, Any] = {}
             if coin and coin.upper() != "ALL":
                 q["coin"] = coin.upper()
 
             cursor = reddit_collection.find(
                 q,
-                {"_id": 0, "title": 1, "text": 1, "polarity": 1, "created_at": 1, "created_utc": 1, "permalink": 1}
+                {
+                    "_id": 1,
+                    "title": 1,
+                    "text": 1,
+                    "polarity": 1,
+                    "created_at": 1,
+                    "created_utc": 1,
+                    "permalink": 1,
+                },
             ).sort("created_at", -1).limit(500)
 
             posts = list(cursor)
             total = len(posts) or 0
-            pos = sum(1 for p in posts if p.get("polarity") is not None and p.get("polarity") > 0.05)
-            neg = sum(1 for p in posts if p.get("polarity") is not None and p.get("polarity") < -0.05)
+            pos = sum(
+                1
+                for p in posts
+                if p.get("polarity") is not None and p["polarity"] > 0.05
+            )
+            neg = sum(
+                1
+                for p in posts
+                if p.get("polarity") is not None and p["polarity"] < -0.05
+            )
             neu = total - pos - neg
 
             top_posts = []
             for p in posts[:top_n]:
                 created_at = p.get("created_at") or p.get("created_utc")
-                top_posts.append({
-                    "id": str(p.get("_id", ""))[:20],
-                    "title": p.get("title") or (p.get("text") or "")[:80],
-                    "text": p.get("text") or p.get("title") or "",
-                    "url": f"https://reddit.com{p.get('permalink')}" if p.get("permalink") else None,
-                    "created_at": created_at,
-                    "sentiment_label": (
-                        "Positive" if p.get("polarity", 0) > 0.05
-                        else "Negative" if p.get("polarity", 0) < -0.05
-                        else "Neutral"
-                    ),
-                    "polarity": p.get("polarity")
-                })
+                top_posts.append(
+                    {
+                        "id": str(p.get("_id", ""))[:20],
+                        "title": p.get("title")
+                        or (p.get("text") or "")[:80],
+                        "text": p.get("text") or p.get("title") or "",
+                        "url": f"https://reddit.com{p.get('permalink')}"
+                        if p.get("permalink")
+                        else None,
+                        "created_at": created_at,
+                        "sentiment_label": (
+                            "Positive"
+                            if (p.get("polarity") or 0) > 0.05
+                            else "Negative"
+                            if (p.get("polarity") or 0) < -0.05
+                            else "Neutral"
+                        ),
+                        "polarity": p.get("polarity"),
+                    }
+                )
 
-            avg_score = (sum(p.get("polarity", 0) for p in posts) / total) if total else 0.0
+            avg_score = (
+                sum(p.get("polarity", 0) for p in posts) / total
+                if total
+                else 0.0
+            )
 
-            return {"data": {
-                "positive": (pos / total) if total else 0,
-                "neutral": (neu / total) if total else 0,
-                "negative": (neg / total) if total else 0,
-                "avg_score": round(avg_score, 4),
-                "top_posts": top_posts
-            }}
+            return {
+                "data": {
+                    "positive": (pos / total) if total else 0,
+                    "neutral": (neu / total) if total else 0,
+                    "negative": (neg / total) if total else 0,
+                    "avg_score": round(avg_score, 4),
+                    "top_posts": top_posts,
+                }
+            }
 
-        if src == "news":
-            # match either 'coin' single field or 'coin_tags' array, case-insensitive
-            q = {"sentiment.score": {"$exists": True}}
+        # ---------- NEWS ----------
+        elif src == "news":
+            q: Dict[str, Any] = {"sentiment.score": {"$exists": True}}
             if coin and coin.upper() != "ALL":
-                coin_name = TICKER_TO_FULL_NAME.get(coin.upper(), coin.upper())
+                coin_name = TICKER_TO_FULL_NAME.get(
+                    coin.upper(), coin.upper()
+                )
                 q["$or"] = [
-                    {"coin": {"$regex": f"^{coin_name}$", "$options": "i"}},
-                    {"coin": {"$regex": f"^{coin.upper()}$", "$options": "i"}},
-                    {"coin_tags": {"$in": [coin.upper(), coin_name]}}
+                    {
+                        "coin": {
+                            "$regex": f"^{coin_name}$",
+                            "$options": "i",
+                        }
+                    },
+                    {
+                        "coin": {
+                            "$regex": f"^{coin.upper()}$",
+                            "$options": "i",
+                        }
+                    },
+                    {"coin_tags": {"$in": [coin.upper(), coin_name]}},
                 ]
 
             # counts by label
             pipeline_counts = [
                 {"$match": q},
-                {"$group": {"_id": {"label": "$sentiment.label"}, "count": {"$sum": 1}}}
+                {
+                    "$group": {
+                        "_id": {"label": "$sentiment.label"},
+                        "count": {"$sum": 1},
+                    }
+                },
             ]
             counts = list(news_collection.aggregate(pipeline_counts))
-            total = sum([c["count"] for c in counts]) or 0
-            pos = next((c["count"] for c in counts if isinstance(c["_id"], dict) and c["_id"].get("label", "").lower() == "positive"), None)
-            # handle cases where _id is a string label (older docs)
-            if pos is None:
-                pos = next((c["count"] for c in counts if isinstance(c["_id"], str) and c["_id"].lower() == "positive"), 0)
-            neu = next((c["count"] for c in counts if isinstance(c["_id"], dict) and c["_id"].get("label", "").lower() == "neutral"), None)
-            if neu is None:
-                neu = next((c["count"] for c in counts if isinstance(c["_id"], str) and c["_id"].lower() == "neutral"), 0)
-            neg = next((c["count"] for c in counts if isinstance(c["_id"], dict) and c["_id"].get("label", "").lower() == "negative"), None)
-            if neg is None:
-                neg = next((c["count"] for c in counts if isinstance(c["_id"], str) and c["_id"].lower() == "negative"), 0)
+            total = sum(c.get("count", 0) for c in counts) or 0
 
+            def pick(label: str) -> int:
+                for c in counts:
+                    _id = c.get("_id")
+                    if isinstance(_id, dict) and str(
+                        _id.get("label", "")
+                    ).lower() == label:
+                        return c["count"]
+                    if isinstance(_id, str) and _id.lower() == label:
+                        return c["count"]
+                return 0
+
+            pos = pick("positive")
+            neu = pick("neutral")
+            neg = pick("negative")
+
+            # avg score (safe)
             pipeline_avg = [
                 {"$match": q},
-                {"$group": {"_id": None, "avg_score": {"$avg": "$sentiment.score"}}},
-                {"$project": {"score": "$avg_score", "_id": 0}}
+                {
+                    "$group": {
+                        "_id": None,
+                        "avg_score": {"$avg": "$sentiment.score"},
+                    }
+                },
+                {"$project": {"score": "$avg_score", "_id": 0}},
             ]
             avg_res = list(news_collection.aggregate(pipeline_avg))
-            avg_score = avg_res[0]["score"] if avg_res else 0.0
+            raw_avg = avg_res[0].get("score", 0.0) if avg_res else 0.0
+            try:
+                avg_score = float(raw_avg or 0.0)
+            except Exception:
+                avg_score = 0.0
 
-            # top posts: prefer published_at then scraped_at then fetched_at
+            # top posts
             top_cursor = news_collection.find(
                 q,
                 {
-                    "_id": 0, "title": 1, "url": 1,
-                    "published_at": 1, "scraped_at": 1, "fetched_at": 1,
-                    "sentiment": 1, "summary": 1, "source": 1, "date_source": 1, "confidence": 1
-                }
-            ).sort([("published_at", -1), ("scraped_at", -1), ("fetched_at", -1)]).limit(top_n)
+                    "_id": 0,
+                    "title": 1,
+                    "url": 1,
+                    "published_at": 1,
+                    "scraped_at": 1,
+                    "fetched_at": 1,
+                    "sentiment": 1,
+                    "summary": 1,
+                    "source": 1,
+                    "date_source": 1,
+                    "confidence": 1,
+                },
+            ).sort(
+                [
+                    ("published_at", -1),
+                    ("scraped_at", -1),
+                    ("fetched_at", -1),
+                ]
+            ).limit(top_n)
 
             top_posts = []
             for d in top_cursor:
-                created_at = d.get("published_at") or d.get("scraped_at") or d.get("fetched_at")
-                top_posts.append({
-                    "id": d.get("url"),
-                    "title": d.get("title"),
-                    "text": d.get("summary") or d.get("title"),
-                    "url": d.get("url"),
-                    "created_at": created_at,
-                    "sentiment_label": d.get("sentiment", {}).get("label"),
-                    "confidence": d.get("confidence", abs(d.get("sentiment", {}).get("score", 0.0))),
-                    "source": d.get("source"),
-                    "date_source": d.get("date_source")
-                })
+                created_at = (
+                    d.get("published_at")
+                    or d.get("scraped_at")
+                    or d.get("fetched_at")
+                )
+                sent = d.get("sentiment") or {}
+                label = sent.get("label")
+                score = sent.get("score", 0.0)
+                conf = d.get("confidence")
+                try:
+                    if conf is None:
+                        conf = abs(float(score or 0.0))
+                    else:
+                        conf = float(conf)
+                except Exception:
+                    conf = 0.0
 
-            return {"data": {
-                "positive": (pos / total) if total else 0,
-                "neutral": (neu / total) if total else 0,
-                "negative": (neg / total) if total else 0,
-                "avg_score": round(avg_score, 4),
-                "top_posts": top_posts
-            }}
+                top_posts.append(
+                    {
+                        "id": d.get("url"),
+                        "title": d.get("title"),
+                        "text": d.get("summary") or d.get("title"),
+                        "url": d.get("url"),
+                        "created_at": created_at,
+                        "sentiment_label": label,
+                        "confidence": conf,
+                        "source": d.get("source"),
+                        "date_source": d.get("date_source"),
+                    }
+                )
 
-        if src == "overall":
+            return {
+                "data": {
+                    "positive": (pos / total) if total else 0,
+                    "neutral": (neu / total) if total else 0,
+                    "negative": (neg / total) if total else 0,
+                    "avg_score": round(avg_score, 4),
+                    "top_posts": top_posts,
+                }
+            }
+
+        # ---------- OVERALL ----------
+        elif src == "overall":
             overview = await get_sentiment_overview()
             od = overview.get("data", {})
-            return {"data": {
-                "positive": od.get("sentiment_counts", {}).get("positive", 0),
-                "neutral": od.get("sentiment_counts", {}).get("neutral", 0),
-                "negative": od.get("sentiment_counts", {}).get("negative", 0),
-                "avg_score": od.get("overall", {}).get("score", 0),
-                "top_posts": []
-            }}
+            return {
+                "data": {
+                    "positive": od.get("sentiment_counts", {}).get(
+                        "positive", 0
+                    ),
+                    "neutral": od.get("sentiment_counts", {}).get(
+                        "neutral", 0
+                    ),
+                    "negative": od.get("sentiment_counts", {}).get(
+                        "negative", 0
+                    ),
+                    "avg_score": od.get("overall", {}).get("score", 0),
+                    "top_posts": [],
+                }
+            }
 
-        return {"data": {}}
+        # unknown source
+        raise HTTPException(status_code=400, detail="Unknown source")
 
     except Exception as e:
-        print(f"Breakdown fetch error ({source}, {coin}): {e}")
-        return {"data": {}}
+        import traceback
+
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1,0 +1,4 @@
+_id,cryptocurrency,confidence,current_price,generated_at,long_term_acc,market_trend,mid_term_acc,news_score,overall_acc,predicted_next_price,reddit_score,short_term_acc,twitter_score
+691dc80882c05455042b8a7f,Bitcoin,1.13,83894,2025-11-22T13:49:13.864330,57.14%,Bearish,100.0%,0,85.71%,76232.054896,0,100.0%,0.091272
+691dc81282c05455042b8a82,Ethereum,7.71,2721.13,2025-11-22T13:49:18.337475,85.71%,Bullish,100.0%,0,95.24%,2933.123908,0,100.0%,0.244353
+691dc81c82c05455042b8a83,Solana,6.02,125.61,2025-11-22T13:49:22.678696,71.43%,Bearish,100.0%,0,90.48%,112.631161,0,100.0%,0.319516

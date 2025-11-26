@@ -1,53 +1,82 @@
 // src/api/account.js
-const BASE = "http://127.0.0.1:8000";
+// Clean + Vite-compatible API helper
 
-export async function getProfile(identifier) {
-  const params = new URLSearchParams(identifier); // { user_id } or { email }
-  const res = await fetch(`${BASE}/api/account/profile?${params.toString()}`);
-  return res.json();
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  localStorage.getItem("API_BASE_HOST") ||
+  "http://localhost:8000";
+
+function getToken() {
+  return localStorage.getItem("token");
 }
 
-export async function updateProfile(body) {
-  const res = await fetch(`${BASE}/api/account/profile`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body), // { user_id/email, name?, username?, new_email? }
-  });
-  return res.json();
+async function safeParseJSON(res) {
+  try {
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch {
+    return {};
+  }
 }
 
-export async function changePassword(body) {
-  const res = await fetch(`${BASE}/api/account/password`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body), // { user_id/email, current_password, new_password }
-  });
-  return res.json();
+async function request(path, opts = {}) {
+  const url = `${API_BASE.replace(/\/+$/, "")}/api${path}`;
+  const token = getToken();
+
+  const headers = opts.headers || {};
+  headers["Content-Type"] = "application/json";
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  try {
+    const res = await fetch(url, { ...opts, headers });
+    const json = await safeParseJSON(res);
+    return {
+      ok: res.ok,
+      status: res.status,
+      data: json.data || json,
+      message: json.message,
+      detail: json.detail,
+    };
+  } catch (err) {
+    return { ok: false, status: 0, message: "Network error", detail: err };
+  }
 }
 
-export async function deactivateAccount(body) {
-  const res = await fetch(`${BASE}/api/account/deactivate`, {
+export function getProfile() {
+  return request("/me", { method: "GET" });
+}
+
+export function updateProfile({ email, new_email }) {
+  return request("/account/update-profile", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body), // { user_id/email }
+    body: JSON.stringify({ email, new_email }),
   });
-  return res.json();
 }
 
-export async function reactivateAccount(body) {
-  const res = await fetch(`${BASE}/api/account/reactivate`, {
+export function changePassword({ email, current_password, new_password }) {
+  return request("/account/update-password", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body), // { user_id/email }
+    body: JSON.stringify({ email, current_password, new_password }),
   });
-  return res.json();
 }
 
-export async function deleteAccount(body) {
-  const res = await fetch(`${BASE}/api/account/delete`, {
+export function deactivateAccount({ email }) {
+  return request("/account/deactivate", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function reactivateAccount({ email }) {
+  return request("/account/reactivate", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function deleteAccount({ email }) {
+  return request("/account/delete", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body), // { user_id/email, confirm: true }
+    body: JSON.stringify({ email, confirm: true }),
   });
-  return res.json();
 }

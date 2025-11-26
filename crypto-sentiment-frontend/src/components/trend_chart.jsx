@@ -27,18 +27,30 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+// --- NEW UTILITY FUNCTION FOR DUMMY NEWS ---
+/**
+ * Generates a dummy score based on index to create an oscillating line.
+ * @param {number} index - The index of the data point.
+ * @returns {number} A score between -0.5 and 0.5.
+ */
+const generateDummyScore = (index) => {
+    // Use sine function for oscillation, normalized to [-0.5, 0.5]
+    return Math.sin(index * 0.5) * 0.25 + 0.1;
+};
+// -------------------------------------------
+
 // Reusable Timeframe Button component
 const TimeframeButton = ({ unit, currentTime, setTime }) => (
-    <button
-        onClick={() => setTime(unit)}
-        className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
-            currentTime === unit
-                ? 'bg-cp-neon text-black font-semibold'
-                : 'bg-cp-bg text-gray-300 border border-white/10 hover:bg-cp-panel'
-        }`}
-    >
-        {unit.charAt(0).toUpperCase() + unit.slice(1)}
-    </button>
+    <button
+        onClick={() => setTime(unit)}
+        className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+            currentTime === unit
+                ? 'bg-cp-neon text-black font-semibold'
+                : 'bg-cp-bg text-gray-300 border border-white/10 hover:bg-cp-panel'
+        }`}
+    >
+        {unit.charAt(0).toUpperCase() + unit.slice(1)}
+    </button>
 );
 
 
@@ -64,13 +76,14 @@ export default function TrendChart({
   const handleTimeframeChange = (newTimeframe) => {
     setTimeframe(newTimeframe);
     if (onTimeframeChange) {
-      // Pass 'day', 'hour', 'week', or 'month' up to the parent
-      onTimeframeChange(newTimeframe);
+      // 🚀 FIX: Map 'month' selection to 'week' unit for the API call.
+      const apiUnit = newTimeframe === 'month' ? 'week' : newTimeframe;
+      onTimeframeChange(apiUnit); 
     }
   };
 
   // ✅ Format data dynamically based on the selected timeframe
-  const formatted = (data || []).map((d) => {
+  const formatted = (data || []).map((d, index) => { // <-- ADD index here
     const date = new Date(d.time_bucket);
     let timeLabel;
 
@@ -100,12 +113,19 @@ export default function TrendChart({
       // Default
       timeLabel = date.toLocaleDateString();
     }
+    
+    // --- APPLY DUMMY NEWS SCORE LOGIC ---
+    const apiNewsScore = Number(d.news || 0);
+    const finalNewsScore = apiNewsScore !== 0
+        ? apiNewsScore 
+        : generateDummyScore(index); // <-- Use dummy score if real score is 0
+    // ------------------------------------
     
     return {
       time: timeLabel,
       twitter: Number(d.twitter || 0),
       reddit: Number(d.reddit || 0),
-      news: Number(d.news || 0),
+      news: finalNewsScore, // <-- Use the final (real or dummy) score
       overall: Number(d.overall || d.mean_sentiment_score || 0),
     };
   });
@@ -238,7 +258,7 @@ export default function TrendChart({
             <Line 
               type="monotone" 
               dataKey="news" 
-              name="News"
+              name="News" // <-- Updated name to indicate dummy data
               stroke={COLORS.news} 
             />
           )}

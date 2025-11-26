@@ -7,6 +7,7 @@ Enhanced Reddit -> FinBERT pipeline with fixes:
 - VADER availability message & install hint
 - logs FinBERT id2label mapping
 - minor robustness improvements
+- improved sentiment handling (less over-neutral, FinBERT+VADER ensemble)
 """
 import os
 import re
@@ -163,7 +164,7 @@ def ensure_unique_index_on_id():
             log.debug("Failed to enumerate duplicates while handling index creation error.", exc_info=True)
 
 # ---------- NLP models ----------
-# spaCy (for NER + lemmatization)
+# spaCy (for NER + lemmatization – kept for potential use, but FinBERT now uses non-lemmatized text)
 try:
     nlp = spacy.load("en_core_web_sm", disable=["parser"])  # keep NER + tagger + lemmatizer
     log.info("spaCy loaded.")
@@ -204,7 +205,7 @@ URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
 MENTION_REGEX = re.compile(r"/u/\w+|u/\w+|@\w+")
 EXTRA_WHITESPACE = re.compile(r"\s+")
 EMOJI_REGEX = re.compile(
-    "["
+    "["  # emojis / flags
     "\U0001F600-\U0001F64F"
     "\U0001F300-\U0001F5FF"
     "\U0001F680-\U0001F6FF"
@@ -248,6 +249,11 @@ def simple_negation_mark(text: str) -> str:
 
 
 def clean_and_lemmatize(text: str) -> str:
+    """
+    Original heavy cleaner with lemmatization & negation marking.
+    Not used for FinBERT anymore, but kept in case you want
+    lemmatized text for other analysis.
+    """
     if not text:
         return ""
     text = URL_REGEX.sub(" ", text)
@@ -265,6 +271,25 @@ def clean_and_lemmatize(text: str) -> str:
     cleaned = " ".join(lemmas)
     cleaned = simple_negation_mark(cleaned)
     return cleaned
+
+
+def clean_for_finbert(text: str) -> str:
+    """
+    Lighter cleaner specifically for FinBERT:
+    - remove URLs, mentions, emojis
+    - expand contractions
+    - normalize whitespace
+    - keep natural sentence structure (no lemmatization / NOT_ tags)
+    """
+    if not text:
+        return ""
+    text = URL_REGEX.sub(" ", text)
+    text = MENTION_REGEX.sub(" ", text)
+    text = EMOJI_REGEX.sub(" ", text)
+    text = expand_contractions(text)
+    text = EXTRA_WHITESPACE.sub(" ", text).strip()
+    # keep original casing – FinBERT can handle it
+    return text
 
 # ---------- Helper functions for Reddit & Mongo ----------
 def is_author_valid(author) -> bool:
@@ -352,9 +377,16 @@ def vader_predict(text: str) -> Dict[str, float]:
 
 
 def ensemble_decision(finbert_out: Dict[str, Any], raw_text: str) -> Dict[str, Any]:
+    """
+    Combine FinBERT and VADER.
+    - Use FinBERT as the base.
+    - If FinBERT says 'neutral' but VADER / polarity is clearly positive/negative,
+      override the label accordingly.
+    """
     polarity = finbert_out["pos"] - finbert_out["neg"]
     fin_label = finbert_out["label"]
     entropy = finbert_out["entropy"]
+
     import math
     max_entropy = math.log(3)
     norm_entropy = min(entropy / max_entropy, 1.0)
@@ -362,6 +394,7 @@ def ensemble_decision(finbert_out: Dict[str, Any], raw_text: str) -> Dict[str, A
 
     vader_scores = vader_predict(raw_text)
     vader_compound = vader_scores.get("compound", 0.0)
+
     vader_sign = 1 if vader_compound > 0.05 else (-1 if vader_compound < -0.05 else 0)
     fin_sign = 1 if polarity > 0.05 else (-1 if polarity < -0.05 else 0)
     agreement = (vader_sign != 0 and vader_sign == fin_sign)
@@ -369,10 +402,19 @@ def ensemble_decision(finbert_out: Dict[str, Any], raw_text: str) -> Dict[str, A
     conf = base_conf
     if agreement:
         conf = min(1.0, conf + 0.15)
-    if not agreement and abs(vader_compound) > 0.25 and base_conf < 0.5:
+    elif abs(vader_compound) > 0.25 and base_conf < 0.5:
         conf = max(0.0, conf - 0.2)
 
+    # Base label from FinBERT
     final_label = fin_label
+
+    # If FinBERT is neutral, let strong VADER / polarity push it to pos/neg
+    if fin_label == "neutral":
+        # thresholds can be tuned
+        if vader_compound >= 0.3 or polarity >= 0.1:
+            final_label = "positive"
+        elif vader_compound <= -0.3 or polarity <= -0.1:
+            final_label = "negative"
 
     return {
         "label": final_label,
@@ -436,7 +478,8 @@ def fetch_posts(limit_per_sub=50) -> List[Dict[str, Any]]:
                     continue
 
                 combined_raw = post_text + " " + comments_text
-                cleaned = clean_and_lemmatize(combined_raw)
+                # NEW: lighter cleaning for FinBERT (no lemmatization)
+                cleaned = clean_for_finbert(combined_raw)
 
                 low = cleaned.lower()
                 detected_coin = "UNKNOWN"
@@ -465,11 +508,14 @@ def fetch_posts(limit_per_sub=50) -> List[Dict[str, Any]]:
             log.warning("Error iterating subreddit %s: %s", sub, e)
     return posts_out
 
+from collections import Counter
+
 def add_sentiment(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if not posts:
         return posts
     texts = [p["text_for_finbert"] or "" for p in posts]
     finbert_outs = finbert_predict(texts, batch_size=BATCH_SIZE)
+    labels = []
     for i, p in enumerate(posts):
         fin = finbert_outs[i]
         ensemble = ensemble_decision(fin, p["text_comments_raw"])
@@ -484,6 +530,9 @@ def add_sentiment(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "confidence": float(ensemble["confidence"]),
             "vader": ensemble["vader"],
         }
+        labels.append(ensemble["label"])
+    # Log distribution per batch so you can see neutrals vs pos/neg
+    log.info("Sentiment label distribution this batch: %s", Counter(labels))
     return posts
 
 def save_posts(posts: List[Dict[str, Any]]):
@@ -547,7 +596,6 @@ def summarize_and_snapshot(posts: List[Dict[str, Any]]):
         numerator = sum(v["polarity"] * v["weight"] for v in values)
         denom = sum(v["weight"] for v in values) or 1.0
         time_weighted_polarity = numerator / denom
-        from collections import Counter
         labels = [v["label"] for v in values if v.get("label")]
         counter = Counter(labels)
         total = len(labels) or 1

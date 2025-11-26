@@ -1,0 +1,82 @@
+<!-- Save this as auth/success.html and ensure FRONTEND_URL points to the folder where this is served -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Auth Success</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="max-w-md p-8 bg-white shadow-xl rounded-xl text-center">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Signing you in...</h2>
+    <p id="msg" class="text-gray-600">Processing token and redirecting...</p>
+    <div id="loading-spinner" class="mt-4 mx-auto w-6 h-6 border-4 border-t-4 border-blue-500 border-opacity-25 rounded-full animate-spin"></div>
+    
+    <script>
+      (function() {
+        // We use window.location.hash because the backend redirects with the token in the fragment:
+        // FRONTEND_URL/auth/success#access_token=...
+        const hash = window.location.hash.replace(/^#/,'');
+        const params = new URLSearchParams(hash);
+        const token = params.get('access_token');
+        const msgEl = document.getElementById('msg');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // Get API_BASE from local storage (if set by the main app) or use a fallback
+        // Note: For a robust setup, you should ensure your main app sets this variable
+        // when it loads, e.g., localStorage.setItem('API_BASE_HOST', 'http://localhost:8000');
+        const API_BASE_HOST = localStorage.getItem('API_BASE_HOST') || 'http://localhost:8000';
+        
+        if (!token) {
+          msgEl.innerText = 'Sign-in failed. No token found in the URL. Redirecting to login.';
+          loadingSpinner.style.display = 'none';
+          console.error('No access token in hash', window.location.hash);
+          setTimeout(() => window.location.href = '/login', 2000);
+          return;
+        }
+
+        // Store token (for demo; in production prefer httpOnly cookie)
+        localStorage.setItem('token', token);
+        msgEl.innerText = 'Token received and stored. Verifying account and redirecting...';
+
+        // Optional: Verify with backend then redirect to app
+        (async function verify() {
+          try {
+            // Note: API_BASE_HOST is used to construct the full API path, e.g., http://localhost:8000/api/me
+            const apiUrl = `${API_BASE_HOST}/api/me`; 
+            const res = await fetch(apiUrl, {
+              headers: { 'Authorization': 'Bearer ' + token }
+            });
+            
+            // If API returns 404/401, it might mean the user needs to complete registration (e.g., set username)
+            if (!res.ok) {
+              msgEl.innerText = 'Verification required. Redirecting to complete registration.';
+              console.warn('Token validation or user check failed, redirecting for completion.');
+              window.location.href = '/complete-registration';
+              return;
+            }
+            
+            // Success -> redirect to main app home page
+            msgEl.innerText = 'Sign-in successful. Redirecting to home.';
+            window.location.href = '/'; 
+            
+          } catch (err) {
+            console.error('Verification failed or network error:', err);
+            msgEl.innerText = 'Network error during verification. Redirecting to home page anyway.';
+            // Fallback to home page
+            window.location.href = '/'; 
+          } finally {
+             loadingSpinner.style.display = 'none';
+          }
+        })();
+      })();
+    </script>
+  </div>
+</body>
+</html>

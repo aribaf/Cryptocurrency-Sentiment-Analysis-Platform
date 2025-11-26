@@ -30,14 +30,20 @@ app = FastAPI(title="CryptoSent API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",  # your local frontend dev host (Vite)
+        "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev"  # backend ngrok host
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,   # <--- must be True to allow cookies
 )
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
-    same_site="lax",
+    same_site="none",     # allow cross-site
+    https_only=True,      # ngrok uses HTTPS
     session_cookie="google_session"
 )
 

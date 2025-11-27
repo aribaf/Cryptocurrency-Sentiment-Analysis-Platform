@@ -45,3 +45,4 @@ python-multipart
 
 httpx
 requests
+itsdangerous

@@ -44,29 +44,40 @@ const timeSince = (date) => {
 function getSentimentDetails(item) {
   const s = item.sentiment || {};
 
+  // Try multiple possible label fields (backend / DB variants)
   let label =
     s.label ||
+    s.final_label ||
     item.sentiment_label ||
+    item.sentimentLabel ||
+    item.label ||
     "";
 
+  // Try multiple possible polarity fields
   let polarity =
-    s.polarity ||
-    item.polarity ||
+    s.polarity ??
+    item.polarity ??
     null;
 
+  // Confidence: try explicit confidence, or score if present
   let confidence =
-    s.confidence ||
-    item.confidence ||
-    null;
+    s.confidence ??
+    item.confidence ??
+    (typeof s.score === "number" ? s.score : null);
 
   let scores =
     s.scores ||
     item.sentiment_scores ||
     null;
 
-  // Infer missing label
+  // Normalize label
+  if (typeof label === "string") {
+    label = label.toLowerCase().trim();
+  }
+
+  // Infer label from polarity if still missing / empty
   if (!label) {
-    if (polarity !== null) {
+    if (typeof polarity === "number") {
       if (polarity > 0.05) label = "positive";
       else if (polarity < -0.05) label = "negative";
       else label = "neutral";
@@ -76,7 +87,7 @@ function getSentimentDetails(item) {
   }
 
   return {
-    label: label.toLowerCase(),
+    label,
     polarity,
     confidence,
     scores,
@@ -89,7 +100,6 @@ export default function RedditList({
   coin = "ALL",
   pageSize = 25,
   maxItems = 600,
-  sentimentFilter = "all", // 🎯 new prop from your frontend
 }) {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
@@ -106,6 +116,8 @@ export default function RedditList({
   const [sortKey, setSortKey] = useState("date");
   const [sortDirection, setSortDirection] = useState("desc");
   const [compact, setCompact] = useState(false);
+  const [sentimentFilter, setSentimentFilter] = useState("all");
+  const [fallbackMessage, setFallbackMessage] = useState(null);
 
   // ---------------------- FETCH PAGE ----------------------
 
@@ -119,6 +131,7 @@ export default function RedditList({
       inFlightRef.current = true;
 
       try {
+        // NOTE: getReddit should internally hit /recent/reddit and return the `data` array.
         const res = await getReddit(limit, coin === "ALL" ? null : coin);
 
         const unified = (res || []).map((it) => {
@@ -142,7 +155,7 @@ export default function RedditList({
               it._id ||
               it.permalink ||
               it.url ||
-              (it.title || it.text).slice(0, 40),
+              (it.title || it.text || "").slice(0, 40),
           };
         });
 
@@ -172,6 +185,7 @@ export default function RedditList({
     idsRef.current = new Set();
     setItems([]);
     setPage(1);
+    setFallbackMessage(null);
   }, [coin]);
 
   useEffect(() => {
@@ -205,12 +219,12 @@ export default function RedditList({
 
   // ---------------------- FILTER & SORT ----------------------
 
-  const filtered = useMemo(() => {
+  const { filtered } = useMemo(() => {
     const q = query.toLowerCase().trim();
-
     let arr = items.slice();
+    let initialFilterPass = [];
 
-    arr = arr.filter((it) => {
+    initialFilterPass = arr.filter((it) => {
       const { label } = getSentimentDetails(it);
 
       // Search filter
@@ -221,13 +235,32 @@ export default function RedditList({
       }
 
       // Sentiment filter
-      if (sentimentFilter !== "all" && label !== sentimentFilter)
+      if (sentimentFilter !== "all" && label !== sentimentFilter) {
         return false;
+      }
 
       return true;
     });
 
-    // Sorting
+    if (initialFilterPass.length === 0 && sentimentFilter !== "all") {
+      setFallbackMessage(
+        `No ${sentimentFilter} posts found. Showing all posts instead.`
+      );
+
+      // Fallback: only search filter
+      arr = arr.filter((it) => {
+        if (q) {
+          const t = (it.title || "").toLowerCase();
+          const txt = (it.text || "").toLowerCase();
+          if (!t.includes(q) && !txt.includes(q)) return false;
+        }
+        return true;
+      });
+    } else {
+      arr = initialFilterPass;
+      setFallbackMessage(null);
+    }
+
     if (sortKey === "date") {
       arr.sort((a, b) => {
         const va = a.created_at
@@ -240,7 +273,7 @@ export default function RedditList({
       });
     }
 
-    return arr;
+    return { filtered: arr };
   }, [items, query, sortKey, sortDirection, sentimentFilter]);
 
   // ---------------------- RENDER ----------------------
@@ -255,6 +288,17 @@ export default function RedditList({
           onChange={(e) => setQuery(e.target.value)}
           className="px-2 py-1 rounded bg-cp-bg border border-white/10 text-sm w-full sm:w-44"
         />
+
+        <select
+          value={sentimentFilter}
+          onChange={(e) => setSentimentFilter(e.target.value)}
+          className="px-2 py-1 rounded bg-cp-bg border border-white/10 text-sm"
+        >
+          <option value="all">Sentiment: All</option>
+          <option value="positive">Sentiment: Positive</option>
+          <option value="negative">Sentiment: Negative</option>
+          <option value="neutral">Sentiment: Neutral</option>
+        </select>
 
         <select
           value={`${sortKey}-${sortDirection}`}
@@ -289,7 +333,13 @@ export default function RedditList({
           </div>
         )}
 
-        {!loading && filtered.length === 0 && (
+        {fallbackMessage && (
+          <div className="text-cp-orange text-sm py-2 border-l-4 border-cp-orange pl-3">
+            {fallbackMessage}
+          </div>
+        )}
+
+        {!loading && filtered.length === 0 && !fallbackMessage && (
           <div className="text-gray-400 text-sm py-4">
             No posts found.
           </div>
@@ -345,7 +395,6 @@ export default function RedditList({
           );
         })}
 
-        {/* sentinel */}
         <div ref={sentinelRef} className="h-6" />
 
         {loading && (

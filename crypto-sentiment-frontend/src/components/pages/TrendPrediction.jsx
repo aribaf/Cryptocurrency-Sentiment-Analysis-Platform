@@ -26,13 +26,22 @@ export default function TrendPrediction() {
 
       // compute quick accuracy cards from the first item or aggregate
       if (list.length) {
-        // try to find a representative item (Bitcoin / first)
         const rep = list[0] || {};
-        const short = rep.short_term_acc ?? rep.short_term_accuracy ?? rep.short_term ?? null;
-        const mid = rep.mid_term_acc ?? rep.mid_term_accuracy ?? rep.mid_term ?? null;
-        const long = rep.long_term_acc ?? rep.long_term_accuracy ?? rep.long_term ?? null;
+        const short =
+          rep.short_term_acc ??
+          rep.short_term_accuracy ??
+          rep.short_term ??
+          null;
+        const mid =
+          rep.mid_term_acc ?? rep.mid_term_accuracy ?? rep.mid_term ?? null;
+        const long =
+          rep.long_term_acc ?? rep.long_term_accuracy ?? rep.long_term ?? null;
         const overall =
-          rep.overall_acc ?? rep.overall_accuracy ?? rep.confidence ?? rep.confidence_pct ?? null;
+          rep.overall_acc ??
+          rep.overall_accuracy ??
+          rep.confidence ??
+          rep.confidence_pct ??
+          null;
         setStats({ short, mid, long, overall });
       } else {
         setStats({});
@@ -82,9 +91,14 @@ export default function TrendPrediction() {
     setFilter(q?.trim()?.toLowerCase() || "");
   };
 
+  // in TrendPrediction.jsx
   const onExport = () => {
     const base = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
-    const href = base ? `${base}/api/trends/download/csv` : "/api/trends/download/csv";
+    const href = base
+      ? `${base}/api/trends/download/csv`
+      : "/api/trends/download/csv";
+
+    // open CSV in a new tab (or trigger download)
     window.open(href, "_blank");
   };
 
@@ -94,59 +108,89 @@ export default function TrendPrediction() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Trend Prediction</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      {/* Page header */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+        <div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">
+            Trend Prediction
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
+            Model-based price direction and confidence for major cryptocurrencies.
+          </p>
+        </div>
+      </div>
 
-      <AccuracyCards stats={stats} />
+      {/* Accuracy cards (wrap nicely on small screens) */}
+      <div className="mb-4 sm:mb-6">
+        <AccuracyCards stats={stats} />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 space-y-4">
-          <div className="space-y-4">
-            {loading && <div className="text-gray-400">Loading predictions...</div>}
+      {/* Main layout: stack on mobile, split on large screens */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:gap-6">
+        {/* Left / main column */}
+        <div className="xl:col-span-3 space-y-4 sm:space-y-5">
+          {/* List of prediction cards */}
+          <div className="space-y-4 sm:space-y-5">
+            {loading && (
+              <div className="text-gray-400 text-sm sm:text-base">
+                Loading predictions...
+              </div>
+            )}
             {!loading && visible.length === 0 && (
-              <div className="text-gray-500">No predictions found.</div>
+              <div className="text-gray-500 text-sm sm:text-base">
+                No predictions found.
+              </div>
             )}
             {visible.map((item) => (
-              <TrendCard key={item.cryptocurrency} item={item} onViewHistory={onViewHistory} />
+              <TrendCard
+                key={item.cryptocurrency}
+                item={item}
+                onViewHistory={onViewHistory}
+              />
             ))}
           </div>
 
           {/* Live realtime panel */}
-<div className="mt-6">
-  <TrendRealtime />
-</div>
+          <section className="mt-5 sm:mt-6 lg:mt-8">
+            <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">
+              Live Price & Signal (Last Updates)
+            </h2>
+            {/* If charts ever overflow horizontally on tiny screens, this wrapper helps */}
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[280px]">
+                <TrendRealtime />
+              </div>
+            </div>
+          </section>
 
-{/* Historical accuracy below it */}
-<div className="mt-6">
-  <h2 className="text-lg font-semibold mb-3">Historical Accuracy</h2>
-  <HistoricalChart data={history} metric="confidence" />
-</div>
-
+          {/* Historical accuracy below it */}
+          <section className="mt-5 sm:mt-6 lg:mt-8">
+            <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">
+              Historical Accuracy
+            </h2>
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[280px]">
+                <HistoricalChart data={history} metric="confidence" />
+              </div>
+            </div>
+          </section>
         </div>
 
-        <aside className="lg:col-span-1">
+        {/* Optional sidebar (filters, export, etc.) – keep responsive if you re-enable */}
+        {/*
+        <aside className="xl:col-span-1">
           <Sidebar
             onSearch={onSearch}
             onTimeframe={setTimeframe}
             timeframe={timeframe}
             onExport={onExport}
+            stats={stats}
+            activeCoin={activeCoin}
+            historyLength={history.length}
           />
-          <div className="mt-4">
-            {activeCoin ? (
-              <div className="bg-black/30 p-4 rounded border border-gray-800">
-                <div className="text-sm text-gray-400 mb-2">History for</div>
-                <div className="text-lg font-semibold">{activeCoin}</div>
-                <div className="text-xs text-gray-400 mt-1">
-                  Showing last {history.length} points
-                </div>
-              </div>
-            ) : (
-              <div className="bg-black/30 p-4 rounded border border-gray-800 text-sm text-gray-400">
-                Select a coin's “View History” to inspect its recent predictions.
-              </div>
-            )}
-          </div>
         </aside>
+        */}
       </div>
     </div>
   );

@@ -3,7 +3,14 @@ from fastapi import APIRouter
 from typing import Optional, List, Dict, Any
 from db import client
 from datetime import datetime
-
+from fastapi import APIRouter, HTTPException, Query
+import os
+from fastapi.responses import FileResponse, StreamingResponse # Keep FileResponse for compatibility
+from datetime import datetime, timedelta
+from typing import List, Dict, Optional, Any
+import io
+import csv
+from db import client
 router = APIRouter(tags=["news"])
 
 news_db = client["crypto_news_db"]
@@ -142,3 +149,70 @@ async def get_news_sentiment():
 
     except Exception as e:
         return {"error": str(e)}
+# api/routes_news.py (Add this new function)
+# api/routes_news.py
+
+from fastapi import HTTPException, Query
+from fastapi.responses import StreamingResponse
+import io
+import csv
+
+@router.get("/download/news.csv", summary="Download recent News sentiment data as CSV")
+async def download_news_csv(limit: int = Query(1000, ge=1, le=5000)):
+    """
+    Export recent news articles from crypto_news_db.articles as CSV.
+    Reuses score_to_label + pick_created_at helpers.
+    """
+    cursor = (
+        news_collection.find({"sentiment.score": {"$exists": True}})
+        .sort([("published_at", -1), ("scraped_at", -1)])
+        .limit(limit)
+    )
+
+    articles = list(cursor)
+    if not articles:
+        raise HTTPException(status_code=404, detail="No News data found to export")
+
+    header = [
+        "id",
+        "coin",
+        "title",
+        "source",
+        "url",
+        "created_at",
+        "sentiment_score",
+        "sentiment_label",
+    ]
+
+    def generate():
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(header)
+        yield buf.getvalue()
+        buf.seek(0)
+        buf.truncate(0)
+
+        for article in articles:
+            score = (article.get("sentiment") or {}).get("score")
+            created_at = pick_created_at(article)
+            label = score_to_label(score)
+
+            writer.writerow([
+                str(article.get("_id", "")),
+                article.get("coin", ""),
+                article.get("title", ""),
+                article.get("source", ""),
+                article.get("url", ""),
+                created_at or "",
+                score,
+                label,
+            ])
+            yield buf.getvalue()
+            buf.seek(0)
+            buf.truncate(0)
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="recent_news_sentiment.csv"'},
+    )

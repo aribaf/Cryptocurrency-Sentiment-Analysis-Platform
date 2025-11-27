@@ -5,7 +5,14 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 import os
-
+from fastapi import APIRouter, HTTPException, Query
+import os
+from fastapi.responses import FileResponse, StreamingResponse # Keep FileResponse for compatibility
+from datetime import datetime, timedelta
+from typing import List, Dict, Optional, Any
+import io
+import csv
+from db import client
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://aribafaryad:uGZKX4AZ5F7vEjkW@tweets.d0g9ckv.mongodb.net/?retryWrites=true&w=majority&appName=tweets")
@@ -139,4 +146,50 @@ def get_alerts(min_value_usd: Optional[float] = Query(100000.0), limit: int = Qu
         out.append(d)
     return out
 
+# api/transactions.py (Add this new function)
+@router.get("/download/transactions.csv", summary="Download recent whale/large transactions as CSV")
+def download_transactions_csv(limit: int = Query(1000, ge=1, le=5000)):
+    import io
+    import pandas as pd
+    
+    # Query logic from get_alerts to get high-value/tagged transactions
+    q = {
+        "$or": [
+            {"value_usd": {"$gte": 100000.0}}, 
+            {"tags": {"$in": ["whale", "suspicious", "exchange"]}}
+        ]
+    }
+    
+    transactions = list(
+        collection.find(q)
+        .sort("timestamp", -1)
+        .limit(limit)
+    )
 
+    if not transactions:
+        raise HTTPException(status_code=404, detail="No alert transactions found to export")
+        
+    cleaned_transactions = []
+    for tx in transactions:
+        tx_out = _to_out(tx.copy()) # Re-use the _to_out utility function
+        cleaned_transactions.append({
+            "tx_hash": tx_out.get("tx_hash"),
+            "blockchain": tx_out.get("blockchain"),
+            "from_addr": tx_out.get("from_addr"),
+            "to_addr": tx_out.get("to_addr"),
+            "value_usd": tx_out.get("value_usd"),
+            "token_symbol": tx_out.get("token_symbol"),
+            "timestamp": tx_out.get("timestamp"),
+            "tags": ", ".join(tx_out.get("tags", []))
+        })
+
+    df = pd.DataFrame(cleaned_transactions)
+    
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    
+    return FileResponse(
+        io.BytesIO(csv_buffer.getvalue().encode('utf-8')),
+        media_type="text/csv",
+        filename="whale_transactions_alerts.csv"
+    )

@@ -270,3 +270,50 @@ async def get_coin_trends_live(coin: str, unit: str = "day"):
 @router.get("/trends/{coin}", summary="Get multi-source sentiment trends (compat)")
 async def get_trend_compat(coin: str, unit: str = "day"):
     return await get_coin_trends_live(coin, unit)
+
+
+from fastapi.responses import StreamingResponse   # keep this import at top
+
+@router.get("/trends/download/{coin}.csv", summary="Download trend predictions CSV for a specific coin")
+async def download_trends_csv_by_coin(coin: str):
+    import io
+    import pandas as pd
+
+    # Check predictions collection first
+    docs = list(
+        predictions_collection.find(
+            {"cryptocurrency": {"$regex": f"^{coin}$", "$options": "i"}},
+            {"_id": 0},
+        )
+    )
+
+    if not docs and os.path.exists(CSV_PATH):
+        # Fallback to reading the main CSV and filtering
+        try:
+            df_all = pd.read_csv(CSV_PATH)
+            df_filtered = df_all[
+                df_all["cryptocurrency"].str.lower() == coin.lower()
+            ]
+            if not df_filtered.empty:
+                docs = df_filtered.to_dict(orient="records")
+        except Exception as e:
+            print(f"Error reading/filtering main CSV for {coin}: {e}")
+
+    if not docs:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Trend prediction data not found for {coin}",
+        )
+
+    df = pd.DataFrame(docs)
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_bytes = csv_buffer.getvalue().encode("utf-8")
+
+    return StreamingResponse(
+        io.BytesIO(csv_bytes),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="{coin.lower()}_trend_predictions.csv"'
+        },
+    )

@@ -10,7 +10,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://cryptocurrency-sentiment-analysis-p-one.vercel.app",
+        
+         "https://cryptocurrency-sentiment-analysis-p.vercel.app",
     ],
     allow_credentials=False,
     allow_methods=["*"],

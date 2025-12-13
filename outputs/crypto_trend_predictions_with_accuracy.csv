@@ -1,4 +1,4 @@
-cryptocurrency,current_price,predicted_next_price,market_trend,short_term_acc,mid_term_acc,long_term_acc,overall_acc,confidence,twitter_score,reddit_score,news_score,gbr_rmse,gbr_mae,gbr_r2,generated_at
-Bitcoin,43669.49,44166.74,Bullish,100.0%,100.0%,57.14%,85.71%,85.71,0.40086886809153455,0.0,0.0,8.933089,7.434704,-0.072574,2025-11-27T07:29:34.237043
-Ethereum,3312.56,3255.74,Bearish,100.0%,100.0%,85.71%,95.24%,95.24,0.4977683435195166,0.0,0.0,11.030704,8.871195,-0.517003,2025-11-27T07:29:34.237043
-Solana,78.65,83.3,Bullish,100.0%,100.0%,71.43%,90.48%,90.48,0.4740349936577969,0.0,0.0,9.213983,7.171647,-0.215102,2025-11-27T07:29:34.237043
+cryptocurrency,current_price,predicted_next_price,market_trend,short_term_acc,mid_term_acc,long_term_acc,overall_acc,confidence,twitter_score,reddit_score,news_score,generated_at
+Bitcoin,43669.49,44281.87,Bullish,100.0%,100.0%,57.14%,85.71%,85.71,0.3878748921485535,0.0,0.0,2025-11-28T17:37:33.112441
+Ethereum,3312.56,3254.85,Bearish,100.0%,100.0%,71.43%,90.48%,90.48,0.4871354998382087,0.0,0.0,2025-11-28T17:37:33.112441
+Solana,78.65,83.64,Bullish,100.0%,100.0%,71.43%,90.48%,90.48,0.46606155816138073,0.0,0.0,2025-11-28T17:37:33.112441

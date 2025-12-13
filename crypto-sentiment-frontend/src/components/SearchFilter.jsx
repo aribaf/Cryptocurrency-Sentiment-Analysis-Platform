@@ -98,18 +98,25 @@ export default function SearchFilter({
 
   // NEW: fetch concrete posts and display them
   const fetchAndShow = useCallback(
-    async (opts = {}) => {
-      const { q: kw, periodDays = Number(period), source: src } = opts;
-      setLoading(true);
-      setError(null);
-      setResults([]);
+  async (opts = {}) => {
+    const {
+      q: kw = q,
+      periodDays = Number(period),
+      source: src = source,
+      limit = 200,
+    } = opts;
 
-      // choose sources to request
-      const sourcesToCall =
-        src === "all" ? ["twitter", "reddit", "news"] : [src];
+    setLoading(true);
+    setError(null);
+    setResults([]);
 
-      // safety limits (per-source)
-      const perSourceLimit = 200;
+    // choose sources to request
+    const sourcesToCall =
+      src === "all" ? ["twitter", "reddit", "news"] : [src];
+
+    // safety limits (per-source)
+    const perSourceLimit = limit;
+
 
       try {
         const promises = sourcesToCall.map(async (s) => {
@@ -194,10 +201,11 @@ export default function SearchFilter({
   );
 
   // User pressed Apply: call both parent (existing flow) and fetch+show
-  const apply = () => {
-    applyParent();
-    fetchAndShow({ q, periodDays: Number(period), source });
-  };
+ const apply = () => {
+  applyParent();
+  fetchAndShow({ q, periodDays: Number(period), source, limit: 200 });
+};
+
 
   const reset = () => {
     setQ(initialCoin || "");
@@ -440,6 +448,30 @@ export default function SearchFilter({
             </a>
           ))}
         </div>
+        {!loading && results.length > 0 && (
+  <button
+    type="button"
+    onClick={() =>
+      fetchAndShow({
+        q,
+        periodDays: Number(period),
+        source,
+        // ask backend for more than we already have
+        limit: results.length + 200,
+      })
+    }
+    className="
+      mt-3 w-full py-2
+      rounded-md text-sm font-semibold
+      bg-cp-bg border border-white/10 text-gray-100
+      hover:border-cp-neon hover:text-cp-neon
+      transition
+    "
+  >
+    Load more results
+  </button>
+)}
+
       </div>
     </div>
   );

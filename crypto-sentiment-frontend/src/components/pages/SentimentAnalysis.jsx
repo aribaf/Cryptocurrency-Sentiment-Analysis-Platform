@@ -266,12 +266,7 @@ export default function SentimentAnalysis() {
             <SearchFilter onApply={() => {}} />
           </div>
 
-          <div className="bg-cp-panel/90 rounded-xl p-4 sm:p-5 border border-white/5">
-            <h3 className="text-sm sm:text-base font-semibold mb-3">
-              Popular Searches
-            </h3>
-            <PopularSearches onPick={handlePickPopular} />
-          </div>
+          
 
           
         </div>

@@ -462,16 +462,7 @@ export default function Dashboard() {
       </div>
 
       {/* Comparison chart */}
-      <div className="mb-6">
-        <CoinSentimentComparison
-          data={comparisonData}
-          onCoinClick={(coinKey) => {
-            if (coinKey === "BTC") setActiveCoinTab("Bitcoin");
-            else if (coinKey === "ETH") setActiveCoinTab("Ethereum");
-            else if (coinKey === "SOLANA") setActiveCoinTab("Solana");
-          }}
-        />
-      </div>
+      
 
       {/* Main layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">

@@ -38,23 +38,28 @@ export default function Login() {
   };
 
   // OTP request
-  const requestOtp = async () => {
-    if (!formData.email) {
-      setMessage({ type: "error", text: "Please enter your email to request an OTP." });
-      return;
-    }
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      const res = await axios.post(`${API_BASE}/auth/otp/request`, { email: formData.email });
-      setMessage({ type: "success", text: res.data.detail || "OTP sent to your email." });
-    } catch (error) {
-      const errorMsg = error.response?.data?.detail || "Failed to request OTP.";
-      setMessage({ type: "error", text: errorMsg });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+// OTP request
+const requestOtp = async () => {
+  if (!formData.email) {
+    setMessage({ type: "error", text: "Please enter your email to request an OTP." });
+    return;
+  }
+  setIsLoading(true);
+  setMessage(null);
+  try {
+    const res = await axios.post(`${API_BASE}/auth/otp/request`, { email: formData.email });
+    setMessage({ type: "success", text: res.data.detail || "OTP sent to your email." });
+
+    // ✅ Go to Verify OTP screen and pass email
+    navigate("/verify-otp", { state: { email: formData.email } });
+  } catch (error) {
+    const errorMsg = error.response?.data?.detail || "Failed to request OTP.";
+    setMessage({ type: "error", text: errorMsg });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // Google Sign-In
   const googleSignIn = () => {

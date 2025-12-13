@@ -9,6 +9,7 @@ Background async worker that:
 """
 import sys
 import os
+from sentiment_pipeline.alerts.alert_evaluator import evaluate_all
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -101,7 +102,11 @@ async def worker_loop():
                 print(f"[realtime_worker] saved prediction for {coin} at {store_doc['generated_at']}")
             except Exception as e:
                 print(f"[realtime_worker] prediction error for {coin}: {e}")
-
+            try:
+                results = evaluate_all()
+                print("[alerts] evaluated:", results)
+            except Exception as e:
+                print("[alerts] evaluation error:", e)
         elapsed = (datetime.utcnow() - start).total_seconds()
         to_sleep = max(1, INTERVAL - elapsed)
         await asyncio.sleep(to_sleep)

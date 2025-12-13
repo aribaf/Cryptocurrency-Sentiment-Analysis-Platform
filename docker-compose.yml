@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  news:
+    build: .
+    env_file:
+      - .env
+    command: python sentiment_pipeline/news/news.py
+    restart: unless-stopped
+
+  reddit:
+    build: .
+    env_file:
+      - .env
+    command: python sentiment_pipeline/reddit/automation.py
+    restart: unless-stopped
+
+  btc_streamer:
+    build: .
+    env_file:
+      - .env
+    command: python sentiment_pipeline/scripts/btc_streamer.py
+    restart: unless-stopped
+
+  twitter_pipeline:
+    build: .
+    env_file:
+      - .env
+    command: python sentiment_pipeline/twitter/pipeline.py
+    restart: unless-stopped
+
+  realtime_worker:
+    build: .
+    env_file:
+      - .env
+    command: python trend_prediction/realtime_worker.py
+    restart: unless-stopped
+
+  trend_worker:
+    build: .
+    env_file:
+      - .env
+    command: python trend_prediction/trend_worker_multi.py
+    restart: unless-stopped
+
+  # optional backfill run-once job you can run with `docker-compose run backfill`
+  backfill:
+    build: .
+    env_file:
+      - .env
+    command: python trend_prediction/backfill_trend_history.py
+    restart: "no"

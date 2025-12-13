@@ -33,10 +33,30 @@ const CustomTooltip = ({ active, payload, label }) => {
  * @param {number} index - The index of the data point.
  * @returns {number} A score between -0.5 and 0.5.
  */
-const generateDummyScore = (index) => {
-  // Use sine function for oscillation, normalized to [-0.5, 0.5]
-  return Math.sin(index * 0.5) * 0.25 + 0.1;
+// deterministic pseudo-random number based on index (0–1)
+const prng = (i) => {
+  const x = Math.sin(i * 127.1 + 13.7) * 43758.5453;
+  return x - Math.floor(x);
 };
+
+// random-walk style dummy news score, gently bounded
+const generateDummyScore = (index, lastValue = 0, anchor = 0) => {
+  const r = prng(index);              // 0..1
+  const step = (r - 0.5) * 0.25;      // small change per step ~ [-0.125, 0.125]
+
+  // random-walk around last value
+  let candidate = lastValue + step;
+
+  // pull slightly toward anchor (overall/twitter sentiment)
+  candidate = 0.7 * candidate + 0.3 * anchor;
+
+  // clamp to a reasonable range
+  if (candidate > 0.8) candidate = 0.8;
+  if (candidate < -0.8) candidate = -0.8;
+
+  return candidate;
+};
+
 // -------------------------------------------
 
 export default function TrendChart({

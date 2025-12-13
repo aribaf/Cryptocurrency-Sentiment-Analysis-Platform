@@ -123,13 +123,7 @@ export default function Sidebar() {
             >
               Transactions
             </NavItem>
-            <NavItem
-              to="/payments"
-              Icon={CreditCardIcon}
-              onClick={closeMobileMenu}
-            >
-              Payments
-            </NavItem>
+           
             <NavItem
               to="/account"
               Icon={UserIcon}

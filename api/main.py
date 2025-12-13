@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware   # <-- ADD THIS LINE
+from routes_alerts import router as alerts_router
 
 from api import transactions
 # ... other imports ...
@@ -32,7 +33,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # your local frontend dev host (Vite)
-        "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev"  # backend ngrok host
+        "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev" ,
+        "https://cryptocurrency-sentiment-analysis.onrender.com",
+        "https://cryptocurrency-sentiment-analysis-p-one.vercel.app",# backend ngrok host
     ],
     allow_methods=["*"],
     allow_headers=["*"],

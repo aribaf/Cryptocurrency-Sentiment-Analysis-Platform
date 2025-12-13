@@ -1,0 +1,51 @@
+# ignore Python virtualenvs and editor files
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.sqlite3
+
+# node / build artifacts
+node_modules
+dist
+build
+
+# model & data caches
+*.ckpt
+*.pt
+*.pth
+*.tar.gz
+outputs/
+outputs/*
+trend_prediction/models/
+trend_prediction/outputs/
+*.zip
+
+# Hugging Face cache
+.hf
+.cache
+.cache/
+huggingface/
+huggingface_hub/
+transformers_cache/
+~/.cache/huggingface
+
+# git
+.git
+.gitignore
+
+# OS/editor
+.DS_Store
+.vscode
+.idea
+*.log
+
+# large files you may have accidentally left in repo
+*.dll
+*.exe
+*.so

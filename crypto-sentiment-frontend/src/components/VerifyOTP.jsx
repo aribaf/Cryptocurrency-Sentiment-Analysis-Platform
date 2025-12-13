@@ -1,60 +1,97 @@
-// src/components/auth/VerifyOTP.jsx (New File)
-import React, { useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+// src/components/auth/VerifyOTP.jsx
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Match the API base used in Login.jsx
-const API_BASE = "http://127.0.0.1:8000/api"; 
+// Match the API base logic used elsewhere (Login/Register)
+const safeEnv = typeof process !== "undefined" && process.env ? process.env : {};
+const API_BASE =
+  safeEnv.REACT_APP_API_BASE ||
+  "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev/api";
 
 export default function VerifyOTP() {
   const navigate = useNavigate();
-  // useLocation gets the state passed during navigation from Login.jsx
-  const location = useLocation(); 
-  const email = location.state?.email; 
+  const location = useLocation();
+
+  // Email passed from Login.jsx: navigate("/verify-otp", { state: { email } })
+  const email = location.state?.email;
 
   const [otp, setOtp] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
-  // Guard clause: if user somehow landed here without an email, send them back
-  if (!email) {
-    navigate("/login"); 
-    return null;
-  }
+  // If user somehow lands here without email in state, send them back to login
+  useEffect(() => {
+    if (!email) {
+      navigate("/login", { replace: true });
+    }
+  }, [email, navigate]);
+
+  if (!email) return null;
 
   const handleVerify = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage({ text: "", type: "" });
 
-    // Client-side validation for OTP format
+    // Simple OTP validation
     if (otp.length !== 6 || !/^\d+$/.test(otp)) {
-        setMessage({ text: "Please enter a valid 6-digit OTP.", type: "error" });
-        setIsLoading(false);
-        return;
+      setMessage({ text: "Please enter a valid 6-digit OTP.", type: "error" });
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const response = await axios.post(`${API_BASE}/auth/verify-otp`, {
-        email: email,
-        otp: otp,
+      const response = await axios.post(`${API_BASE}/auth/otp/verify`, {
+        email,
+        otp,
       });
 
-      // OTP verified successfully (from the 200 OK response)
-      if (response.data.success) {
-        // Save the session data (matching your original Login.jsx logic)
-        localStorage.setItem("userLoggedIn", "true");
-        localStorage.setItem("userEmail", response.data.email);
-        localStorage.setItem("username", response.data.username);
-        
-        setMessage({ text: "Verification successful! Redirecting...", type: "success" });
-        setTimeout(() => navigate("/dashboard"), 1000); 
+      // Adjust this based on your backend response shape
+      // Assuming it returns an access_token like normal login
+      if (response.status === 200) {
+        if (response.data.access_token) {
+          localStorage.setItem("token", response.data.access_token);
+        }
+        if (response.data.username) {
+          localStorage.setItem("username", response.data.username);
+        }
+        if (response.data.email) {
+          localStorage.setItem("userEmail", response.data.email);
+        }
+
+        setMessage({
+          text: "Verification successful! Redirecting...",
+          type: "success",
+        });
+
+        setTimeout(() => navigate("/dashboard"), 1000);
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.detail || "Verification failed. Check your code.";
+      const errorMsg =
+        err.response?.data?.detail || "Verification failed. Check your code.";
       setMessage({ text: errorMsg, type: "error" });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsResending(true);
+    setMessage({ text: "", type: "" });
+    try {
+      const res = await axios.post(`${API_BASE}/auth/otp/request`, { email });
+      setMessage({
+        text: res.data.detail || "OTP resent to your email.",
+        type: "success",
+      });
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.detail || "Failed to resend OTP. Try again.";
+      setMessage({ text: errorMsg, type: "error" });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -64,20 +101,25 @@ export default function VerifyOTP() {
         <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-2 text-center">
           Verify Your Login
         </h2>
+
         <p className="text-sm text-gray-400 mb-6 text-center">
-          A 6-digit code has been sent to **{email}**.
+          A 6-digit code has been sent to{" "}
+          <span className="font-semibold text-white">{email}</span>.
         </p>
 
         <form onSubmit={handleVerify}>
           <div className="mb-6">
-            <label htmlFor="otp" className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="otp"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
               OTP Code
             </label>
-            <input 
+            <input
               id="otp"
-              type="text" 
-              value={otp} 
-              onChange={(e) => setOtp(e.target.value)} 
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
               maxLength="6"
               placeholder="Enter 6-digit code"
               className="w-full p-3 bg-cp-input border border-cp-border rounded-lg text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-cp-purple focus:ring-1 focus:ring-cp-purple transition-all"
@@ -86,7 +128,13 @@ export default function VerifyOTP() {
           </div>
 
           {message.text && (
-            <div className={`mb-4 text-xs font-medium p-2 rounded ${message.type === "error" ? "bg-red-900/30 text-red-400" : "bg-green-900/30 text-green-400"}`}>
+            <div
+              className={`mb-4 text-xs font-medium p-2 rounded ${
+                message.type === "error"
+                  ? "bg-red-900/30 text-red-400"
+                  : "bg-green-900/30 text-green-400"
+              }`}
+            >
               {message.text}
             </div>
           )}
@@ -101,13 +149,13 @@ export default function VerifyOTP() {
         </form>
 
         <div className="mt-7 text-center text-xs sm:text-sm text-gray-400">
-          Didn't receive the code?
+          Didn&apos;t receive the code?
           <button
-            // You would create a function to resend the code here
-            className="ml-1 font-medium text-cp-neon hover:text-cp-neon/80 transition-colors"
-            onClick={() => { /* TODO: Implement resend logic */ }}
+            onClick={handleResend}
+            disabled={isResending}
+            className="ml-1 font-medium text-cp-neon hover:text-cp-neon/80 disabled:opacity-60 transition-colors"
           >
-            Resend Code
+            {isResending ? "Resending..." : "Resend Code"}
           </button>
         </div>
       </div>

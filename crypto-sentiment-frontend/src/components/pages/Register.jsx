@@ -25,12 +25,18 @@ export default function Register() {
       // optionally request OTP for verification
       try {
         await axios.post(`${API_BASE}/auth/otp/request`, { email: formData.email });
-        setMessage(prev => ({ ...prev, text: prev.text + " Please check your email for the verification OTP." }));
-        // Optional: Redirect to OTP verification page
+        setMessage(prev => ({
+          ...prev,
+          text: (prev?.text || "") + " Please check your email for the verification OTP."
+        }));
+        // Optional: Redirect to OTP verification page instead of dashboard
         // navigate('/verify-otp', { state: { email: formData.email } });
       } catch (otpError) {
         console.warn("Could not request OTP immediately:", otpError);
       }
+
+      // ✅ Redirect user to dashboard after successful registration
+      navigate("/dashboard");
 
     } catch (error) {
       const errorMsg = error.response?.data?.detail || "An unknown error occurred during registration.";
@@ -51,43 +57,34 @@ export default function Register() {
   const INPUT_STYLE = 'w-full p-4 bg-gray-700/50 text-white border-b-2 border-transparent focus:outline-none focus:border-red-600 transition duration-300 placeholder-gray-500 text-base';
   const LABEL_STYLE = 'block mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider';
 
-
   return (
-    // Outer container: Deep Black background, responsive padding
     <div className="flex items-center justify-center min-h-screen bg-black p-4 font-sans antialiased text-white relative">
-      
-      {/* Visual Flair (retained for consistency) */}
       <div className="absolute top-10 right-10 w-4 h-4 bg-red-600 transform rotate-45"></div>
       <div className="absolute bottom-10 left-10 w-4 h-4 bg-lime-400 transform rotate-45"></div>
 
-      {/* Register Card: Wider (max-w-md), Dark, prominent */}
       <div className="w-full max-w-md bg-gray-900/90 backdrop-blur-sm p-8 md:p-12 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-gray-800 relative z-10">
-        
-        {/* Logo/System Name */}
         <p className="text-sm tracking-[0.3em] text-center mb-8 text-lime-400 font-bold uppercase">
           @CRYPTOSWNT
         </p>
 
-        {/* Main Heading */}
         <h1 className="text-2xl sm:text-3xl font-extrabold mb-10 text-center uppercase leading-tight">
           CREATE <br />
           <span className="text-red-600 tracking-widest">NEW IDENTITY</span>
         </h1>
 
-        {/* Message Alert Theming */}
         {message && (
-          <div className={`p-3 mb-6 rounded border-l-4 font-medium text-sm ${
-            message.type === 'error' 
-              ? 'bg-red-900/40 text-red-300 border-red-600' 
-              : 'bg-lime-900/40 text-lime-300 border-lime-400'
-          }`}>
+          <div
+            className={`p-3 mb-6 rounded border-l-4 font-medium text-sm ${
+              message.type === "error"
+                ? "bg-red-900/40 text-red-300 border-red-600"
+                : "bg-lime-900/40 text-lime-300 border-lime-400"
+            }`}
+          >
             {message.text}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {/* Email Input */}
           <div>
             <label className={LABEL_STYLE}>Email Address</label>
             <input
@@ -101,7 +98,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Username Input */}
           <div>
             <label className={LABEL_STYLE}>Username</label>
             <input
@@ -114,7 +110,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Password Input */}
           <div>
             <label className={LABEL_STYLE}>Password</label>
             <input
@@ -128,27 +123,25 @@ export default function Register() {
             />
           </div>
 
-          {/* Register Button - Primary Accent (Orange/Red) */}
-          <button 
-            type="submit" 
-            className={`w-full py-4 mt-8 text-white rounded-md font-bold uppercase tracking-widest transition disabled:bg-gray-700 disabled:shadow-none ${ACCENT_RED_ORANGE}`} 
+          <button
+            type="submit"
+            className={`w-full py-4 mt-8 text-white rounded-md font-bold uppercase tracking-widest transition disabled:bg-gray-700 disabled:shadow-none ${ACCENT_RED_ORANGE}`}
             disabled={isLoading}
           >
             {isLoading ? "PROVISIONING..." : "DEPLOY ACCOUNT"}
           </button>
         </form>
 
-        {/* Separator and Google Sign-up */}
         <div className="my-8 border-t border-gray-700 pt-8 text-center">
           <p className="text-sm mb-6 text-gray-500 uppercase tracking-widest">
             — Or Use External Identity —
           </p>
-          
-          {/* Google Sign-up Button */}
+
           <button
             onClick={googleSignIn}
             className="w-full py-3 rounded-md bg-gray-800 text-gray-300 border border-gray-700 shadow-md hover:bg-gray-700 hover:text-white transition flex items-center justify-center space-x-3 font-medium"
           >
+            {/* Google Icon */}
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5">
               <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,7.92-11.303,7.92c-6.769,0-12.263-5.494-12.263-12.264s5.494-12.264,12.263-12.264c3.18,0,6.046,1.107,8.336,3.018l5.657-5.657C34.046,6.01,29.283,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.684,43.821,21.31,43.611,20.083z"/>
               <path fill="#FF3D00" d="M6.306,14.691l6.084,4.526C14.542,14.771,18.969,12,24,12c3.059,0,5.852,1.194,7.938,3.167l5.657-5.657C34.046,6.01,29.283,4,24,4C12.955,4,4,12.955,4,24c0,3.585,0.912,6.945,2.443,9.889L12.55,28.67C11.668,26.477,11.166,24.238,11.166,24C11.166,20.015,12.915,16.516,16.036,14.691L6.306,14.691z"/>
@@ -159,15 +152,23 @@ export default function Register() {
           </button>
         </div>
 
-        {/* Login Link */}
         <p className="mt-8 text-center text-sm text-gray-500">
-            Already have an account? <a onClick={() => navigate('/login')} className={`cursor-pointer font-bold ${ACCENT_NEON_YELLOW_TEXT}`}>Log in</a>
+          Already have an account?{" "}
+          <a
+            onClick={() => navigate("/login")}
+            className={`cursor-pointer font-bold ${ACCENT_NEON_YELLOW_TEXT}`}
+          >
+            Log in
+          </a>
         </p>
 
-        {/* Footer Security Tags (retained) */}
         <div className="mt-12 flex flex-wrap justify-center space-x-3 text-xs font-mono text-gray-500">
-          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">IMMUTABLE LEDGER</span>
-          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">SECURE END-TO-END</span>
+          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">
+            IMMUTABLE LEDGER
+          </span>
+          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">
+            SECURE END-TO-END
+          </span>
         </div>
       </div>
     </div>

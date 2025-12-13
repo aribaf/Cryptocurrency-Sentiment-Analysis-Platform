@@ -307,16 +307,6 @@ export default function NewsList({
           {compact ? "Expand" : "Compact"}
         </button>
 
-        <button
-          onClick={() => {
-            idsRef.current = new Set();
-            setItems([]);
-            setPage(1);
-          }}
-          className="px-2 py-1 rounded bg-cp-neon text-black text-xs"
-        >
-          Reset
-        </button>
       </div>
 
       {/* LIST */}

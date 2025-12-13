@@ -308,23 +308,7 @@ export default function TwitterList({
           {compact ? "Expand" : "Compact"}
         </button>
 
-        <button
-          onClick={() => {
-            idsRef.current = new Set();
-            setItems([]);
-            setPage(1);
-          }}
-          className="px-2 py-1 rounded bg-cp-neon text-black text-xs"
-        >
-          Reset
-        </button>
-
-        <button
-          onClick={() => fetchPage(Math.min((page + 1) * pageSize, maxItems))}
-          className="px-2 py-1 rounded bg-cp-neon text-black text-xs"
-        >
-          Load more
-        </button>
+        
       </div>
 
       {/* List */}

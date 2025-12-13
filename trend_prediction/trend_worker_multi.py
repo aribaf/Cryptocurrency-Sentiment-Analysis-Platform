@@ -4,6 +4,7 @@ Worker: trains/predicts for coins, upserts summary into predictions_collection,
 inserts per-run docs into trend_history, saves CSV.
 """
 import os
+import time
 import sys
 # ensure project root (parent dir) is on sys.path so `db.py` can be imported
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -291,5 +292,19 @@ def train_and_store():
     return results
 
 
+
+
 if __name__ == "__main__":
-    train_and_store()
+    REFRESH_INTERVAL = 3600  # 1 hour in seconds
+    # For daily use: 86400 (24 hours)
+
+    while True:
+        print("Running trend prediction worker...")
+        try:
+            train_and_store()
+        except Exception as e:
+            print("Error during worker execution:", e)
+
+        print(f"Sleeping for {REFRESH_INTERVAL} seconds...\n")
+        time.sleep(REFRESH_INTERVAL)
+

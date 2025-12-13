@@ -376,112 +376,99 @@ async def get_sentiment_breakdown(
             }
 
         # ---------- NEWS ----------
+                # ---------- NEWS ----------
         elif src == "news":
             q: Dict[str, Any] = {"sentiment.score": {"$exists": True}}
             if coin and coin.upper() != "ALL":
-                coin_name = TICKER_TO_FULL_NAME.get(
-                    coin.upper(), coin.upper()
-                )
+                coin_name = TICKER_TO_FULL_NAME.get(coin.upper(), coin.upper())
                 q["$or"] = [
-                    {
-                        "coin": {
-                            "$regex": f"^{coin_name}$",
-                            "$options": "i",
-                        }
-                    },
-                    {
-                        "coin": {
-                            "$regex": f"^{coin.upper()}$",
-                            "$options": "i",
-                        }
-                    },
+                    {"coin": {"$regex": f"^{coin_name}$", "$options": "i"}},
+                    {"coin": {"$regex": f"^{coin.upper()}$", "$options": "i"}},
                     {"coin_tags": {"$in": [coin.upper(), coin_name]}},
                 ]
 
-            # counts by label
-            pipeline_counts = [
-                {"$match": q},
-                {
-                    "$group": {
-                        "_id": {"label": "$sentiment.label"},
-                        "count": {"$sum": 1},
-                    }
-                },
-            ]
-            counts = list(news_collection.aggregate(pipeline_counts))
-            total = sum(c.get("count", 0) for c in counts) or 0
+            THRESHOLD = 0.05
 
-            def pick(label: str) -> int:
-                for c in counts:
-                    _id = c.get("_id")
-                    if isinstance(_id, dict) and str(
-                        _id.get("label", "")
-                    ).lower() == label:
-                        return c["count"]
-                    if isinstance(_id, str) and _id.lower() == label:
-                        return c["count"]
-                return 0
+            # pull recent docs once
+            docs = list(
+                news_collection.find(
+                    q,
+                    {
+                        "_id": 0,
+                        "title": 1,
+                        "url": 1,
+                        "published_at": 1,
+                        "scraped_at": 1,
+                        "fetched_at": 1,
+                        "sentiment": 1,
+                        "summary": 1,
+                        "source": 1,
+                        "date_source": 1,
+                        "confidence": 1,
+                    },
+                )
+                .sort(
+                    [
+                        ("published_at", -1),
+                        ("scraped_at", -1),
+                        ("fetched_at", -1),
+                    ]
+                )
+                .limit(500)
+            )
 
-            pos = pick("positive")
-            neu = pick("neutral")
-            neg = pick("negative")
+            total = len(docs) or 0
+            pos = neg = neu = 0
+            scores = []
 
-            # avg score (safe)
-            pipeline_avg = [
-                {"$match": q},
-                {
-                    "$group": {
-                        "_id": None,
-                        "avg_score": {"$avg": "$sentiment.score"},
-                    }
-                },
-                {"$project": {"score": "$avg_score", "_id": 0}},
-            ]
-            avg_res = list(news_collection.aggregate(pipeline_avg))
-            raw_avg = avg_res[0].get("score", 0.0) if avg_res else 0.0
-            try:
-                avg_score = float(raw_avg or 0.0)
-            except Exception:
-                avg_score = 0.0
+            for d in docs:
+                sent = d.get("sentiment") or {}
+                score = sent.get("score", 0.0) or 0.0
+                try:
+                    score = float(score)
+                except Exception:
+                    score = 0.0
 
-            # top posts
-            top_cursor = news_collection.find(
-                q,
-                {
-                    "_id": 0,
-                    "title": 1,
-                    "url": 1,
-                    "published_at": 1,
-                    "scraped_at": 1,
-                    "fetched_at": 1,
-                    "sentiment": 1,
-                    "summary": 1,
-                    "source": 1,
-                    "date_source": 1,
-                    "confidence": 1,
-                },
-            ).sort(
-                [
-                    ("published_at", -1),
-                    ("scraped_at", -1),
-                    ("fetched_at", -1),
-                ]
-            ).limit(top_n)
+                scores.append(score)
 
+                if score > THRESHOLD:
+                    pos += 1
+                elif score < -THRESHOLD:
+                    neg += 1
+                else:
+                    neu += 1
+
+            avg_score = (sum(scores) / total) if total else 0.0
+
+            # build top_posts with a derived label when missing
             top_posts = []
-            for d in top_cursor:
+            for d in docs[:top_n]:
+                sent = d.get("sentiment") or {}
+                score = sent.get("score", 0.0) or 0.0
+                try:
+                    score_f = float(score)
+                except Exception:
+                    score_f = 0.0
+
+                label = sent.get("label")
+                if not label:
+                    if score_f > THRESHOLD:
+                        label = "Positive"
+                    elif score_f < -THRESHOLD:
+                        label = "Negative"
+                    else:
+                        label = "Neutral"
+
                 created_at = (
                     d.get("published_at")
                     or d.get("scraped_at")
                     or d.get("fetched_at")
                 )
-                sent = d.get("sentiment") or {}
-                label = sent.get("label")
-                score = sent.get("score", 0.0)
+
                 conf = d.get("confidence")
                 try:
                     if conf is None:
-                        conf = abs(float(score or 0.0))
+                        conf = abs(score_f)
                     else:
                         conf = float(conf)
                 except Exception:
@@ -510,6 +497,7 @@ async def get_sentiment_breakdown(
                     "top_posts": top_posts,
                 }
             }
+
 
         # ---------- OVERALL ----------
         elif src == "overall":

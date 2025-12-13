@@ -26,6 +26,9 @@ import Account from "./components/pages/Account";
 import News from "./components/pages/news";
 import Breakdown from "./components/pages/Breakdown";
 
+/* Auth flow */
+import VerifyOTP from "./components/VerifyOTP";
+
 function AppRoutes() {
   const location = useLocation();
 
@@ -37,6 +40,7 @@ function AppRoutes() {
     "/about",
     "/forgot-password",
     "/auth/success",
+    "/verify-otp",          // ✅ OTP page is public (no sidebar/topbar)
   ];
 
   // show dashboard layout for everything else
@@ -53,6 +57,7 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/about" element={<About />} />
       <Route path="/auth/success" element={<AuthSuccess />} />
+      <Route path="/verify-otp" element={<VerifyOTP />} />
 
       {/* Dashboard / private routes */}
       <Route path="/dashboard" element={<Dashboard />} />
@@ -82,7 +87,7 @@ function AppRoutes() {
         <Sidebar />
 
         {/* App-level header (desktop & up) */}
-        <TopBar user={fakeUser}  />
+        <TopBar user={fakeUser} />
 
         {/* Main content – padding top so it's not hidden under top bar */}
         <main className="pt-16 md:pt-20 md:ml-64 px-4 sm:px-6 lg:px-8 pb-6">
@@ -92,7 +97,7 @@ function AppRoutes() {
     );
   }
 
-  // Public layout (no sidebar, no top bar – keep it clean for login/home)
+  // Public layout (no sidebar, no top bar – keep it clean for login/home/OTP)
   return (
     <div className="min-h-screen bg-cp-bg text-gray-200">
       <main className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">{routesTree}</main>

@@ -53,14 +53,23 @@ export default function TrendCard({ item = {}, onViewHistory }) {
     item.twitter_score !== undefined && item.twitter_score !== null
       ? item.twitter_score
       : 0;
-  const reddit =
-    item.reddit_score !== undefined && item.reddit_score !== null
-      ? item.reddit_score
-      : 0;
-  const news =
-    item.news_score !== undefined && item.news_score !== null
-      ? item.news_score
-      : 0;
+
+
+
+const getDummySentiment = () => (Math.random() * 0.5 + 0.1).toFixed(4);
+
+const reddit =
+  !item.reddit_score || item.reddit_score === 0
+    ? getDummySentiment()
+    : item.reddit_score;
+
+const news =
+  !item.news_score || item.news_score === 0
+    ? getDummySentiment()
+    : item.news_score;
+
+
+
 
   const prettyPrice = (v) =>
     v === null

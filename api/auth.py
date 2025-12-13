@@ -87,10 +87,45 @@ def verify_otp_in_db(email: str, otp: str) -> bool:
     return True
 
 # OPTIONAL: replace with your project's email sending function
+import smtplib
+from email.mime.text import MIMEText
+
+EMAIL_HOST = os.getenv("EMAIL_SMTP_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_SMTP_PORT", 587))
+EMAIL_USER = os.getenv("EMAIL_SMTP_USER")
+EMAIL_PASS = os.getenv("EMAIL_SMTP_PASS")
+EMAIL_FROM = os.getenv("EMAIL_FROM")
+
 def send_otp_email(background_tasks: BackgroundTasks, email: str, otp: str):
-    # If you have a real email sender, schedule it here:
-    # background_tasks.add_task(send_email, to=email, subject="Your OTP", body=f"OTP: {otp}")
-    print(f"[OTP] Send to {email}: {otp}")
+    def send_email():
+        subject = "Your CryptoSent OTP Code"
+        body = f"""
+Hello,
+
+Your OTP code is: {otp}
+
+This code will expire in 5 minutes.
+Do not share it with anyone.
+
+– CryptoSent Team
+"""
+
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = EMAIL_FROM
+        msg["To"] = email
+
+        try:
+            with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+                server.starttls()
+                server.login(EMAIL_USER, EMAIL_PASS)
+                server.send_message(msg)
+                print("✅ OTP email sent to:", email)
+        except Exception as e:
+            print("❌ Email send failed:", e)
+
+    background_tasks.add_task(send_email)
+
 
 # --- Request/Response models ---
 class OTPRequest(BaseModel):

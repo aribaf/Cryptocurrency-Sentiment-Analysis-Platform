@@ -21,6 +21,7 @@ import TrendPrediction from "./components/pages/TrendPrediction";
 import TransactionsPage from "./components/pages/Transactions";
 import Payments from "./components/pages/Payments";
 import Account from "./components/pages/Account";
+// trigger vercel redeploy
 
 /* Other views */
 import News from "./components/pages/news";

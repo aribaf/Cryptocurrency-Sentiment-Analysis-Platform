@@ -6,7 +6,8 @@ from db import client
 router = APIRouter()
 trend_db = client["trend_prediction"]
 predictions_collection = trend_db["predictions"]
-
+# NEW: Reference the alerts collection
+ALERTS_COLLECTION = client["appdb"]["alerts"]
 # Simple pub-sub: every client gets periodic snapshot from predictions_collection.
 @router.websocket("/ws/live_trends")
 async def websocket_live_trends(ws: WebSocket):

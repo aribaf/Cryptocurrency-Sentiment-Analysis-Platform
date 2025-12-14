@@ -8,102 +8,113 @@ It provides a unified **interactive dashboard** for tracking the current market 
 
 ---
 
-### 🔗 Live Demo
+### 🔗 Live Demo & Repository
 
 | Component | URL |
 | :--- | :--- |
 | **Live Platform** | https://cryptocurrency-sentiment-analysis-p-one.vercel.app/ |
-| **GitHub Repository** | `https://github.com/aribaf/crypto-sentiment-platform.git` |
+| **GitHub Repository** | https://github.com/aribaf/Cryptocurrency-Sentiment-Analysis-Platform |
 
-### Tech Stack
+### 💻 Tech Stack
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
 | **Backend** | FastAPI (Python) | High-performance, asynchronous web framework. |
-| **Frontend** | React.js | Interactive, responsive user interface. |
-| **Database** | MongoDB | NoSQL database for flexible data storage and aggregation. |
+| **Frontend** | React + Vite | Modern single-page application with fast builds. |
+| **Database** | MongoDB Atlas | NoSQL database for scalable data storage. |
 | **ML/NLP** | NLTK, Scikit-learn, TensorFlow | Core libraries for text processing and model training. |
-| **Deployment** | Docker, Vercel | Containerization and seamless front-end deployment. |
+| **Deployment** | Docker, Render, AWS, Vercel | Containerization and seamless front-end deployment. |
 
 ---
 
-## Features
+## ✨ Features
 
 ### 📡 Multi-Source Sentiment Collection
-Automatically fetches real-time crypto-related text data from multiple public sources and historical market candle data.
+The system continuously collects cryptocurrency-related text data and market information from multiple public sources. 
 
-* **Twitter**
-* **Reddit**
-* **News APIs**
-* **Market candle data**
+#### Data Sources
+* Twitter (X)
+* Reddit
+* Cryptocurrency news APIs
+* Market candle (OHLC) data
 
-Each post is cleaned, labeled, and stored for subsequent analysis by the NLP models.
+> 📝 **Note:** All collected data is cleaned, normalized, and stored for downstream sentiment analysis and trend prediction.
 
-###  NLP-Based Sentiment Analysis
-A robust full preprocessing pipeline ensures clean, normalized text data for high-accuracy sentiment classification.
+### 🧠 NLP-Based Sentiment Analysis
+A complete text preprocessing and classification pipeline ensures high-quality sentiment predictions.
 
-* **Preprocessing Pipeline:**
-    * Tokenization
-    * Stopword removal
-    * Lemmatization
-    * Noise cleaning
-    * Lowercasing & normalization
-* **Models Used:**
-    * **Logistic Regression** (Baseline)
-    * **Support Vector Machine (SVM)**
-    * **BiLSTM** (TensorFlow) - Deep Learning for complex context capture
-    * **Softmax-based probability scoring**
-* **Classification:** Each post is classified as **Positive**, **Negative**, or **Neutral**.
+#### Preprocessing Pipeline
+* Tokenization
+* Stopword removal
+* Lemmatization
+* Noise and URL cleaning
+* Text normalization and lowercasing
 
-### 🔮 Trend Prediction Engine
-Predicts the short-term market direction—**Bullish** or **Bearish**—using a blend of technical and sentiment-driven features.
+#### Models Used
+* Logistic Regression (baseline)
+* Support Vector Machine (SVM)
+* **BiLSTM (TensorFlow)** for deep contextual understanding
+* Softmax-based probability scoring
 
-* **Features Used:**
-    * **Technical Indicators:** Exponential Moving Average (EMA), Relative Strength Index (RSI), Moving Average Convergence Divergence (MACD)
-    * Market volatility features
-    * Aggregate sentiment scores from all sources
-* **Modeling:** **Ensemble modeling** (rule-based signals combined with ML signals) is used for the final prediction.
-* **Outputs:**
-    * Market direction (**Bullish/Bearish**)
-    * Confidence score (**0–100%**)
-    * Most likely trend
+Each post is classified as **Positive**, **Negative**, or **Neutral**, along with a confidence score.
 
-### Interactive Dashboard (React.js)
-A single-page application built for real-time data visualization and user interaction.
+### 🔮 Market Trend Prediction Engine
+The platform predicts short-term market direction (**Bullish** or **Bearish**) by combining sentiment-driven features with technical indicators. 
 
-* **Real-time sentiment feeds** and aggregate scores.
-* **Source-wise breakdown** visualization (Twitter, Reddit, News).
-* **Prediction cards** for each tracked coin (BTC, ETH, SOLANA).
-* **Confidence visualization** for trend predictions.
-* **Trend history logs** and sentiment timeline charts.
-* **Search and time filters** for historical data analysis.
-* **Fully responsive UI** design.
+#### Features Used
+* **Technical indicators:** Exponential Moving Average (EMA), Relative Strength Index (RSI), Moving Average Convergence Divergence (MACD)
+* Market volatility metrics
+* Aggregated sentiment scores across all data sources
+
+#### Modeling Approach
+* Hybrid ensemble strategy combining rule-based signals and machine learning outputs
+
+#### Outputs
+* Market direction (**Bullish** / **Bearish**)
+* Prediction confidence score (0–100%)
+* Most likely short-term trend
+
+### 📊 Interactive Dashboard (React)
+A responsive single-page application for real-time visualization and analysis.
+
+* Live sentiment feeds and aggregate market scores
+* Source-wise sentiment breakdown (Twitter, Reddit, News)
+* Coin-specific prediction cards for BTC, ETH, and SOL
+* Trend confidence visualization
+* Historical sentiment and trend charts
+* Search and time-based filtering
+* Fully responsive UI design
 
 ---
 
-##  Architecture
+## 🏗️ Architecture
 
 ### **Backend Architecture (FastAPI)**
-The backend is designed for high concurrency and scalability, utilizing Python's asynchronous capabilities.
+The backend is designed for scalability, concurrency, and modularity.
 
-* Layered, modular, and scalable design.
-* Asynchronous API endpoints for fast response times.
-* Dedicated **Sentiment and trend workers** for resource-intensive processing.
-* **Background scheduler** for continuous, automated data scraping.
-* Optimized **MongoDB aggregation pipelines** for complex data reporting.
-* Security: **JWT authentication**, account settings, and **OTP-based verification**.
+* Layered and modular architecture
+* Asynchronous REST API endpoints for low-latency responses
+* Dedicated sentiment and trend processing workers
+* Background schedulers for automated data ingestion
+* Optimized MongoDB aggregation pipelines
+* JWT-based authentication and account management
 
-### **Database (MongoDB)**
-A flexible NoSQL structure allows for easy storage and retrieval of unstructured text data alongside structured market data.
+### **Database Architecture (MongoDB)**
+A flexible NoSQL schema supports both unstructured text data and structured market data. 
 
-* **Collections:**
-    * `twitter_posts`
-    * `reddit_posts`
-    * `news_posts`
-    * `sentiment_history`
-    * `trend_predictions`
-    * `users`
-* **Features:** Aggregation framework, optimized indexing, and clean structured documents.
+#### Collections
+* `twitter_posts`
+* `reddit_posts`
+* `news_posts`
+* `sentiment_history`
+* `trend_predictions`
+* `users`
+
+#### Database Features
+* Indexed queries for fast retrieval
+* Aggregation pipelines for analytics
+* Clean and structured document design
+
 
 ---
 

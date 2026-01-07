@@ -29,6 +29,39 @@ const COLORS = {
   ETH: "#60a5fa", // blue-ish
   SOLANA: "#f59e0b", // amber
 };
+// -----------------------------
+// Realistic Neutral Default Values (Preloaded UI)
+// -----------------------------
+const DEFAULT_OVERVIEW = {
+  overall: {
+    score: 0.02,
+    label: "Neutral",
+  },
+  by_source: {
+    twitter: 0.01,
+    reddit: -0.01,
+    news: 0.02,
+  },
+  sentiment_counts: {
+    positive: 34,
+    neutral: 42,
+    negative: 24,
+  },
+};
+
+const DEFAULT_TREND = [
+  { time: "T-4", sentiment: 0.01 },
+  { time: "T-3", sentiment: 0.015 },
+  { time: "T-2", sentiment: 0.012 },
+  { time: "T-1", sentiment: 0.018 },
+  { time: "Now", sentiment: 0.02 },
+];
+
+const DEFAULT_COMPARISON = [
+  { coin: "BTC", overall: 0.02, twitter: 0.01, reddit: 0.0, news: 0.02 },
+  { coin: "ETH", overall: 0.018, twitter: 0.01, reddit: -0.005, news: 0.015 },
+  { coin: "SOLANA", overall: 0.015, twitter: 0.008, reddit: 0.0, news: 0.012 },
+];
 
 /**
  * CoinSentimentComparison
@@ -211,9 +244,10 @@ const coinMap = {
 };
 
 export default function Dashboard() {
-  const [overview, setOverview] = useState(null);
-  const [trend, setTrend] = useState([]);
-  const [comparisonData, setComparisonData] = useState([]);
+  const [overview, setOverview] = useState(DEFAULT_OVERVIEW);
+  const [trend, setTrend] = useState(DEFAULT_TREND);
+  const [comparisonData, setComparisonData] = useState(DEFAULT_COMPARISON);
+  const [loading, setLoading] = useState(true);
 
   const [activeCoinTab, setActiveCoinTab] = useState("Overview");
   const [timeframe, setTimeframe] = useState("Day");
@@ -230,7 +264,10 @@ export default function Dashboard() {
     console.log("Downloading CSV from:", href); // optional debug
 
     try {
-      const response = await fetch(href);
+      const response = await fetch(href, {
+  credentials: "include",
+});
+
 
       if (!response.ok) {
         const text = await response.text();
@@ -270,12 +307,17 @@ export default function Dashboard() {
     // Sentiment overview + live trends for the selected coin
     Promise.all([getOverview(coinSymbol), getTrends(coinSymbol, trendUnit)])
       .then(([overviewRes, trendRes]) => {
-        const normalizedOverview =
-          overviewRes && overviewRes.data ? overviewRes.data : overviewRes;
-        setOverview(normalizedOverview);
-        setTrend(trendRes || []);
-      })
-      .catch(console.error);
+      const normalizedOverview =
+        overviewRes && overviewRes.data ? overviewRes.data : overviewRes;
+
+      setOverview(normalizedOverview || DEFAULT_OVERVIEW);
+      setTrend(trendRes?.length ? trendRes : DEFAULT_TREND);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error(err);
+      setLoading(false);
+    });
 
     // Comparison chart always uses BTC / ETH / SOLANA
     Promise.allSettled([
@@ -305,7 +347,8 @@ export default function Dashboard() {
             news: 0,
           };
         });
-        setComparisonData(arr);
+        setComparisonData(arr.length ? arr : DEFAULT_COMPARISON);
+
       })
       .catch(console.error);
   }, [selectedCoin, timeframe]);
@@ -499,7 +542,13 @@ export default function Dashboard() {
 
             <div className="w-full overflow-x-auto">
               <div className="min-w-[280px]">
-                <TrendChart data={trend} height={300} coin={selectedCoin} />
+                <TrendChart
+                  data={trend}
+                  height={300}
+                  coin={selectedCoin}
+                  isPlaceholder={loading}
+                />
+
               </div>
             </div>
           </div>

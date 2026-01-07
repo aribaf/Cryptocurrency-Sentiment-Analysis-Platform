@@ -3,17 +3,14 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Match the API base logic used elsewhere (Login/Register)
-const safeEnv = typeof process !== "undefined" && process.env ? process.env : {};
-const API_BASE =
-  safeEnv.REACT_APP_API_BASE ||
-  "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev/api";
+// ✅ Base URL WITHOUT /api
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 export default function VerifyOTP() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Email passed from Login.jsx: navigate("/verify-otp", { state: { email } })
+  // Email passed from Login.jsx
   const email = location.state?.email;
 
   const [otp, setOtp] = useState("");
@@ -21,7 +18,7 @@ export default function VerifyOTP() {
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
-  // If user somehow lands here without email in state, send them back to login
+  // Redirect if user lands here without email
   useEffect(() => {
     if (!email) {
       navigate("/login", { replace: true });
@@ -30,66 +27,75 @@ export default function VerifyOTP() {
 
   if (!email) return null;
 
+  // =========================
+  // VERIFY OTP
+  // =========================
   const handleVerify = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage({ text: "", type: "" });
 
-    // Simple OTP validation
-    if (otp.length !== 6 || !/^\d+$/.test(otp)) {
+    if (!/^\d{6}$/.test(otp)) {
       setMessage({ text: "Please enter a valid 6-digit OTP.", type: "error" });
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await axios.post(`${API_BASE}/auth/otp/verify`, {
-        email,
-        otp,
-      });
+      const res = await axios.post(
+        `${API_BASE}/api/auth/otp/verify`,
+        { email, otp },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-      // Adjust this based on your backend response shape
-      // Assuming it returns an access_token like normal login
-      if (response.status === 200) {
-        if (response.data.access_token) {
-          localStorage.setItem("token", response.data.access_token);
-        }
-        if (response.data.username) {
-          localStorage.setItem("username", response.data.username);
-        }
-        if (response.data.email) {
-          localStorage.setItem("userEmail", response.data.email);
-        }
+      if (res.status === 200 && res.data.access_token) {
+        localStorage.setItem("token", res.data.access_token);
+        localStorage.setItem("userEmail", email);
 
         setMessage({
           text: "Verification successful! Redirecting...",
           type: "success",
         });
 
-        setTimeout(() => navigate("/dashboard"), 1000);
+        setTimeout(() => navigate("/dashboard"), 800);
       }
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.detail || "Verification failed. Check your code.";
-      setMessage({ text: errorMsg, type: "error" });
+      setMessage({
+        text:
+          err.response?.data?.detail ||
+          "Verification failed. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // =========================
+  // RESEND OTP
+  // =========================
   const handleResend = async () => {
     setIsResending(true);
     setMessage({ text: "", type: "" });
+
     try {
-      const res = await axios.post(`${API_BASE}/auth/otp/request`, { email });
+      const res = await axios.post(
+        `${API_BASE}/api/auth/otp/request`,
+        { email },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
       setMessage({
-        text: res.data.detail || "OTP resent to your email.",
+        text: res.data?.detail || "OTP resent to your email.",
         type: "success",
       });
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.detail || "Failed to resend OTP. Try again.";
-      setMessage({ text: errorMsg, type: "error" });
+      setMessage({
+        text:
+          err.response?.data?.detail ||
+          "Failed to resend OTP. Try again.",
+        type: "error",
+      });
     } finally {
       setIsResending(false);
     }
@@ -109,14 +115,10 @@ export default function VerifyOTP() {
 
         <form onSubmit={handleVerify}>
           <div className="mb-6">
-            <label
-              htmlFor="otp"
-              className="block text-sm font-medium text-gray-300 mb-2"
-            >
+            <label className="block text-sm font-medium text-gray-300 mb-2">
               OTP Code
             </label>
             <input
-              id="otp"
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
@@ -142,7 +144,7 @@ export default function VerifyOTP() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-1 py-2.5 px-4 rounded-lg shadow-lg text-xs sm:text-sm font-bold text-white bg-cp-orange hover:bg-cp-orange/90 disabled:opacity-60 transition-all uppercase tracking-[0.15em]"
+            className="w-full py-2.5 px-4 rounded-lg shadow-lg text-xs sm:text-sm font-bold text-white bg-cp-orange hover:bg-cp-orange/90 disabled:opacity-60 transition-all uppercase tracking-[0.15em]"
           >
             {isLoading ? "Verifying..." : "Verify & Login"}
           </button>

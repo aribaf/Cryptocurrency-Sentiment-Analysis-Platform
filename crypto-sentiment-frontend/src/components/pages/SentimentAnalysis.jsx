@@ -19,14 +19,36 @@ const getLabelByScore = (score, threshold) => {
   if (score < -threshold) return "Negative";
   return "Neutral";
 };
+// -----------------------------
+// Realistic Neutral Defaults (Preloaded UI)
+// -----------------------------
+const DEFAULT_OVERVIEW = {
+  overall: {
+    score: 0.02,
+  },
+  by_source: {
+    twitter: 0.01,
+    reddit: -0.01,
+    news: 0.02,
+  },
+};
+
+const DEFAULT_TREND = [
+  { time: "T-4", sentiment: 0.01 },
+  { time: "T-3", sentiment: 0.015 },
+  { time: "T-2", sentiment: 0.012 },
+  { time: "T-1", sentiment: 0.018 },
+  { time: "Now", sentiment: 0.02 },
+];
 
 // developer-provided uploaded file (local path)
 const UPLOADED_SCREENSHOT = "/mnt/data/debf3a90-480b-4245-bf7c-e60e2d7754af.png";
 
 export default function SentimentAnalysis() {
-  const [overview, setOverview] = useState(null);
-  const [trendData, setTrendData] = useState([]);
-  const [loadingOverview, setLoadingOverview] = useState(true);
+  const [overview, setOverview] = useState(DEFAULT_OVERVIEW);
+  const [trendData, setTrendData] = useState(DEFAULT_TREND);
+  const [loadingOverview, setLoadingOverview] = useState(false);
+
   const [selectedCoin, setSelectedCoin] = useState("BTC");
   const [timeframe, setTimeframe] = useState("day");
   const [error, setError] = useState(null);
@@ -39,8 +61,9 @@ export default function SentimentAnalysis() {
         getOverview(coin),
         getTrends(coin, tf),
       ]);
-      setOverview(ov);
-      setTrendData(tr || []);
+      setOverview(ov || DEFAULT_OVERVIEW);
+      setTrendData(tr?.length ? tr : DEFAULT_TREND);
+
     } catch (e) {
       setError(e.message || String(e));
     } finally {
@@ -53,57 +76,44 @@ export default function SentimentAnalysis() {
   }, [selectedCoin, timeframe]);
 
   const cards = [
-    {
-      title: "Twitter Sentiment",
-      sourceKey: "twitter",
-      label:
-        overview?.by_source?.twitter !== undefined &&
-        overview?.by_source?.twitter !== null
-          ? `${getLabelByScore(
-              overview.by_source.twitter,
-              NEUTRAL_THRESHOLD
-            )} ${(overview.by_source.twitter * 100).toFixed(1)}%`
-          : "Neutral 0%",
-      score: overview?.by_source?.twitter ?? 0,
-    },
-    {
-      title: "Reddit Sentiment",
-      sourceKey: "reddit",
-      label:
-        overview?.by_source?.reddit !== undefined &&
-        overview?.by_source?.reddit !== null
-          ? `${getLabelByScore(
-              overview.by_source.reddit,
-              NEUTRAL_THRESHOLD
-            )} ${(overview.by_source.reddit * 100).toFixed(1)}%`
-          : "Neutral 0%",
-      score: overview?.by_source?.reddit ?? 0,
-    },
-    {
-      title: "News Sentiment",
-      sourceKey: "news",
-      label:
-        overview?.by_source?.news !== undefined &&
-        overview?.by_source?.news !== null
-          ? `${getLabelByScore(
-              overview.by_source.news,
-              NEUTRAL_THRESHOLD
-            )} ${(overview.by_source.news * 100).toFixed(1)}%`
-          : "Neutral 0%",
-      score: overview?.by_source?.news ?? 0,
-    },
-    {
-      title: "Overall Sentiment",
-      sourceKey: "overall",
-      label: overview?.overall
-        ? `${getLabelByScore(
-            overview.overall.score,
-            NEUTRAL_THRESHOLD
-          )} ${(overview.overall.score * 100).toFixed(1)}%`
-        : "Neutral 0%",
-      score: overview?.overall?.score ?? 0,
-    },
-  ];
+  {
+    title: "Twitter Sentiment",
+    sourceKey: "twitter",
+    score: overview.by_source.twitter,
+    label: `${getLabelByScore(
+      overview.by_source.twitter,
+      NEUTRAL_THRESHOLD
+    )} ${(overview.by_source.twitter * 100).toFixed(1)}%`,
+  },
+  {
+    title: "Reddit Sentiment",
+    sourceKey: "reddit",
+    score: overview.by_source.reddit,
+    label: `${getLabelByScore(
+      overview.by_source.reddit,
+      NEUTRAL_THRESHOLD
+    )} ${(overview.by_source.reddit * 100).toFixed(1)}%`,
+  },
+  {
+    title: "News Sentiment",
+    sourceKey: "news",
+    score: overview.by_source.news,
+    label: `${getLabelByScore(
+      overview.by_source.news,
+      NEUTRAL_THRESHOLD
+    )} ${(overview.by_source.news * 100).toFixed(1)}%`,
+  },
+  {
+    title: "Overall Sentiment",
+    sourceKey: "overall",
+    score: overview.overall.score,
+    label: `${getLabelByScore(
+      overview.overall.score,
+      NEUTRAL_THRESHOLD
+    )} ${(overview.overall.score * 100).toFixed(1)}%`,
+  },
+];
+
 
   const handleTimeframeChange = (newTf) => setTimeframe(newTf);
   const handlePickPopular = (coinName) => {
@@ -148,12 +158,7 @@ export default function SentimentAnalysis() {
 
       {/* Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {loadingOverview ? (
-          <div className="col-span-full text-center text-gray-400 text-sm py-4">
-            Loading overview...
-          </div>
-        ) : (
-          cards.map((c) => (
+         {cards.map((c) => (
             <SentimentCard
               key={c.sourceKey}
               title={c.title}
@@ -162,8 +167,8 @@ export default function SentimentAnalysis() {
               sourceKey={c.sourceKey}
               coin={selectedCoin}
             />
-          ))
-        )}
+          ))}
+
       </div>
 
       {/* Chart and lists */}

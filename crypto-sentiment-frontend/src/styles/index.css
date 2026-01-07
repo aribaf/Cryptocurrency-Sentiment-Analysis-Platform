@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Tell Tailwind v4 about your custom brand colors + fonts */
+/* ---------------- THEME TOKENS ---------------- */
 @theme {
   /* colors */
   --color-cp-bg: #0b0d0f;
@@ -11,18 +11,61 @@
   --color-cp-orange: #ff5722;
 
   /* fonts */
-  --font-sans: "Space Mono", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Body / UI text */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Headings / Titles */
   --font-display: "Space Grotesk", system-ui, sans-serif;
+
+  /* Numbers / Code */
   --font-mono: "PT Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Global dark background */
+/* ---------------- BASE STYLES ---------------- */
 @layer base {
   body {
     @apply bg-cp-bg text-white font-sans antialiased;
   }
+
+  /* Main page titles */
+  h1 {
+    @apply font-display font-bold tracking-tight;
+  }
+
+  /* Section titles */
+  h2,
+  h3 {
+    @apply font-display font-semibold tracking-tight;
+  }
+
+  /* UI labels / small headings */
+  h4,
+  h5 {
+    @apply font-sans font-medium;
+  }
 }
 
+/* ---------------- UTILITIES ---------------- */
+@layer utilities {
+  /* Explicit heading utilities (recommended) */
+  .heading-xl {
+    @apply font-display text-3xl font-bold tracking-tight;
+  }
+
+  .heading-lg {
+    @apply font-display text-xl font-semibold tracking-tight;
+  }
+
+  .heading-md {
+    @apply font-display text-lg font-medium;
+  }
+
+  .metric-text {
+    @apply font-mono text-sm;
+  }
+}
+
+/* ---------------- GLOBAL HELPERS ---------------- */
 html,
 body,
 #root {

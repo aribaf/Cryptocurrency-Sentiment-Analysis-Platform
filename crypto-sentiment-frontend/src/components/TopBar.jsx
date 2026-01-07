@@ -13,7 +13,7 @@ const PAGE_META = {
   "/news": { section: "Analytics", page: "News Feed" },
 };
 
-export default function TopBar({ user, envLabel = "Live data" }) {
+export default function TopBar({ user, loading, envLabel = "Live data" }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,11 +66,17 @@ export default function TopBar({ user, envLabel = "Live data" }) {
             onClick={() => setMenuOpen((prev) => !prev)}
             className="flex items-center gap-2 text-xs text-gray-200 hover:text-white"
           >
-            <UserCircleIcon className="w-8 h-8 text-cp-neon" />
+            {/* Avatar (first letter) */}
+            <div className="w-8 h-8 rounded-full bg-cp-neon text-black flex items-center justify-center text-sm font-bold">
+              {user?.username?.[0]?.toUpperCase() || "?"}
+            </div>
+
+            {/* Username */}
             <span className="hidden md:inline">
-              {user?.name || "Account"}
+              {loading ? "Loading…" : user?.username || "Guest"}
             </span>
           </button>
+
 
           {menuOpen && (
             <div className="absolute right-0 mt-2 w-44 bg-cp-panel border border-white/10 rounded-lg shadow-lg text-xs text-gray-200 z-40">

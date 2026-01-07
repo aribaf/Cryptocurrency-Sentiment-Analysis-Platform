@@ -12,7 +12,8 @@ client = MongoClient(MONGO_URI)
 c = client[DB_NAME]["transactions"]
 
 doc = {
-    "tx_hash": "0xseed" + datetime.utcnow().strftime("%s"),
+    # use timestamp() instead of strftime("%s") which is not supported on Windows
+    "tx_hash": "0xseed" + str(int(datetime.utcnow().timestamp())),
     "blockchain": "ethereum",
     "from": "0xFromSeed",
     "to": "0xToSeed",

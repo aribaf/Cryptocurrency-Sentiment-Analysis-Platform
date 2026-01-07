@@ -3,8 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const safeEnv = typeof process !== "undefined" && process.env ? process.env : {};
-const API_BASE = safeEnv.REACT_APP_API_BASE || "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev/api";
-const OAUTH_HOST = safeEnv.REACT_APP_OAUTH_HOST || "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev";
+const API_BASE =
+  import.meta.env.VITE_API_BASE;
+
+const OAUTH_HOST =
+  import.meta.env.VITE_OAUTH_HOST;
 
 export default function Register() {
   const navigate = useNavigate();
@@ -19,7 +22,7 @@ export default function Register() {
     setIsLoading(true);
     setMessage(null);
     try {
-      const res = await axios.post(`${API_BASE}/account/register`, formData);
+      const res = await axios.post(`${API_BASE}/api/account/register`, formData);
       setMessage({ type: "success", text: res.data.detail || "Account created successfully. " });
 
       // optionally request OTP for verification
@@ -48,7 +51,7 @@ export default function Register() {
 
   // Google Sign-In
   const googleSignIn = () => {
-    window.location.href = `${OAUTH_HOST}/api/auth/google/login`;
+    window.location.href = "http://localhost:8000/api/auth/google/login";
   };
 
   // --- THEME CONSTANTS (Matching the Login Page) ---
@@ -162,14 +165,7 @@ export default function Register() {
           </a>
         </p>
 
-        <div className="mt-12 flex flex-wrap justify-center space-x-3 text-xs font-mono text-gray-500">
-          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">
-            IMMUTABLE LEDGER
-          </span>
-          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">
-            SECURE END-TO-END
-          </span>
-        </div>
+        
       </div>
     </div>
   );

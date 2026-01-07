@@ -220,8 +220,11 @@ from fastapi.responses import StreamingResponse  # already imported with FileRes
 async def download_twitter_csv(limit: int = 1000):
     import io
     import pandas as pd
+    from fastapi import HTTPException
+    from fastapi.responses import StreamingResponse
 
-    q = {"sentiment.score": {"$exists": True}}
+    # ✅ FIXED QUERY
+    q = {"sentiment.scores": {"$exists": True}}
 
     tweets = list(
         raw_collection.find(q)
@@ -232,31 +235,37 @@ async def download_twitter_csv(limit: int = 1000):
     if not tweets:
         raise HTTPException(status_code=404, detail="No Twitter data found to export")
 
-    cleaned_tweets = []
+    cleaned = []
     for tweet in tweets:
         label, confidence_score = extract_sentiment(tweet)
         created_at = normalize_created_at(tweet)
 
-        cleaned_tweets.append({
+        scores = tweet.get("sentiment", {}).get("scores", {})
+        sentiment_score = (
+            float(scores.get("positive", 0)) - float(scores.get("negative", 0))
+        )
+
+        cleaned.append({
             "tweet_id": tweet.get("tweet_id", ""),
             "coin": tweet.get("coin", ""),
-            "text": tweet.get("text", ""),
+            "text": tweet.get("text", "").replace("\n", " "),
             "url": tweet.get("url", ""),
             "created_at": created_at,
-            "sentiment_score": tweet.get("sentiment", {}).get("score"),
+            "sentiment_score": round(sentiment_score, 4),
             "sentiment_label": label,
-            "confidence": confidence_score,
+            "confidence": round(abs(sentiment_score), 4),
         })
 
-    df = pd.DataFrame(cleaned_tweets)
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
-    csv_bytes = csv_buffer.getvalue().encode("utf-8")
+    df = pd.DataFrame(cleaned)
+
+    buf = io.StringIO()
+    df.to_csv(buf, index=False)
 
     return StreamingResponse(
-        io.BytesIO(csv_bytes),
+        io.BytesIO(buf.getvalue().encode("utf-8")),
         media_type="text/csv",
         headers={
             "Content-Disposition": 'attachment; filename="recent_twitter_sentiment.csv"'
         },
     )
+

@@ -1,6 +1,12 @@
+
+from starlette.middleware.sessions import SessionMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 # ✅ CREATE APP ONCE
 app = FastAPI(title="CryptoSent API")
@@ -14,11 +20,17 @@ app.add_middleware(
         "https://cryptocurrency-sentiment-analysis-p-one.vercel.app",
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+# ✅ REQUIRED FOR GOOGLE OAUTH
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SECRET_KEY"),
+    same_site="lax",
+    https_only=False
+)
 # ❌ REMOVE SessionMiddleware (do NOT use it now)
 # from starlette.middleware.sessions import SessionMiddleware
 
@@ -36,6 +48,8 @@ from .routes_trends import router as trends_router
 from .routes_account import router as account_router
 from .routes_sentiment import router as sentiment_router
 from .routes_heatmap import router as heatmap_router
+from .routes_admin import router as admin_router
+app.include_router(admin_router, prefix="/api")
 
 # ------------------ MOUNT ROUTERS ------------------
 

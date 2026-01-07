@@ -1,38 +1,46 @@
-// Save as src/pages/AuthSuccess.jsx (React)
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function AuthSuccess(){
+export default function AuthSuccess() {
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    const hash = window.location.hash.replace(/^#/,'');
+  useEffect(() => {
+    // 1. Extract the hash and look for the token
+    const hash = window.location.hash.replace("#", "");
     const params = new URLSearchParams(hash);
-    const token = params.get('access_token');
-    if (!token) {
-      console.error("No access token in URL");
-      navigate('/login');
+    const tokenFromUrl = params.get("access_token");
+
+    // Debugging logs to help you see the state in the console
+    console.log("Token from URL:", tokenFromUrl);
+
+    // 2. Priority 1: If we found a token in the URL, save it and go to dashboard
+    if (tokenFromUrl) {
+      localStorage.setItem("access_token", tokenFromUrl);
+
+      // Force a full-page redirect so the Auth provider re-reads localStorage and fetches /api/me with the token.
+      // SPA navigation alone can run into a race where AuthContext mounted earlier and won't re-run.
+      console.log("Stored access_token — doing full redirect to /dashboard to refresh auth state");
+      window.location.replace("/dashboard");
       return;
     }
-    localStorage.setItem('token', token);
-    // optionally verify with /api/me then redirect
-    fetch((process.env.REACT_APP_API_BASE_HOST || 'http://localhost:8000') + '/api/me', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    })
-      .then(r => {
-        if (!r.ok) throw new Error('verify failed');
-        return r.json();
-      })
-      .then(user => {
-        console.log('user', user);
-        navigate('/');
-      })
-      .catch(err => {
-        console.warn('verify failed', err);
-        // if account needs completion:
-        navigate('/complete-registration');
-      });
+
+    // 3. Priority 2: If no token in URL, check if we ALREADY have one in storage
+    const existingToken = localStorage.getItem("access_token");
+
+    if (existingToken) {
+      console.log("Using existing token from storage");
+      navigate("/dashboard");
+      return;
+    }
+
+    // 4. Failure: Only redirect to login if BOTH are missing
+    console.error("No token found in URL or storage, redirecting to login.");
+    navigate("/login");
   }, [navigate]);
 
-  return <div style={{padding:20}}>Finalizing sign-in…</div>;
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-black text-white font-mono">
+      <p className="tracking-widest animate-pulse">-- INITIALIZING SESSION --</p>
+    </div>
+  );
 }

@@ -12,7 +12,7 @@ DB_NAME = os.environ.get("DB_NAME", "appdb")
 db = client[DB_NAME]
 users_col = db["users"]
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "4283c705eab3418c45deb0b8e1be4f35a5b225a3aaa4ab1e4522edbd12649cb6")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 JWT_ALG = os.environ.get("JWT_ALG", "HS256")
 
 router = APIRouter(tags=["protected"])
@@ -34,6 +34,23 @@ def get_current_user(creds: HTTPAuthorizationCredentials = Depends(security)):
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
-@router.get("/me")
-async def me(user = Depends(get_current_user)):
-    return {"email": user.get("email"), "auth_method": user.get("auth_method")}
+
+def get_admin_user(user=Depends(get_current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return user
+
+@router.get("/me", summary="Get current logged-in user")
+async def get_current_user_info(user=Depends(get_current_user)):
+    # ensure frontend always receives a non-empty username (fallback to email prefix)
+    email = user.get("email") or ""
+    username = user.get("username") or (email.split("@")[0] if email else None)
+    return {
+        "id": str(user.get("_id")),
+        "email": email,
+        "username": username,
+        "is_active": user.get("is_active", True),
+    }

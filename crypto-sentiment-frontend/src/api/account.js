@@ -7,7 +7,7 @@ const API_BASE =
   "http://localhost:8000";
 
 function getToken() {
-  return localStorage.getItem("token");
+  return localStorage.getItem("access_token"); 
 }
 
 async function safeParseJSON(res) {
@@ -43,7 +43,8 @@ async function request(path, opts = {}) {
 }
 
 export function getProfile() {
-  return request("/me", { method: "GET" });
+  // 2. Add /auth to the path to match your FastAPI router structure
+  return request("/auth/me", { method: "GET" });
 }
 
 export function updateProfile({ email, new_email }) {

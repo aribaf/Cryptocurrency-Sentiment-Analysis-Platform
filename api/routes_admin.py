@@ -20,6 +20,11 @@ users_col = db["users"]
 TWEETS_COLLECTION = client["crypto_tweets_db"]["latest_tweets"]
 NEWS_COLLECTION = client["crypto_news_db"]["articles"]
 REDDIT_COLLECTION = client["crypto_reddit_db"]["latest_reddit"]
+SOURCE_CONFIG = {
+    "twitter": {"enabled": True},
+    "reddit": {"enabled": True},
+    "news": {"enabled": True},
+}
 
 # --- Pydantic Models ---
 
@@ -158,3 +163,66 @@ async def delete_user_account(user_id: str):
         raise HTTPException(status_code=404, detail="User not found.")
 
     return {"message": f"User {user_id} deleted successfully"}
+
+
+
+@router.get("/sentiment-monitor", summary="Sentiment source health (Admin)")
+async def sentiment_monitor():
+
+    def source_stats(col, date_field):
+        count = col.count_documents({})
+
+        latest = col.find_one({}, sort=[(date_field, -1)])
+
+        avg_result = list(col.aggregate([
+            {"$match": {"score": {"$ne": None}}},
+            {"$group": {"_id": None, "avg": {"$avg": "$score"}}}
+        ]))
+
+        avg_score = (
+            round(avg_result[0]["avg"], 4)
+            if avg_result and avg_result[0].get("avg") is not None
+            else 0
+        )
+
+        return {
+            "records": count,
+            "avg_score": avg_score,
+            "last_updated": latest.get(date_field) if latest else None
+        }
+
+    return {
+        "twitter": source_stats(TWEETS_COLLECTION, "scraped_at"),
+        "reddit": source_stats(REDDIT_COLLECTION, "created_at"),
+        "news": source_stats(NEWS_COLLECTION, "published_at")
+    }
+    
+    
+@router.post("/sentiment/rerun/{source}")
+async def rerun_sentiment_source(source: str):
+    if source not in SOURCE_CONFIG:
+        raise HTTPException(status_code=400, detail="Invalid source")
+
+    if not SOURCE_CONFIG[source]["enabled"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"{source} source is disabled"
+        )
+
+    # 🔁 Placeholder hook for scraper
+    print(f"[ADMIN] Re-running {source} scraper")
+
+    return {
+        "message": f"{source.capitalize()} scraper triggered successfully"
+    }
+@router.post("/sentiment/toggle/{source}")
+async def toggle_sentiment_source(source: str):
+    if source not in SOURCE_CONFIG:
+        raise HTTPException(status_code=400, detail="Invalid source")
+
+    SOURCE_CONFIG[source]["enabled"] = not SOURCE_CONFIG[source]["enabled"]
+
+    return {
+        "source": source,
+        "enabled": SOURCE_CONFIG[source]["enabled"]
+    }

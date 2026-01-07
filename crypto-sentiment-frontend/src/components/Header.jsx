@@ -8,7 +8,8 @@ export default function Header() {
 
   return (
     // Height remains h-16 for a polished look
-    <header className="z-30 border-b border-gray-900 bg-cp-bg h-16">
+   <header className="relative z-50 border-b border-gray-900 bg-cp-bg h-16">
+
       {/* REMOVED: max-w-7xl mx-auto 
         The content now spans the full browser width, 
         using only padding (px-4 sm:px-6 lg:px-8) for edge spacing.
@@ -79,8 +80,10 @@ export default function Header() {
         </div>
 
         {/* Mobile nav (full-width under header) */}
-        {open && (
-          <nav className="md:hidden pb-3 flex flex-col gap-1 text-sm font-semibold text-gray-300">
+       {open && (
+  <nav className="md:hidden absolute left-0 top-16 w-full bg-cp-bg border-t border-gray-900 z-50
+                  pb-4 flex flex-col gap-1 text-sm font-semibold text-gray-300">
+
             <Link
               to="/dashboard"
               onClick={() => setOpen(false)}

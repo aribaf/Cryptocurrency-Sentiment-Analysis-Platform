@@ -4,8 +4,12 @@ import { useNavigate } from "react-router-dom";
 
 // Safe access to env: prevents "process is not defined" in some bundlers
 const safeEnv = typeof process !== "undefined" && process.env ? process.env : {};
-const API_BASE = safeEnv.REACT_APP_API_BASE || "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev/api";
-const OAUTH_HOST = safeEnv.REACT_APP_OAUTH_HOST || "https://malisa-nonexaggerating-slobberingly.ngrok-free.dev";
+const API_BASE =
+  import.meta.env.VITE_API_BASE;
+
+const OAUTH_HOST =
+  import.meta.env.VITE_OAUTH_HOST;
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,9 +27,10 @@ export default function Login() {
     setIsLoading(true);
     setMessage(null);
     try {
-      const res = await axios.post(`${API_BASE}/auth/login`, formData);
+      const res = await axios.post(`${API_BASE}/api/auth/login`, formData);
+
       if (res.status === 200 && res.data.access_token) {
-        localStorage.setItem("token", res.data.access_token);
+localStorage.setItem("access_token", res.data.access_token);
         setMessage({ type: "success", text: "Login successful! Redirecting..." });
         navigate("/");
       }
@@ -47,7 +52,7 @@ const requestOtp = async () => {
   setIsLoading(true);
   setMessage(null);
   try {
-    const res = await axios.post(`${API_BASE}/auth/otp/request`, { email: formData.email });
+    const res = await axios.post(`${API_BASE}/api/auth/otp/request`, { email: formData.email });
     setMessage({ type: "success", text: res.data.detail || "OTP sent to your email." });
 
     // ✅ Go to Verify OTP screen and pass email
@@ -63,7 +68,8 @@ const requestOtp = async () => {
 
   // Google Sign-In
   const googleSignIn = () => {
-    window.location.href = `${OAUTH_HOST}/api/auth/google/login`;
+    window.location.href = `${API_BASE}/api/auth/google/login`;
+
   };
 
   // --- THEME CONSTANTS ---
@@ -173,10 +179,7 @@ const requestOtp = async () => {
         </div>
 
         {/* Footer Security Tags */}
-        <div className="mt-12 flex flex-wrap justify-center space-x-3 text-xs font-mono text-gray-500">
-          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">256-BIT SECURED</span>
-          <span className="border border-gray-700 py-1 px-3 rounded-full mb-2">DECENTRALIZED</span>
-        </div>
+       
       </div>
     </div>
   );

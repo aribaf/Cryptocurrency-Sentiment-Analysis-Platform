@@ -21,7 +21,7 @@ load_dotenv()
 # from utils import send_email   # optional helper to send OTP emails
 
 # --- Basic config and constants ---
-SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplease")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 JWT_ALG = "HS256"
 JWT_EXP_MINUTES = int(os.environ.get("JWT_EXP_MINUTES", 60))
 
@@ -31,7 +31,7 @@ GOOGLE_REDIRECT_URI = os.environ.get(
     "GOOGLE_REDIRECT_URI",
     "http://localhost:8000/api/auth/google/callback"
 )
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = os.environ.get("FRONTEND_URL")
 
 # If you use a MongoDB client module, import it:
 # Example expects `db = client.get_database()` or `client` with .users/.otps collections.
@@ -63,9 +63,14 @@ oauth.register(
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 # --- Helpers: JWT creation ---
-def create_access_token(subject: str, minutes: Optional[int] = None) -> str:
+def create_access_token(subject: str, role: str = "user", minutes: Optional[int] = None) -> str:
     expire = datetime.utcnow() + timedelta(minutes=(minutes or JWT_EXP_MINUTES))
-    payload = {"sub": str(subject), "exp": expire, "iat": datetime.utcnow()}
+    payload = {
+        "sub": str(subject),
+        "role": role,              # 👈 ADD ROLE
+        "exp": expire,
+        "iat": datetime.utcnow()
+    }
     return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALG)
 
 # --- Simple OTP storage helpers (uses Mongo) ---
@@ -182,6 +187,7 @@ async def verify_otp(body: OTPVerify):
             "username": email.split("@")[0],
             "created_at": datetime.utcnow(),
             "is_active": True,
+            "role": "user",     
             "auth_method": "otp"
         }
         if user_collection is not None:
@@ -191,7 +197,11 @@ async def verify_otp(body: OTPVerify):
             # fallback in-memory representation (not persisted)
             user = new_user
 
-    token = create_access_token(str(user.get("_id", user.get("email"))))
+    token = create_access_token(
+    str(user.get("_id", user.get("email"))),
+    role=user.get("role", "user")
+)
+
     return {"access_token": token, "token_type": "bearer"}
 
 # --- Password login endpoint (optional) ---
@@ -225,23 +235,21 @@ async def login(body: LoginIn):
     # Example (pseudo):
     # if not verify_password(body.password, user["hashed_password"]):
     #     raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_access_token(str(user.get("_id", user.get("email"))))
+    token = create_access_token(
+    str(user.get("_id", user.get("email"))),
+    role=user.get("role", "user")
+)
+
     return {"access_token": token, "token_type": "bearer"}
 
 
 # --- Google OAuth routes (Option A: /google/login and /google/callback) ---
 @router.get("/google/login")
 async def google_login(request: Request):
-    """
-    Start Google OAuth2 login (redirect to Google).
-    Make sure GOOGLE_REDIRECT_URI matches Google Console setting.
-    """
-    try:
-        # Use the GOOGLE_REDIRECT_URI defined above (must be exact)
-        return await oauth.google.authorize_redirect(request, GOOGLE_REDIRECT_URI)
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Failed to create redirect: {e}")
+    return await oauth.google.authorize_redirect(
+        request,
+        "http://localhost:8000/api/auth/google/callback"
+    )
 
 @router.get("/google/callback")
 async def google_callback(request: Request):
@@ -292,12 +300,13 @@ async def google_callback(request: Request):
         user = user_collection.find_one({"email": email})
 
     if not user:
-        # create user
+        # create user (fall back to email prefix when Google name not provided)
         new_user = {
             "email": email,
-            "name": name,
+            "username": name or (email.split("@")[0] if email else ""),
             "oauth_provider": "google",
             "oauth_id": oauth_id,
+            "role": "user",     
             "created_at": datetime.utcnow(),
             "is_active": True
         }
@@ -309,11 +318,22 @@ async def google_callback(request: Request):
 
     # create our own JWT
     subject = str(user.get("_id", email))
-    jwt_token = create_access_token(subject)
+    jwt_token = create_access_token(
+    subject,
+    role=user.get("role", "user")
+)
 
     # Redirect back to frontend success route with token in fragment
-    redirect_url = f"{FRONTEND_URL}/auth/success#access_token={jwt_token}"
+    # create JWT token above this
+    # create jwt_token ABOVE this line
+    redirect_url = (
+        "http://localhost:5173/auth/success"
+        f"#access_token={jwt_token}"
+    )
+
     return RedirectResponse(redirect_url)
+
+
 
 
 # --- Optional route to get current user (requires Authorization header) ---
@@ -322,23 +342,42 @@ async def me(request: Request):
     auth = request.headers.get("Authorization") or ""
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
+
     token = auth.split(" ", 1)[1]
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALG])
+
+    sub = payload.get("sub")
+    user_collection = db.your_db.users if hasattr(db, "your_db") else db.users
+    user = user_collection.find_one({"_id": ObjectId(sub)})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "email": user.get("email"),
+        "username": user.get("username"),
+        "role": user.get("role", "user"),
+        "oauth_provider": user.get("oauth_provider"),
+        "auth_method": user.get("auth_method")
+    }
+
+
+
+def admin_required(request: Request):
+    auth = request.headers.get("Authorization") or ""
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token = auth.split(" ", 1)[1]
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALG])
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    sub = payload.get("sub")
-    # find user by id or email
-    if db is not None:
-        user_collection = db.your_db.users if hasattr(db, "your_db") else db.users
-        user = user_collection.find_one({"_id": ObjectId(sub)}) if ObjectId.is_valid(sub) else user_collection.find_one({"email": sub})
-        if user:
-            user["_id"] = str(user["_id"])
-            return user
-    # fallback minimal response
-    return {"sub": sub}
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
 
-# export router
+    return payload
+
+

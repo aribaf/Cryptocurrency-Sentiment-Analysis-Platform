@@ -5,6 +5,9 @@ import { getTwitter } from "../api/api"; // adjust path if your api module is el
 /* -----------------------
    Helpers
 ------------------------*/
+const TOP_PER_SENTIMENT = 3; // adjust: 1–3 is ideal
+
+
 const parseCreated = (created) => {
   if (!created) return null;
   try {

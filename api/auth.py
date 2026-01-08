@@ -28,8 +28,7 @@ JWT_EXP_MINUTES = int(os.environ.get("JWT_EXP_MINUTES", 60))
 # Default redirect URIs (sane defaults for local/ngrok testing).
 # IMPORTANT: these must match Google Console EXACTLY when testing.
 GOOGLE_REDIRECT_URI = os.environ.get(
-    "GOOGLE_REDIRECT_URI",
-    "http://localhost:8000/api/auth/google/callback"
+    "GOOGLE_REDIRECT_URI"
 )
 FRONTEND_URL = os.environ.get("FRONTEND_URL")
 
@@ -248,7 +247,7 @@ async def login(body: LoginIn):
 async def google_login(request: Request):
     return await oauth.google.authorize_redirect(
         request,
-        "http://localhost:8000/api/auth/google/callback"
+         GOOGLE_REDIRECT_URI
     )
 
 @router.get("/google/callback")

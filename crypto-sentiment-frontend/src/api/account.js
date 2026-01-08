@@ -3,8 +3,7 @@
 
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
-  localStorage.getItem("API_BASE_HOST") ||
-  "http://localhost:8000";
+  localStorage.getItem("API_BASE_HOST");
 
 function getToken() {
   return localStorage.getItem("access_token"); 

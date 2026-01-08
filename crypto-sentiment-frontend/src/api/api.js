@@ -1,7 +1,7 @@
 // src/api/api.js
 import axios from "axios";
 
-const rawBase = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
+const rawBase = import.meta.env.VITE_API_BASE;
 // Ensure base ends with "/api" (so callers below use paths like "/sentiment/overview")
 const API_BASE = rawBase.endsWith("/api") ? rawBase : rawBase.replace(/\/$/, "") + "/api";
 

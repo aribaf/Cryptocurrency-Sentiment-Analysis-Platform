@@ -326,12 +326,13 @@ async def google_callback(request: Request):
     # create JWT token above this
     # create jwt_token ABOVE this line
     redirect_url = (
-    f"{FRONTEND_URL}/auth/success"
+    f"{FRONTEND_URL.rstrip('/')}/auth/success"
     f"#access_token={jwt_token}"
 )
-
-
     return RedirectResponse(redirect_url)
+
+
+  
 
 
 

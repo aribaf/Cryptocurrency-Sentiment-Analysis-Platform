@@ -5,6 +5,7 @@ import TrendCard from "../trend/TrendCard";
 import Sidebar from "../trend/Sidebar";
 import HistoricalChart from "../trend/HistoricalChart";
 import TrendRealtime from "../trend/TrendRealTime";
+import Chatbot from "../chatbot/Chatbot";
 
 import { fetchTrends, fetchTrendHistory } from "../../api/api.js";
 
@@ -154,6 +155,17 @@ export default function TrendPrediction() {
     if (!filter) return true;
     return (it.cryptocurrency || "").toLowerCase().includes(filter);
   });
+  const chatbotContext = {
+  overall: {
+    score: stats.overall,
+    label:
+      stats.overall > 0.65
+        ? "High confidence"
+        : stats.overall > 0.55
+        ? "Moderate confidence"
+        : "Low confidence",
+  },
+};
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -228,6 +240,12 @@ export default function TrendPrediction() {
         </aside>
         */}
       </div>
+<Chatbot
+  coin={activeCoin}
+  sentiment={chatbotContext}
+  timeframe={timeframe}
+/>
+
     </div>
   );
 }

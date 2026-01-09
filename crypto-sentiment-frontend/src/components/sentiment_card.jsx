@@ -47,12 +47,12 @@ export default function SentimentCard({
   // --- Choose Arrow Icon ---
   const getArrow = (lbl) => {
     if (lbl === "Positive") {
-      return <ArrowUp className="text-cp-neon" size={18} />;
+      return <ArrowUp className="text-cp-neon" size={16} />;
     }
     if (lbl === "Negative") {
-      return <ArrowDown className="text-cp-magenta" size={18} />;
+      return <ArrowDown className="text-cp-magenta" size={16} />;
     }
-    return <ArrowRight className="text-gray-400" size={18} />;
+    return <ArrowRight className="text-gray-400" size={16} />;
   };
 
   // --- Navigation handler (default) ---
@@ -84,8 +84,8 @@ export default function SentimentCard({
       aria-label={`Open ${title} breakdown`}
       className="
         bg-cp-panel/90
-        rounded-xl
-        p-4
+        rounded-lg md:rounded-xl
+        p-3 md:p-4
         shadow-sm
         border border-white/5
         hover:border-cp-neon/80
@@ -104,10 +104,10 @@ export default function SentimentCard({
       <div className="flex justify-between items-start gap-2">
         {/* Card Title */}
         <div>
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+          <p className="text-xs md:text-xs font-medium text-gray-400 uppercase tracking-wide">
             {title}
           </p>
-          <p className="mt-1 text-[11px] text-gray-500">
+          <p className="mt-1 text-[10px] md:text-[11px] text-gray-500">
             {sourceKey && (
               <>
                 Source:{" "}
@@ -125,16 +125,16 @@ export default function SentimentCard({
         </div>
       </div>
 
-      <div className="mt-4 flex items-baseline justify-between">
+      <div className="mt-3 md:mt-4 flex items-baseline justify-between">
         {/* Sentiment Label */}
-        <h3 className={`text-lg font-semibold ${moodColor(score)}`}>
+        <h3 className={`text-base md:text-lg font-semibold ${moodColor(score)}`}>
           {label || "Loading..."}
         </h3>
 
         {/* Sentiment Score */}
-        <p className="text-xs text-gray-400">
+        <p className="text-[10px] md:text-xs text-gray-400">
           Score:{" "}
-          <span className="font-semibold text-gray-100">{scoreDisplay}</span>
+          <span className="font-semibold text-gray-100 text-xs md:text-sm">{scoreDisplay}</span>
         </p>
       </div>
     </div>

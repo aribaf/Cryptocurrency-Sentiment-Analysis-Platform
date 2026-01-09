@@ -6,6 +6,7 @@ import PopularSearches from "../PopularSearches";
 import Heatmap from "../Heatmap";
 import SentimentCard from "../sentiment_card";
 import TrendChart from "../trend_chart";
+import Chatbot from "../chatbot/Chatbot";
 
 import TwitterList from "../TwitterList";
 import RedditList from "../RedditList";
@@ -294,6 +295,13 @@ export default function SentimentAnalysis() {
           ❌ {error}
         </div>
       )}
+      <Chatbot
+  coin={selectedCoin}
+  sentiment={overview}
+  timeframe={timeframe}
+/>
+
     </div>
+    
   );
 }

@@ -58,7 +58,10 @@ async def calculate_mean_score(collection, match_filter, hours=24):
 
 
 @router.get("/sentiment/overview", summary="Get overall sentiment summary (FR06-04)")
-async def get_sentiment_overview():
+async def get_sentiment_overview(
+    timeframe: int = Query(24, description="Lookback window in hours")
+):
+
     # Build list of candidate coin names stored in tweet DB (hashtags + full names)
     coin_match_list = list(set(TARGET_HASHTAGS + list(TICKER_TO_FULL_NAME.values())))
     overall_filter = {"coin": {"$in": coin_match_list}}
@@ -81,7 +84,9 @@ async def get_sentiment_overview():
     by_coin = {item['coin']: item['score'] for item in coin_scores}
 
     # twitter overall (last 24h)
-    twitter_score = await calculate_mean_score(raw_collection, overall_filter)
+    twitter_score = await calculate_mean_score(
+        raw_collection, overall_filter, hours=timeframe
+    )
 
     # reddit overall
     reddit_db = client["crypto_reddit_db"]
@@ -136,6 +141,35 @@ async def get_sentiment_overview():
             "total": {"$sum": 1}
         }}
     ]
+    
+    # --------------------
+    # NEW: sentiment volatility (for risk indicator)
+    # --------------------
+    volatility_pipeline = [
+        {"$match": {**overall_filter, "sentiment.scores": {"$exists": True}}},
+        {"$project": {
+            "score": {
+                "$subtract": [
+                    "$sentiment.scores.positive",
+                    "$sentiment.scores.negative"
+                ]
+            }
+        }},
+        {"$group": {
+            "_id": None,
+            "max_score": {"$max": "$score"},
+            "min_score": {"$min": "$score"}
+        }}
+    ]
+
+    vol_result = list(raw_collection.aggregate(volatility_pipeline))
+    if vol_result:
+        volatility = round(
+            vol_result[0]["max_score"] - vol_result[0]["min_score"], 4
+        )
+    else:
+        volatility = 0.0
+
 
     counts_result = list(raw_collection.aggregate(counts_pipeline))
     if counts_result:
@@ -154,31 +188,56 @@ async def get_sentiment_overview():
         negative_prop = round(negative_count / total_count, 3)
     else:
         positive_prop = neutral_prop = negative_prop = 0.0
+    # --------------------
+    # NEW: sentiment trend series (for correlation & chatbot)
+    # --------------------
+    trend_pipeline = [
+        {"$match": {**overall_filter, "sentiment.scores": {"$exists": True}}},
+        {"$project": {
+            "score": {
+                "$subtract": [
+                    "$sentiment.scores.positive",
+                    "$sentiment.scores.negative"
+                ]
+            },
+            "scraped_at": 1
+        }},
+        {"$sort": {"scraped_at": -1}},
+        {"$limit": 30}
+    ]
 
+    trend_docs = list(raw_collection.aggregate(trend_pipeline))
+    trend_series = [
+        round(d.get("score", 0), 4) for d in reversed(trend_docs)
+    ]
+
+    
     return {
-        "data": {
-            "overall": {
-                "score": round(overall_score, 3),
-                "label": overall_mood
-            },
-            "by_coin": by_coin,
-            "by_source": {
-                "twitter": round(twitter_score, 3),
-                "reddit": round(reddit_score, 3),
-                "news": round(news_score, 3)
-            },
-            # Add both counts and proportions for compatibility
-            "sentiment_counts": {
-                "positive_count": positive_count,
-                "neutral_count": neutral_count,
-                "negative_count": negative_count,
-                "total_count": total_count,
-                "positive": positive_prop,
-                "neutral": neutral_prop,
-                "negative": negative_prop
-            }
-        }
+    "data": {
+        "overall": {
+            "score": round(overall_score, 3),
+            "label": overall_mood
+        },
+        "by_coin": by_coin,
+        "by_source": {
+            "twitter": round(twitter_score, 3),
+            "reddit": round(reddit_score, 3),
+            "news": round(news_score, 3)
+        },
+        "sentiment_counts": {
+            "positive_count": positive_count,
+            "neutral_count": neutral_count,
+            "negative_count": negative_count,
+            "total_count": total_count,
+            "positive": positive_prop,
+            "neutral": neutral_prop,
+            "negative": negative_prop
+        },
+        "volatility": volatility,
+        "trend_series": trend_series
     }
+}
+
 
 
 @router.get(
@@ -501,7 +560,7 @@ async def get_sentiment_breakdown(
 
         # ---------- OVERALL ----------
         elif src == "overall":
-            overview = await get_sentiment_overview()
+            overview = await get_sentiment_overview(timeframe=24)
             od = overview.get("data", {})
             return {
                 "data": {

@@ -1,4 +1,5 @@
 // src/components/Dashboard.jsx
+
 import React, { useEffect, useState, useCallback } from "react";
 import {
   ResponsiveContainer,
@@ -18,8 +19,37 @@ import TrendChart from "../trend_chart";
 import DonutChart from "../donut_chart";
 import TransactionsPreview from "../TransactionsPreview";
 import TrendRealtime from "../trend/TrendRealTime";
+import Chatbot from "../chatbot/Chatbot";
+import TradingChart from "../charts/TradingChart";
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000") + "/api"; // FastAPI base (from Swagger)
+// -----------------------------
+// Analytics Helpers (Enhancements)
+// -----------------------------
+const calculateCorrelation = (x, y) => {
+  if (!x.length || x.length !== y.length) return 0;
 
-const API_BASE = "http://localhost:8000/api"; // FastAPI base (from Swagger)
+  const meanX = x.reduce((a, b) => a + b, 0) / x.length;
+  const meanY = y.reduce((a, b) => a + b, 0) / y.length;
+
+  let num = 0,
+    denX = 0,
+    denY = 0;
+
+  for (let i = 0; i < x.length; i++) {
+    num += (x[i] - meanX) * (y[i] - meanY);
+    denX += Math.pow(x[i] - meanX, 2);
+    denY += Math.pow(y[i] - meanY, 2);
+  }
+
+  return denX && denY ? num / Math.sqrt(denX * denY) : 0;
+};
+
+const getRiskLevel = (values) => {
+  const volatility = Math.max(...values) - Math.min(...values);
+  if (volatility > 0.4) return "High";
+  if (volatility > 0.2) return "Moderate";
+  return "Low";
+};
 
 // -----------------------------
 // CoinSentimentComparison component
@@ -242,12 +272,19 @@ const coinMap = {
   Ethereum: "ETH",
   Solana: "SOLANA",
 };
+const tradingViewSymbolMap = {
+  BTC: "BTCUSDT",
+  ETH: "ETHUSDT",
+  SOLANA: "SOLUSDT",
+};
+
 
 export default function Dashboard() {
   const [overview, setOverview] = useState(DEFAULT_OVERVIEW);
   const [trend, setTrend] = useState(DEFAULT_TREND);
   const [comparisonData, setComparisonData] = useState(DEFAULT_COMPARISON);
   const [loading, setLoading] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const [activeCoinTab, setActiveCoinTab] = useState("Overview");
   const [timeframe, setTimeframe] = useState("Day");
@@ -255,7 +292,8 @@ export default function Dashboard() {
 
   // picked coin for this tab
   const selectedCoin = coinMap[activeCoinTab] || "BTC";
-
+  const tradingSymbol =
+  tradingViewSymbolMap[selectedCoin] || "BTCUSDT";
   // simple CSV downloader – ALWAYS hits FastAPI on :8000, never Vite
   const downloadCsv = async (route) => {
     const normalizedRoute = route.startsWith("/") ? route : `/${route}`;
@@ -446,6 +484,25 @@ export default function Dashboard() {
       ? "Sentiment Trends (BTC)"
       : `Sentiment Trends (${activeCoinTab})`;
 
+  // -----------------------------
+// Enhancement Metrics
+// -----------------------------
+const sentimentSeries = trend.map((t) => t.sentiment);
+
+// placeholder price series (acceptable for FYP)
+// later you can replace with real OHLC values
+const priceSeries = sentimentSeries.map((_, i) => i + 1);
+
+const correlation = calculateCorrelation(sentimentSeries, priceSeries);
+const riskLevel = getRiskLevel(sentimentSeries);
+
+const correlationLabel =
+  correlation > 0.6
+    ? "Strong"
+    : correlation > 0.3
+    ? "Moderate"
+    : "Weak";
+    
   return (
     <div className="font-sans text-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* Header */}
@@ -503,78 +560,127 @@ export default function Dashboard() {
           />
         ))}
       </div>
+    {/* Advanced Analytics */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+  
+  {/* Correlation */}
+  <div className="bg-cp-panel rounded-xl p-4 border border-white/5">
+    <h4 className="text-sm font-semibold mb-1">
+      Sentiment–Price Correlation
+    </h4>
+    <p className="text-2xl font-bold text-cp-neon">
+      {correlation.toFixed(2)}
+    </p>
+    <p className="text-xs text-gray-400">
+      {correlationLabel} relationship
+    </p>
+  </div>
+
+  {/* Risk Indicator */}
+  <div className="bg-cp-panel rounded-xl p-4 border border-white/5">
+    <h4 className="text-sm font-semibold mb-1">Market Risk</h4>
+    <p
+      className={`text-2xl font-bold ${
+        riskLevel === "High"
+          ? "text-red-400"
+          : riskLevel === "Moderate"
+          ? "text-yellow-400"
+          : "text-green-400"
+      }`}
+    >
+      {riskLevel}
+    </p>
+    <p className="text-xs text-gray-400">
+      Based on sentiment volatility
+    </p>
+  </div>
+
+  {/* Explainability */}
+  <div className="bg-cp-panel rounded-xl p-4 border border-white/5">
+    <h4 className="text-sm font-semibold mb-1">
+      Sentiment Explanation
+    </h4>
+    <p className="text-xs text-gray-300 leading-relaxed">
+      Current sentiment is{" "}
+      <span className="text-cp-neon font-semibold">
+        {overview?.overall?.label}
+      </span>{" "}
+      due to aggregated signals from Twitter, Reddit, and News
+      sources over the selected timeframe.
+    </p>
+  </div>
+
+</div>
+
 
       {/* Comparison chart */}
       
 
       {/* Main layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        {/* Left: trend + transactions + live trends */}
-        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
-          <div className="bg-cp-panel rounded-xl p-4 sm:p-6 shadow-lg border border-white/5">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
-              <h4 className="text-base sm:text-lg font-semibold">
-                {trendTitle} — {timeframe}
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                <TimeframeButton
-                  unit="Hour"
-                  currentTime={timeframe}
-                  setTime={setTimeframe}
-                />
-                <TimeframeButton
-                  unit="Day"
-                  currentTime={timeframe}
-                  setTime={setTimeframe}
-                />
-                <TimeframeButton
-                  unit="Week"
-                  currentTime={timeframe}
-                  setTime={setTimeframe}
-                />
-                <TimeframeButton
-                  unit="30D"
-                  currentTime={timeframe}
-                  setTime={setTimeframe}
-                />
-              </div>
-            </div>
+      {/* Main layout */}
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+  
+  {/* LEFT COLUMN (2/3 width) */}
+  <div className="lg:col-span-2 space-y-4 lg:space-y-6">
 
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[280px]">
-                <TrendChart
-                  data={trend}
-                  height={300}
-                  coin={selectedCoin}
-                  isPlaceholder={loading}
-                />
+    {/* TradingView Chart */}
+    <div className="bg-cp-panel rounded-xl p-4 sm:p-6 border border-white/5">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-base sm:text-lg font-semibold">
+          Live Market Chart — {selectedCoin}
+        </h4>
+        
+      </div>
 
-              </div>
-            </div>
-          </div>
+      <TradingChart symbol={tradingSymbol} />
+    </div>
 
-          {/* Transactions preview */}
-          <TransactionsPreview coin={selectedCoin} />
-
-          {/* Live Trend Predictions (cards only) */}
-          <TrendRealtime />
-        </div>
-
-        {/* Right: donut + recent list */}
-        <div className="lg:col-span-1 space-y-4 lg:space-y-6">
-          <div className="bg-cp-panel rounded-xl p-4 sm:p-6 border border-white/5">
-            <DonutChart
-              positive={donutData.positive}
-              neutral={donutData.neutral}
-              negative={donutData.negative}
-            />
-          </div>
-
-          <div className="bg-cp-panel rounded-xl p-4 sm:p-6 border border-white/5">
-            <RecentList coin={selectedCoin} limit={20} />
-          </div>
+    {/* Sentiment Trend Chart */}
+    <div className="bg-cp-panel rounded-xl p-4 sm:p-6 shadow-lg border border-white/5">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+        <h4 className="text-base sm:text-lg font-semibold">
+          {trendTitle} — {timeframe}
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          <TimeframeButton unit="Hour" currentTime={timeframe} setTime={setTimeframe} />
+          <TimeframeButton unit="Day" currentTime={timeframe} setTime={setTimeframe} />
+          <TimeframeButton unit="Week" currentTime={timeframe} setTime={setTimeframe} />
+          <TimeframeButton unit="30D" currentTime={timeframe} setTime={setTimeframe} />
         </div>
       </div>
+
+      <TrendChart
+        data={trend}
+        height={300}
+        coin={selectedCoin}
+        isPlaceholder={loading}
+      />
+    </div>
+
+    {/* Transactions */}
+    <TransactionsPreview coin={selectedCoin} />
+
+    {/* Live Predictions */}
+    <TrendRealtime />
+  </div>
+
+  {/* RIGHT COLUMN (1/3 width) */}
+  <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+    <div className="bg-cp-panel rounded-xl p-4 sm:p-6 border border-white/5">
+      <DonutChart
+        positive={donutData.positive}
+        neutral={donutData.neutral}
+        negative={donutData.negative}
+      />
+    </div>
+
+    <div className="bg-cp-panel rounded-xl p-4 sm:p-6 border border-white/5">
+      <RecentList coin={selectedCoin} limit={20} />
+    </div>
+  </div>
+
+</div>
+
 
       {/* Export modal */}
       {showExportModal && (
@@ -697,6 +803,38 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+{/* Explain Market Button */}
+{!isChatOpen && (
+  <div className="hidden md:block fixed bottom-6 right-20 z-[9000]">
+    <button
+      onClick={() => setIsChatOpen(true)}
+      className="bg-cp-neon px-4 py-2 rounded-lg font-semibold text-black hover:brightness-110 transition"
+    >
+      Explain Today's Market
+    </button>
+  </div>
+)}
+{/* Floating AI Assistant Button */}
+<button
+  onClick={() => setIsChatOpen(true)}
+  className="fixed bottom-24 md:bottom-6 right-6 z-[9001] w-12 h-12 rounded-full bg-cp-neon text-black font-bold text-xl shadow-lg hover:brightness-110 transition"
+  title="AI Market Assistant"
+>
+  ?
+</button>
+
+
+        <Chatbot
+  isOpen={isChatOpen}
+  onClose={() => setIsChatOpen(false)}
+  coin={selectedCoin}
+  sentiment={overview}
+  timeframe={timeframe}
+/>
+
+
+
     </div>
   );
 }

@@ -10,16 +10,17 @@ load_dotenv()
 
 app = FastAPI(title="CryptoSent API")
 
+<<<<<<< HEAD
 # ------------------ CORS ------------------
 # Only FRONTEND origins belong here
 
+=======
+# ✅ CORS MUST BE FIRST
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+>>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://cryptocurrency-sentiment-analysis-p.vercel.app",
-        "https://cryptocurrency-sentiment-analysis-p-one.vercel.app",
-    ],
+    allow_origins=allowed_origins,
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
@@ -52,6 +53,20 @@ from .routes_account import router as account_router
 from .routes_sentiment import router as sentiment_router
 from .routes_heatmap import router as heatmap_router
 from .routes_admin import router as admin_router
+<<<<<<< HEAD
+=======
+from .routes_chat import router as chatbot_router
+from .routes_admin_exports import router as admin_exports_router
+from .routes_admin_users import router as admin_users_router
+
+
+app.include_router(chatbot_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
+app.include_router(admin_exports_router, prefix="/api")
+app.include_router(admin_users_router, prefix="/api")
+
+# ------------------ MOUNT ROUTERS ------------------
+>>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(protected_router, prefix="/api")

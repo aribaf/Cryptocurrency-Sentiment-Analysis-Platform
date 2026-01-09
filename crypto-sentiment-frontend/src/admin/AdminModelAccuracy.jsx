@@ -13,18 +13,18 @@ export default function AdminModelAccuracy() {
       <div className="bg-cp-panel p-6 rounded-xl border border-white/10">
         <h3 className="font-semibold mb-3">Model Accuracy</h3>
 
-        <div className="grid grid-cols-3 gap-4 text-center text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-sm">
           <div>
             <div className="text-gray-400">Short-term</div>
-            <div className="text-xl font-bold">78%</div>
+            <div className="text-lg md:text-xl font-bold">78%</div>
           </div>
           <div>
             <div className="text-gray-400">Mid-term</div>
-            <div className="text-xl font-bold">73%</div>
+            <div className="text-lg md:text-xl font-bold">73%</div>
           </div>
           <div>
             <div className="text-gray-400">Long-term</div>
-            <div className="text-xl font-bold">69%</div>
+            <div className="text-lg md:text-xl font-bold">69%</div>
           </div>
         </div>
       </div>

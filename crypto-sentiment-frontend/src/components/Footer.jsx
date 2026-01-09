@@ -5,8 +5,8 @@ import Logo from "../assets/logo-white.svg";
 
 export default function Footer() {
   return (
-    <footer className="py-20 bg-cp-bg border-t border-gray-900 text-gray-200">
-      <div className="max-w-7xl mx-auto px-6 text-center">
+<footer className="py-12 sm:py-16 md:py-20 bg-cp-bg border-t border-gray-900 text-gray-200">
+      <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         
         {/* Top CTA Section - Highlighting with Neon */}
         <div className="mb-12">

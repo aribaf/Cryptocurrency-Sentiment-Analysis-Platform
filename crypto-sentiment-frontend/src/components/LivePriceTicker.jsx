@@ -62,9 +62,9 @@ export default function LivePriceTicker({ symbols = ['BTC', 'ETH'], pollInterval
   }, [symbols.join(','), pollInterval]);
 
   return (
-    <div className="bg-cp-panel rounded-xl p-3 flex items-center space-x-4 text-sm">
-      <div className="font-semibold text-gray-300 mr-2">Markets</div>
-      <div className="flex items-center space-x-3 overflow-x-auto">
+    <div className="bg-cp-panel rounded-lg md:rounded-xl p-2 md:p-3 flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-4 text-xs md:text-sm">
+      <div className="font-semibold text-gray-300">Markets</div>
+      <div className="flex items-center space-x-2 md:space-x-3 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
         {loading && <div className="text-gray-400">Loading...</div>}
         {error && <div className="text-cp-magenta">{error}</div>}
         {!loading &&
@@ -75,9 +75,9 @@ export default function LivePriceTicker({ symbols = ['BTC', 'ETH'], pollInterval
             const chg = p.chg24h ?? null;
             const up = typeof chg === 'number' ? chg >= 0 : null;
             return (
-              <div key={s} className="flex items-center space-x-2 px-3 py-1 rounded-md bg-cp-bg/60 border border-white/5 min-w-[110px]">
-                <div className="font-medium">{s}</div>
-                <div className="text-sm">{formatPrice(price)}</div>
+              <div key={s} className="flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-1 rounded-md bg-cp-bg/60 border border-white/5 min-w-[100px] md:min-w-[110px] flex-shrink-0">
+                <div className="font-medium text-xs md:text-sm">{s}</div>
+                <div className="text-xs md:text-sm">{formatPrice(price)}</div>
                 <div className={`text-xs font-semibold ${up === null ? 'text-gray-300' : up ? 'text-green-400' : 'text-red-400'}`}>
                   {typeof chg === 'number' ? `${(chg * 100).toFixed(2)}%` : '—'}
                 </div>

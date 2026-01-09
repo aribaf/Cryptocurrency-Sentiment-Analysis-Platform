@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    fetch(`${API_BASE}/api/me`, {
+    fetch(`${API_BASE}/api/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

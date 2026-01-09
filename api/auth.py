@@ -25,12 +25,16 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 JWT_ALG = "HS256"
 JWT_EXP_MINUTES = int(os.environ.get("JWT_EXP_MINUTES", 60))
 
-# Default redirect URIs (sane defaults for local/ngrok testing).
-# IMPORTANT: these must match Google Console EXACTLY when testing.
+# Default redirect URIs - use environment variables
 GOOGLE_REDIRECT_URI = os.environ.get(
+<<<<<<< HEAD
     "GOOGLE_REDIRECT_URI"
+=======
+    "GOOGLE_REDIRECT_URI",
+    os.environ.get("BACKEND_URL", "") + "/api/auth/google/callback"
+>>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
 )
-FRONTEND_URL = os.environ.get("FRONTEND_URL")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 # If you use a MongoDB client module, import it:
 # Example expects `db = client.get_database()` or `client` with .users/.otps collections.
@@ -245,9 +249,14 @@ async def login(body: LoginIn):
 # --- Google OAuth routes (Option A: /google/login and /google/callback) ---
 @router.get("/google/login")
 async def google_login(request: Request):
+    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI", GOOGLE_REDIRECT_URI)
     return await oauth.google.authorize_redirect(
         request,
+<<<<<<< HEAD
          GOOGLE_REDIRECT_URI
+=======
+        redirect_uri
+>>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
     )
 
 @router.get("/google/callback")
@@ -323,12 +332,18 @@ async def google_callback(request: Request):
 )
 
     # Redirect back to frontend success route with token in fragment
+<<<<<<< HEAD
     # create JWT token above this
     # create jwt_token ABOVE this line
     redirect_url = (
     f"{FRONTEND_URL.rstrip('/')}/auth/success"
     f"#access_token={jwt_token}"
 )
+=======
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    redirect_url = f"{frontend_url}/auth/success#access_token={jwt_token}"
+
+>>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
     return RedirectResponse(redirect_url)
 
 
@@ -354,10 +369,13 @@ async def me(request: Request):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    email = user.get("email") or ""
+    username = user.get("username") or (email.split("@")[0] if email else None)
     return {
-        "email": user.get("email"),
-        "username": user.get("username"),
+        "email": email,
+        "username": username,
         "role": user.get("role", "user"),
+        "is_active": user.get("is_active", True),
         "oauth_provider": user.get("oauth_provider"),
         "auth_method": user.get("auth_method")
     }

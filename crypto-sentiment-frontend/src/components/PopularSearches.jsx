@@ -5,11 +5,11 @@ const defaultCoins = ["Bitcoin", "Ethereum", "Solana", "Cardano", "Dogecoin", "S
 
 export default function PopularSearches({ coins = defaultCoins, onPick }) {
   return (
-    <div className="bg-cp-panel/90 rounded-xl p-6 shadow-md border border-white/5 mt-6">
-      <h4 className="text-lg font-display font-semibold mb-2 text-white">
+    <div className="bg-cp-panel/90 rounded-lg md:rounded-xl p-4 md:p-6 shadow-md border border-white/5 mt-4 md:mt-6">
+      <h4 className="text-base md:text-lg font-display font-semibold mb-2 text-white">
         Popular Searches
       </h4>
-      <p className="text-xs text-gray-400 mb-4">
+      <p className="text-[10px] md:text-xs text-gray-400 mb-3 md:mb-4">
         Tap a coin to quickly filter sentiment and recent posts.
       </p>
 
@@ -29,7 +29,7 @@ export default function PopularSearches({ coins = defaultCoins, onPick }) {
               type="button"
               onClick={() => onPick && onPick(coin)}
               className={`
-                px-3 py-1.5 rounded-full text-xs font-medium
+                px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[11px] md:text-xs font-medium
                 bg-cp-bg/80 border border-white/10 text-gray-100
                 hover:text-black
                 hover:bg-gradient-to-r ${accent}

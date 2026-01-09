@@ -55,7 +55,7 @@ return (
     <h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
     {/* KPI Cards */}
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <Card title="Total Records" value={totalRecords} />
       <Card title="API Status" value={apiStatus} />
       <Card
@@ -95,9 +95,9 @@ return (
 
 function Card({ title, value }) {
   return (
-    <div className="bg-cp-panel p-4 rounded-lg border border-white/10">
-      <div className="text-xs text-gray-400">{title}</div>
-      <div className="text-xl font-bold mt-1">{value}</div>
+    <div className="bg-cp-panel p-4 rounded-lg border border-white/10 min-w-0">
+      <div className="text-xs text-gray-400 truncate">{title}</div>
+      <div className="text-lg md:text-xl font-bold mt-1 truncate">{value}</div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // src/components/sidebar.jsx
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   ChartPieIcon,
   ArrowTrendingUpIcon,
@@ -33,6 +34,7 @@ const NavItem = ({ to, children, Icon, onClick }) => (
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
 
   const closeMobileMenu = () => setIsOpen(false);
   const toggleMobileMenu = () => setIsOpen((prev) => !prev);
@@ -70,7 +72,7 @@ export default function Sidebar() {
       {/* Sidebar (fixed left, full height) */}
       <aside
         className={`
-          fixed inset-y-0 left-0 w-64 h-screen bg-cp-panel border-r border-gray-900 p-4
+          fixed inset-y-0 left-0 w-56 md:w-64 h-screen bg-cp-panel border-r border-gray-900 p-3 md:p-4
           flex flex-col shadow-xl z-20 transform transition-transform duration-200
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
@@ -124,6 +126,16 @@ export default function Sidebar() {
               Transactions
             </NavItem>
            
+            {user?.role === "admin" && (
+              <NavItem
+                to="/admin"
+                Icon={CreditCardIcon}
+                onClick={closeMobileMenu}
+              >
+                Admin Panel
+              </NavItem>
+            )}
+
             <NavItem
               to="/account"
               Icon={UserIcon}

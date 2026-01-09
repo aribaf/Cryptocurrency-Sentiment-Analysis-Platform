@@ -283,7 +283,7 @@ export default function SearchFilter({
         <span className="px-2 py-1 rounded-full bg-cp-bg/80 border border-white/10 text-gray-200">
           Source:{" "}
           <span className="text-cp-neon">
-            {source === "all" ? "All" : source.charAt(0).toUpperCase() + source.slice(1)}
+            {source === "all" ? "All" : source.charA2223t(0).toUpperCase() + source.slice(1)}
           </span>
         </span>
       </div>

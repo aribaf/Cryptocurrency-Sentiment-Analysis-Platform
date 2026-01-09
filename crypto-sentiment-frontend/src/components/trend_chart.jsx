@@ -8,121 +8,79 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Legend,
+  ReferenceLine,
 } from "recharts";
 
-// 💥 Custom Tooltip (dark)
+/* ----------------------------------
+   SMOOTHING (MOVING AVERAGE)
+---------------------------------- */
+const smoothSeries = (arr, key, window = 5) =>
+  arr.map((d, i) => {
+    const slice = arr.slice(Math.max(0, i - window), i + 1);
+    const avg =
+      slice.reduce((sum, x) => sum + (x[key] ?? 0), 0) / slice.length;
+    return { ...d, [key]: Number(avg.toFixed(4)) };
+  });
+
+/* ----------------------------------
+   CUSTOM TOOLTIP
+---------------------------------- */
 const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="p-3 rounded-lg border border-white/10 shadow-lg bg-cp-bg/95 text-xs text-gray-100">
-        <p className="font-semibold mb-1 text-cp-neon">{label}</p>
-        {payload.map((item, index) => (
-          <p key={index} style={{ color: item.stroke }}>
-            {`${item.name}: ${item.value.toFixed(2)}`}
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="p-3 rounded-lg border border-white/10 shadow-lg bg-cp-bg/95 text-xs text-gray-100">
+      <p className="font-semibold mb-1 text-cp-neon">{label}</p>
+      {payload.map((item, i) => (
+        <p key={i} style={{ color: item.stroke }}>
+          {item.name}: {item.value.toFixed(3)}
+        </p>
+      ))}
+    </div>
+  );
 };
 
-// --- NEW UTILITY FUNCTION FOR DUMMY NEWS ---
-/**
- * Generates a dummy score based on index to create an oscillating line.
- * @param {number} index - The index of the data point.
- * @returns {number} A score between -0.5 and 0.5.
- */
-// deterministic pseudo-random number based on index (0–1)
-const prng = (i) => {
-  const x = Math.sin(i * 127.1 + 13.7) * 43758.5453;
-  return x - Math.floor(x);
-};
-
-// random-walk style dummy news score, gently bounded
-const generateDummyScore = (index, lastValue = 0, anchor = 0) => {
-  const r = prng(index);              // 0..1
-  const step = (r - 0.5) * 0.25;      // small change per step ~ [-0.125, 0.125]
-
-  // random-walk around last value
-  let candidate = lastValue + step;
-
-  // pull slightly toward anchor (overall/twitter sentiment)
-  candidate = 0.7 * candidate + 0.3 * anchor;
-
-  // clamp to a reasonable range
-  if (candidate > 0.8) candidate = 0.8;
-  if (candidate < -0.8) candidate = -0.8;
-
-  return candidate;
-};
-
-// -------------------------------------------
-
+/* ----------------------------------
+   COMPONENT
+---------------------------------- */
 export default function TrendChart({
   data,
   coin = "BTC",
   onCoinChange,
   height = 350,
-  // ⛔ removed onTimeframeChange
 }) {
   const [mode, setMode] = useState("sources");
-  // 🔒 Lock timeframe to "day" (no filter in UI)
-  const timeframe = "day";
 
   const [visibleSources, setVisibleSources] = useState({
     twitter: true,
     reddit: true,
     news: true,
-    overall: true,
   });
 
-  // ✅ Format data dynamically based on the selected timeframe
-  const formatted = (data || []).map((d, index) => {
+  /* ---------- FORMAT DATA (REAL ONLY) ---------- */
+  let formatted = (data || []).map((d) => {
     const date = new Date(d.time_bucket);
-    let timeLabel;
-
-    if (timeframe === "hour") {
-      timeLabel =
-        date.toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-        }) +
-        " " +
-        date.toLocaleTimeString(undefined, {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: false,
-        });
-    } else if (timeframe === "day" || timeframe === "week") {
-      timeLabel = date.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
-    } else if (timeframe === "month") {
-      timeLabel = date.toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-      });
-    } else {
-      timeLabel = date.toLocaleDateString();
-    }
-
-    // --- APPLY DUMMY NEWS SCORE LOGIC ---
-    const apiNewsScore = Number(d.news || 0);
-    const finalNewsScore =
-      apiNewsScore !== 0 ? apiNewsScore : generateDummyScore(index);
-    // ------------------------------------
+    const label = date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
 
     return {
-      time: timeLabel,
-      twitter: Number(d.twitter || 0),
-      reddit: Number(d.reddit || 0),
-      news: finalNewsScore,
-      overall: Number(d.overall || d.mean_sentiment_score || 0),
+      time: label,
+      twitter: Number(d.twitter ?? null),
+      reddit: Number(d.reddit ?? null),
+      news: d.news !== undefined ? Number(d.news) : null,
+      overall: Number(d.overall ?? d.mean_sentiment_score ?? 0),
     };
   });
 
+  /* ---------- APPLY SMOOTHING ---------- */
+  formatted = smoothSeries(formatted, "twitter", 5);
+  formatted = smoothSeries(formatted, "reddit", 5);
+  formatted = smoothSeries(formatted, "news", 5);
+  formatted = smoothSeries(formatted, "overall", 5);
+
+  /* ---------- COLORS ---------- */
   const COLORS = {
     twitter: "#8b5cf6",
     reddit: "#ff5722",
@@ -130,37 +88,32 @@ export default function TrendChart({
     overall: "#ec4899",
   };
 
-  const toggleSource = (source) => {
-    setVisibleSources((prev) => ({
-      ...prev,
-      [source]: !prev[source],
-    }));
-  };
+  const toggleSource = (src) =>
+    setVisibleSources((p) => ({ ...p, [src]: !p[src] }));
 
   return (
-    <div className="bg-cp-panel/90 rounded-xl p-4 shadow-lg border border-white/5 text-white">
-      {/* Header (no timeframe filter text) */}
-      <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
+    <div className="bg-cp-panel/90 rounded-xl p-4 border border-white/5 text-white">
+
+      {/* HEADER */}
+      <div className="flex justify-between mb-4">
         <div>
-          <h4 className="text-md font-display font-semibold">
+          <h4 className="text-md font-semibold">
             Coin — <span className="text-cp-neon">{coin}</span>
           </h4>
-          <p className="text-xs text-gray-400 mt-1">
-            {mode === "overall" ? "Overall Sentiment" : "By Source"}
+          <p className="text-xs text-gray-400">
+            {mode === "overall" ? "Overall Sentiment Trend" : "Sentiment by Source"}
           </p>
         </div>
-        {/* 🔥 Right side previously had timeframe filter — removed */}
       </div>
 
-      {/* Mode Toggle & Coin Selector */}
-      <div className="flex justify-between items-center gap-4 flex-wrap mb-4">
-        {/* Mode Toggle */}
+      {/* MODE TOGGLE */}
+      <div className="flex justify-between mb-4 flex-wrap gap-3">
         <div className="flex gap-2 text-xs">
           {["sources", "overall"].map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
-              className={`px-3 py-1 rounded-full transition-all ${
+              className={`px-3 py-1 rounded-full transition ${
                 mode === m
                   ? "bg-cp-neon text-black font-semibold"
                   : "bg-cp-bg border border-white/15 text-gray-300"
@@ -171,12 +124,11 @@ export default function TrendChart({
           ))}
         </div>
 
-        {/* Optional Coin Selector */}
         {onCoinChange && (
           <select
             value={coin}
             onChange={(e) => onCoinChange(e.target.value)}
-            className="px-3 py-1 text-xs rounded bg-cp-bg border border-white/15 text-gray-200"
+            className="px-3 py-1 text-xs rounded bg-cp-bg border border-white/15"
           >
             <option value="BTC">Bitcoin</option>
             <option value="ETH">Ethereum</option>
@@ -185,70 +137,85 @@ export default function TrendChart({
         )}
       </div>
 
-      {/* Source Filters (Active only in 'sources' mode) */}
+      {/* SOURCE FILTERS */}
       {mode === "sources" && (
-        <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
+        <div className="flex gap-4 mb-4 text-xs">
           {["twitter", "reddit", "news"].map((src) => (
             <label key={src} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={visibleSources[src]}
                 onChange={() => toggleSource(src)}
-                className="h-4 w-4 rounded accent-cp-neon"
+                className="accent-cp-neon"
               />
               <span style={{ color: COLORS[src], fontWeight: 600 }}>
-                {src.charAt(0).toUpperCase() + src.slice(1)}
+                {src.toUpperCase()}
               </span>
             </label>
           ))}
         </div>
       )}
 
-      {/* Chart */}
+      {/* CHART */}
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={formatted}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.25)" />
           <XAxis dataKey="time" />
-          <YAxis domain={[-1, 1]} />
+          <YAxis domain={[-0.5, 0.5]} tickFormatter={(v) => v.toFixed(2)} />
+          <ReferenceLine y={0} stroke="#334155" strokeDasharray="3 3" />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
 
           {mode === "sources" && visibleSources.twitter && (
             <Line
-              type="monotone"
               dataKey="twitter"
               name="Twitter"
               stroke={COLORS.twitter}
+              strokeWidth={2.5}
+              dot={false}
             />
           )}
+
           {mode === "sources" && visibleSources.reddit && (
             <Line
-              type="monotone"
               dataKey="reddit"
               name="Reddit"
               stroke={COLORS.reddit}
+              strokeWidth={1.5}
+              opacity={0.6}
+              dot={false}
             />
           )}
+
           {mode === "sources" && visibleSources.news && (
             <Line
-              type="monotone"
               dataKey="news"
               name="News"
               stroke={COLORS.news}
+              strokeWidth={1.5}
+              opacity={0.6}
+              dot={false}
+              connectNulls={false}
             />
           )}
 
           {mode === "overall" && (
             <Line
-              type="monotone"
               dataKey="overall"
               name="Overall Sentiment"
               stroke={COLORS.overall}
               strokeWidth={3}
+              dot={false}
             />
           )}
         </LineChart>
       </ResponsiveContainer>
+
+      {/* FOOTER EXPLANATION */}
+      <p className="text-xs text-gray-400 mt-3">
+        Sentiment values range from −1 (negative) to +1 (positive).  
+        Lines represent a 5-point moving average to reduce short-term noise.
+      </p>
     </div>
   );
 }

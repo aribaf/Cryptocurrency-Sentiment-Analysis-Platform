@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 /* Layouts */
 import Sidebar from "./components/sidebar";
 import TopBar from "./components/TopBar";
+import MobileBottomNav from "./components/MobileBottomNav";
 
 /* Pages */
 import Home from "./components/pages/Home";
@@ -29,6 +30,9 @@ import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminSentiment from "./admin/AdminSentiment";
 import AdminModelAccuracy from "./admin/AdminModelAccuracy";
+import AdminExports from "./admin/AdminExports";
+import AdminSettings from "./admin/AdminSettings";
+import AdminUsers from "./admin/AdminUsers";
 
 export default function AppRoutes() {
   const location = useLocation();
@@ -78,6 +82,9 @@ export default function AppRoutes() {
         <Route index element={<AdminDashboard />} />
         <Route path="sentiment" element={<AdminSentiment />} />
         <Route path="trends" element={<AdminModelAccuracy />} />
+        <Route path="exports" element={<AdminExports />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* Other */}
@@ -93,7 +100,8 @@ export default function AppRoutes() {
       <div className="min-h-screen bg-cp-bg text-gray-200">
         <Sidebar />
         <TopBar user={user} loading={loading} />
-        <main className="pt-16 md:pt-20 md:ml-64 px-4 sm:px-6 lg:px-8 pb-6">
+        <MobileBottomNav />
+        <main className="pt-16 md:pt-20 md:ml-64 px-4 sm:px-6 lg:px-8 pb-24 md:pb-6">
           {routesTree}
         </main>
       </div>

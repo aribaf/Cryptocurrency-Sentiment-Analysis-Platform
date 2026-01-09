@@ -53,6 +53,8 @@ from .routes_account import router as account_router
 from .routes_sentiment import router as sentiment_router
 from .routes_heatmap import router as heatmap_router
 from .routes_admin import router as admin_router
+from .routes_admin_exports import router as admin_exports_router
+from .routes_admin_users import router as admin_users_router
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(protected_router, prefix="/api")
@@ -67,6 +69,8 @@ app.include_router(account_router, prefix="/api")
 app.include_router(sentiment_router, prefix="/api")
 app.include_router(heatmap_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(admin_exports_router, prefix="/api")
+app.include_router(admin_users_router, prefix="/api")
 
 # ------------------ ROOT ------------------
 

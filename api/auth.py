@@ -27,12 +27,7 @@ JWT_EXP_MINUTES = int(os.environ.get("JWT_EXP_MINUTES", 60))
 
 # Default redirect URIs - use environment variables
 GOOGLE_REDIRECT_URI = os.environ.get(
-<<<<<<< HEAD
     "GOOGLE_REDIRECT_URI"
-=======
-    "GOOGLE_REDIRECT_URI",
-    os.environ.get("BACKEND_URL", "") + "/api/auth/google/callback"
->>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
 )
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
@@ -252,11 +247,7 @@ async def google_login(request: Request):
     redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI", GOOGLE_REDIRECT_URI)
     return await oauth.google.authorize_redirect(
         request,
-<<<<<<< HEAD
          GOOGLE_REDIRECT_URI
-=======
-        redirect_uri
->>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
     )
 
 @router.get("/google/callback")
@@ -332,18 +323,12 @@ async def google_callback(request: Request):
 )
 
     # Redirect back to frontend success route with token in fragment
-<<<<<<< HEAD
     # create JWT token above this
     # create jwt_token ABOVE this line
     redirect_url = (
     f"{FRONTEND_URL.rstrip('/')}/auth/success"
     f"#access_token={jwt_token}"
 )
-=======
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
-    redirect_url = f"{frontend_url}/auth/success#access_token={jwt_token}"
-
->>>>>>> 9a7a3a3 (Update admin exports, fix auth redirect, improve UI)
     return RedirectResponse(redirect_url)
 
 

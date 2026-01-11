@@ -25,13 +25,11 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 JWT_ALG = "HS256"
 JWT_EXP_MINUTES = int(os.environ.get("JWT_EXP_MINUTES", 60))
 
-# Default redirect URIs (sane defaults for local/ngrok testing).
-# IMPORTANT: these must match Google Console EXACTLY when testing.
+# Default redirect URIs - use environment variables
 GOOGLE_REDIRECT_URI = os.environ.get(
-    "GOOGLE_REDIRECT_URI",
-    "http://localhost:8000/api/auth/google/callback"
+    "GOOGLE_REDIRECT_URI"
 )
-FRONTEND_URL = os.environ.get("FRONTEND_URL")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 # If you use a MongoDB client module, import it:
 # Example expects `db = client.get_database()` or `client` with .users/.otps collections.
@@ -246,9 +244,10 @@ async def login(body: LoginIn):
 # --- Google OAuth routes (Option A: /google/login and /google/callback) ---
 @router.get("/google/login")
 async def google_login(request: Request):
+    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI", GOOGLE_REDIRECT_URI)
     return await oauth.google.authorize_redirect(
         request,
-        "http://localhost:8000/api/auth/google/callback"
+         GOOGLE_REDIRECT_URI
     )
 
 @router.get("/google/callback")
@@ -327,11 +326,13 @@ async def google_callback(request: Request):
     # create JWT token above this
     # create jwt_token ABOVE this line
     redirect_url = (
-        "http://localhost:5173/auth/success"
-        f"#access_token={jwt_token}"
-    )
-
+    f"{FRONTEND_URL.rstrip('/')}/auth/success"
+    f"#access_token={jwt_token}"
+)
     return RedirectResponse(redirect_url)
+
+
+  
 
 
 
@@ -382,5 +383,4 @@ def admin_required(request: Request):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     return payload
-
 

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import bcrypt
 
 load_dotenv()
-DB_NAME = os.environ.get("DB_NAME", "appdb")
+DB_NAME = "your_db"  # Hardcoded to your_db where users exist
 db = client[DB_NAME]
 users_col = db["users"]
 

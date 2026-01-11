@@ -438,25 +438,25 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 text-white"> {/* Adjusted overall padding */}
+    <div className="p-3 sm:p-4 lg:p-6 text-white max-w-[100vw] overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start justify-between gap-4"> {/* Changed md: to sm: for earlier stacking */}
-        <div>
-          <h2 className="text-xl font-bold mb-1">Transaction Tracking</h2>
-          <div className="text-sm text-gray-400">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4 mb-4">
+        <div className="w-full sm:w-auto">
+          <h2 className="text-xl sm:text-2xl font-bold mb-1.5 text-white">Transaction Tracking</h2>
+          <div className="text-xs sm:text-sm text-gray-400">
             Monitor large & suspicious transactions across chains
           </div>
         </div>
 
         {/* Controls block - uses flex-wrap to handle overflow on small screens */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
-          <label className="text-xs text-gray-300">Chain</label>
+        <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto justify-end">
+          <label className="text-xs text-gray-300 hidden sm:inline">Chain</label>
           <select
             className="
-              px-3 py-2 rounded-md text-xs
+              px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs
               bg-cp-bg/90 border border-white/15 text-gray-100
               focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
-              min-w-[100px]
+              min-w-[90px] sm:min-w-[100px] flex-shrink-0
             "
             value={chainFilter}
             onChange={(e) => {
@@ -477,10 +477,11 @@ export default function TransactionsPage() {
             }}
             className="
               bg-cp-neon text-black
-              px-3 py-2 rounded-md text-xs font-semibold
+              px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs font-semibold
               hover:bg-cp-neon/90
               shadow-[0_0_16px_rgba(217,255,47,0.4)]
               transition-colors
+              flex-shrink-0
             "
           >
             Refresh
@@ -489,10 +490,11 @@ export default function TransactionsPage() {
           <button
             onClick={() => exportCSV(filteredTxs)}
             className="
-              px-3 py-2 rounded-md text-xs font-semibold
+              px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs font-semibold
               bg-cp-bg border border-white/15 text-gray-100
               hover:border-cp-neon/60
               transition-colors
+              flex-shrink-0
             "
           >
             Export CSV
@@ -501,28 +503,28 @@ export default function TransactionsPage() {
       </div>
 
       {/* stats - grid stacks on small screens, 3 columns on medium and up */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 my-4">
-        <div className="p-3 rounded-xl bg-cp-panel border border-white/5">
-          <div className="text-[11px] text-gray-400 uppercase tracking-wide">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 my-3 sm:my-4">
+        <div className="p-3 sm:p-4 rounded-xl bg-cp-panel border border-white/5">
+          <div className="text-[10px] sm:text-[11px] text-gray-400 uppercase tracking-wide">
             Total events
           </div>
-          <div className="text-xl sm:text-2xl font-semibold text-gray-100 mt-1">
+          <div className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mt-1">
             {transactions.length}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-cp-panel border border-white/5">
-          <div className="text-[11px] text-gray-400 uppercase tracking-wide">
+        <div className="p-3 sm:p-4 rounded-xl bg-cp-panel border border-white/5">
+          <div className="text-[10px] sm:text-[11px] text-gray-400 uppercase tracking-wide">
             Total USD (all chains)
           </div>
-          <div className="text-xl sm:text-2xl font-semibold text-gray-100 mt-1">
+          <div className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mt-1 break-all">
             {formatUSD(
               Object.values(stats.byUsd).reduce((s, v) => s + v, 0)
             )}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-cp-panel border border-white/5">
+        <div className="p-3 sm:p-4 rounded-xl bg-cp-panel border border-white/5 sm:col-span-2 lg:col-span-1">
           <div className="text-[11px] text-gray-400 uppercase tracking-wide">
             Activity by chain
           </div>
@@ -566,54 +568,56 @@ export default function TransactionsPage() {
       </div>
 
       {/* wallet search - stacks on small screens */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-4">
         <input
           className="
-            flex-1 px-3 py-2 rounded-md text-sm
+            flex-1 px-3 py-2 rounded-md text-xs sm:text-sm
             bg-cp-bg/90 border border-white/15 text-gray-100
             placeholder:text-gray-500
             focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
           "
           value={wallet}
           onChange={(e) => setWallet(e.target.value)}
-          placeholder="Search wallet address (auto-search after typing stops)..."
+          placeholder="Search wallet address..."
         />
-        <button
-          className="
-            px-4 py-2 rounded-md text-sm font-semibold
-            bg-cp-neon text-black
-            hover:bg-cp-neon/90
-            shadow-[0_0_14px_rgba(217,255,47,0.4)]
-          "
-          onClick={onWalletSearch}
-        >
-          Search
-        </button>
-        <button
-          className="
-            px-3 py-2 rounded-md text-sm
-            bg-cp-panel border border-white/10 text-gray-200
-            hover:border-cp-neon/60
-          "
-          onClick={clearWalletHistory}
-        >
-          Clear
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="
+              flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold
+              bg-cp-neon text-black
+              hover:bg-cp-neon/90
+              shadow-[0_0_14px_rgba(217,255,47,0.4)]
+            "
+            onClick={onWalletSearch}
+          >
+            Search
+          </button>
+          <button
+            className="
+              flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm
+              bg-cp-panel border border-white/10 text-gray-200
+              hover:border-cp-neon/60
+            "
+            onClick={clearWalletHistory}
+          >
+            Clear
+          </button>
+        </div>
       </div>
 
       {/* Main content grid - table (2/3) and sidebar (1/3) stack on non-LG screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Transactions table container */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-            <div className="text-sm text-gray-400">
+            <div className="text-xs sm:text-sm text-gray-400">
               {loading
                 ? "Loading..."
                 : `Showing ${filteredTxs.length} transactions`}
             </div>
 
             {/* Sorting/Pagination controls - added flex-wrap */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <label className="text-[11px] text-gray-400">Sort</label>
               <button
                 onClick={() => setSort("timestamp")}
@@ -676,8 +680,8 @@ export default function TransactionsPage() {
           </div>
 
           {/* Table container: crucial for horizontal scrolling on mobile */}
-          <div className="overflow-x-auto border border-white/10 rounded-xl bg-cp-panel">
-            <table className="w-full table-auto min-w-[700px]"> {/* Set a min-width for mobile */}
+          <div className="overflow-x-auto border border-white/10 rounded-xl bg-cp-panel shadow-lg">
+            <table className="w-full table-auto min-w-[650px] sm:min-w-[700px]">
               <thead className="bg-cp-bg">
                 <tr>
                   <th className="p-2 text-left text-[11px] font-semibold text-gray-300 border-b border-white/10 whitespace-nowrap">
@@ -729,10 +733,10 @@ export default function TransactionsPage() {
 
           {/* pagination controls - stacks on small screens */}
           <div className="flex flex-col sm:flex-row items-center justify-between mt-3 gap-2">
-            <div className="text-sm text-gray-400">
+            <div className="text-xs sm:text-sm text-gray-400 order-2 sm:order-1">
               Page {page} of {pageCount}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2 order-1 sm:order-2">
               <button
                 className="
                   px-3 py-1 rounded-md text-xs
@@ -788,36 +792,36 @@ export default function TransactionsPage() {
         </div>
 
         {/* alerts & settings sidebar */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 space-y-3 sm:space-y-4 min-w-0">
           <div>
-            <h3 className="font-semibold mb-2 text-gray-100">
+            <h3 className="text-sm sm:text-base font-semibold mb-2 text-gray-100">
               Recent Alerts
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {loadingAlerts && (
-                <div className="text-sm text-gray-400">
+                <div className="text-xs sm:text-sm text-gray-400">
                   Loading alerts...
                 </div>
               )}
               {!loadingAlerts && alerts.length === 0 && (
-                <div className="text-sm text-gray-400">No alerts</div>
+                <div className="text-xs sm:text-sm text-gray-400">No alerts</div>
               )}
               {alerts.map((a) => (
                 <div
                   key={a.id || a.tx_hash}
                   className="
-                    p-3 rounded-xl
+                    p-2.5 sm:p-3 rounded-xl
                     bg-cp-panel border border-white/10
-                    text-xs
+                    text-[11px] sm:text-xs
                   "
                 >
-                  <div className="font-mono text-gray-100">
+                  <div className="font-mono text-gray-100 break-all">
                     Hash: {(a.tx_hash || "").slice(0, 12)}...
                   </div>
-                  <div className="mt-1 text-gray-200">
+                  <div className="mt-1 text-gray-200 break-all">
                     Value: {formatUSD(a.value_usd || a.value || 0)}
                   </div>
-                  <div className="mt-1 text-[11px] text-gray-400">
+                  <div className="mt-1 text-[10px] sm:text-[11px] text-gray-400">
                     {a.timestamp ? formatDate(a.timestamp) : ""}
                   </div>
                   <div className="mt-2 text-right">
@@ -825,7 +829,7 @@ export default function TransactionsPage() {
                       href={explorerUrl(a.blockchain, a.tx_hash)}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[11px] text-cp-neon hover:underline"
+                      className="text-[10px] sm:text-[11px] text-cp-neon hover:underline"
                     >
                       Open
                     </a>
@@ -835,13 +839,13 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-200">
+          <div className="bg-cp-panel p-3 rounded-xl border border-white/10">
+            <label className="block text-xs sm:text-sm text-gray-200">
               Min alert USD
             </label>
             <input
               className="
-                mt-1 w-full px-2 py-1 rounded-md text-sm
+                mt-1 w-full px-2 py-1.5 rounded-md text-xs sm:text-sm
                 bg-cp-bg/90 border border-white/15 text-gray-100
                 focus:outline-none focus:border-cp-neon focus:ring-1 focus:ring-cp-neon
               "
@@ -851,7 +855,7 @@ export default function TransactionsPage() {
             />
             <button
               className="
-                mt-2 px-3 py-1 rounded-md text-xs font-semibold
+                mt-2 w-full px-3 py-1.5 rounded-md text-xs font-semibold
                 bg-cp-neon text-black
                 hover:bg-cp-neon/90
                 shadow-[0_0_12px_rgba(217,255,47,0.4)]
@@ -863,13 +867,13 @@ export default function TransactionsPage() {
           </div>
 
           {walletHistory.length > 0 && (
-            <div className="mt-4">
-              <h4 className="font-semibold mb-2 text-gray-100">
+            <div className="mt-3 sm:mt-4">
+              <h4 className="text-sm sm:text-base font-semibold mb-2 text-gray-100 break-all">
                 Wallet history for {walletQuery}
               </h4>
               {/* Wallet history table: crucial for horizontal scrolling on mobile */}
-              <div className="overflow-x-auto border border-white/10 rounded-xl max-h-80 bg-cp-panel">
-                <table className="w-full table-auto text-xs min-w-[500px]"> {/* Set min-width for mobile */}
+              <div className="overflow-x-auto border border-white/10 rounded-xl max-h-80 bg-cp-panel shadow-lg">
+                <table className="w-full table-auto text-[10px] sm:text-xs min-w-[450px] sm:min-w-[500px]">
                   <thead className="bg-cp-bg">
                     <tr>
                       <th className="p-2 text-left text-[11px] text-gray-300 border-b border-white/10 whitespace-nowrap">

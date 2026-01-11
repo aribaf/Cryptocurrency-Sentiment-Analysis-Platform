@@ -62,7 +62,22 @@ export default function Register() {
   const LABEL_STYLE = 'block mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider';
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black p-4 font-sans antialiased text-white relative">
+    <div className="flex items-center justify-center min-h-screen bg-black font-sans antialiased text-white relative">
+      
+      {/* Back to Home Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-3 text-white hover:text-lime-400 transition-colors group"
+        >
+          <img src="/logo.png" alt="CryptoSent" className="w-8 h-8 object-contain" />
+          <span className="text-lg font-bold">
+            <span className="text-white group-hover:text-lime-400 transition-colors">Crypto</span>
+            <span className="text-lime-400">Sent</span>
+          </span>
+        </button>
+      </div>
+
       <div className="absolute top-10 right-10 w-4 h-4 bg-red-600 transform rotate-45"></div>
       <div className="absolute bottom-10 left-10 w-4 h-4 bg-lime-400 transform rotate-45"></div>
 

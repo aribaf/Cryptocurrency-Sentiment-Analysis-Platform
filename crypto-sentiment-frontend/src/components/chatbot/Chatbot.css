@@ -1,7 +1,7 @@
 /* Toggle button */
 .chatbot-toggle {
   position: fixed;
-  bottom: 100px;
+  bottom: 24px;
   right: 24px;
   width: 44px;
   height: 44px;
@@ -19,17 +19,10 @@
   background: #020617;
 }
 
-@media (max-width: 768px) {
-  .chatbot-toggle {
-    bottom: 90px;
-    right: 12px;
-  }
-}
-
 /* Container */
 .chatbot-container {
   position: fixed;
-  bottom: 100px;
+  bottom: 20px;
   right: 20px;
   width: 360px;
   height: 520px;
@@ -40,15 +33,6 @@
   flex-direction: column;
   z-index: 1000;
   overflow: hidden;
-}
-
-@media (max-width: 768px) {
-  .chatbot-container {
-    width: 320px;
-    height: 420px;
-    bottom: 100px;
-    right: 10px;
-  }
 }
 
 /* Header */

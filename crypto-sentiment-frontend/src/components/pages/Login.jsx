@@ -78,9 +78,23 @@ const requestOtp = async () => {
   const INPUT_STYLE = 'w-full p-4 bg-gray-700/50 text-white border-b-2 border-transparent focus:outline-none focus:border-red-600 transition duration-300 placeholder-gray-500 text-base';
 
   return (
-    // Outer container: Deep Black background, p-4 ensures padding on small screens
-    <div className="flex items-center justify-center min-h-screen bg-black p-4 font-sans antialiased text-white relative overflow-hidden">
+    // Outer container: Deep Black background
+    <div className="flex items-center justify-center min-h-screen bg-black font-sans antialiased text-white relative overflow-hidden">
       
+      {/* Back to Home Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-3 text-white hover:text-lime-400 transition-colors group"
+        >
+          <img src="/logo.png" alt="CryptoSent" className="w-8 h-8 object-contain" />
+          <span className="text-lg font-bold">
+            <span className="text-white group-hover:text-lime-400 transition-colors">Crypto</span>
+            <span className="text-lime-400">Sent</span>
+          </span>
+        </button>
+      </div>
+
       {/* Pseudo-elements for background design (retained for visual flair) */}
       <div className="absolute top-10 left-10 w-4 h-4 bg-lime-400 transform rotate-45"></div>
       <div className="absolute bottom-20 right-20 w-4 h-4 bg-red-600 transform rotate-45"></div>

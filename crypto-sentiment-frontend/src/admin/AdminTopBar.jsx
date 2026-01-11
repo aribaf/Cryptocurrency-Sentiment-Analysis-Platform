@@ -45,9 +45,6 @@ export default function AdminTopBar() {
         <NavLink to="/admin/exports" className={linkClass}>
           Exports
         </NavLink>
-        <NavLink to="/admin/users" className={linkClass}>
-          Users
-        </NavLink>
         <NavLink to="/admin/settings" className={linkClass}>
           Settings
         </NavLink>
@@ -70,9 +67,6 @@ export default function AdminTopBar() {
           </NavLink>
           <NavLink to="/admin/exports" className={({ isActive }) => `${isActive ? 'bg-cp-neon text-black' : 'text-gray-300 hover:text-white hover:bg-white/10'} block px-3 py-2 rounded` } onClick={() => setMenuOpen(false)}>
             Exports
-          </NavLink>
-          <NavLink to="/admin/users" className={({ isActive }) => `${isActive ? 'bg-cp-neon text-black' : 'text-gray-300 hover:text-white hover:bg-white/10'} block px-3 py-2 rounded` } onClick={() => setMenuOpen(false)}>
-            Users
           </NavLink>
           <NavLink to="/admin/settings" className={({ isActive }) => `${isActive ? 'bg-cp-neon text-black' : 'text-gray-300 hover:text-white hover:bg-white/10'} block px-3 py-2 rounded` } onClick={() => setMenuOpen(false)}>
             Settings

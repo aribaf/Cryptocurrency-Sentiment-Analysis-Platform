@@ -83,7 +83,6 @@ export default function AppRoutes() {
         <Route path="sentiment" element={<AdminSentiment />} />
         <Route path="trends" element={<AdminModelAccuracy />} />
         <Route path="exports" element={<AdminExports />} />
-        <Route path="users" element={<AdminUsers />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 

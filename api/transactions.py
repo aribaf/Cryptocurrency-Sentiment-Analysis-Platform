@@ -16,11 +16,12 @@ from db import client
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://aribafaryad:uGZKX4AZ5F7vEjkW@tweets.d0g9ckv.mongodb.net/?retryWrites=true&w=majority&appName=tweets")
-DB_NAME = os.getenv("DB_NAME", "crypto_tweets_db")
+# Transactions can be in either crypto_tweets_db or your_db depending on where you stored them
+TRANSACTIONS_DB = os.getenv("TRANSACTIONS_DB", "crypto_tweets_db")
 COL_NAME = "transactions"
 
 client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = client[TRANSACTIONS_DB]
 collection = db[COL_NAME]
 
 

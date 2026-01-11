@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function HowItWorks() {
+  const navigate = useNavigate();
   return (
     <section id="how" className="py-16 sm:py-20 md:py-24 bg-black border-t border-gray-800">
       <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -44,12 +46,12 @@ export default function HowItWorks() {
         
         {/* Call to Action Button below How It Works */}
         <div className="mt-10 sm:mt-12 md:mt-16 text-center">
-            <a 
-              href="/dashboard-preview" 
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg font-bold rounded-md bg-white text-black hover:bg-gray-200 transition-colors"
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg font-bold rounded-md bg-white text-black hover:bg-gray-200 transition-colors cursor-pointer"
             >
               See Live Dashboard Demo
-            </a>
+            </button>
         </div>
 
       </div>

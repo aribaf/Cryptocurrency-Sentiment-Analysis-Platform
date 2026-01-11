@@ -57,6 +57,18 @@ async def get_system_status():
         tweet_count = TWEETS_COLLECTION.count_documents({})
         news_count = NEWS_COLLECTION.count_documents({})
         reddit_count = REDDIT_COLLECTION.count_documents({})
+        
+        # Get user statistics
+        user_db = client["your_db"]
+        users_collection = user_db["users"]
+        total_users = users_collection.count_documents({})
+        active_users = users_collection.count_documents({"is_active": True})
+        admin_users = users_collection.count_documents({"role": "admin"})
+        
+        # Get recent users (last 7 days)
+        from datetime import timedelta
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        recent_users = users_collection.count_documents({"created_at": {"$gte": seven_days_ago}})
 
         # Find the latest document in each collection to get last scrape time
         latest_tweet = TWEETS_COLLECTION.find_one(
@@ -74,6 +86,12 @@ async def get_system_status():
                 "tweet_count": tweet_count,
                 "news_count": news_count,
                 "reddit_count": reddit_count,
+            },
+            "user_stats": {
+                "total_users": total_users,
+                "active_users": active_users,
+                "admin_users": admin_users,
+                "recent_users_7d": recent_users,
             },
             "last_scrape": {
                 "twitter": latest_tweet.get("scraped_at") if latest_tweet else None,

@@ -65,6 +65,90 @@ function normalizeScores(rows) {
   }));
 }
 
+// -----------------------------
+// Generate Mock Heatmap Data
+// -----------------------------
+function generateMockHeatmapData(days, unit, source) {
+  const coins = ["Bitcoin", "Ethereum", "Solana"];
+  const dates = [];
+  const now = new Date();
+  
+  // Generate date labels based on unit
+  for (let i = days - 1; i >= 0; i--) {
+    let date = new Date(now);
+    let label = "";
+    
+    switch (unit) {
+      case "hour":
+        date.setHours(date.getHours() - i);
+        label = date.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" }) + 
+                " " + date.toLocaleTimeString("en-US", { hour: "2-digit", hour12: false });
+        break;
+      case "week":
+        date.setDate(date.getDate() - i * 7);
+        label = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        break;
+      case "day":
+      default:
+        date.setDate(date.getDate() - i);
+        label = date.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" });
+        break;
+    }
+    dates.push(label);
+  }
+  
+  // Base sentiment values per coin (similar to dashboard mock data)
+  const coinBaseSentiment = {
+    Bitcoin: 0.29,
+    Ethereum: 0.22,
+    Solana: 0.18,
+  };
+  
+  // Generate mock data for each coin
+  const rows = coins.map(coin => {
+    const baseSentiment = coinBaseSentiment[coin];
+    
+    return {
+      coin: coin,
+      date: dates[0], // not used in this structure
+      score: baseSentiment,
+      values: dates.map((date, idx) => {
+        // Add realistic variations over time
+        const timeProgress = idx / dates.length;
+        const trendFactor = (Math.sin(timeProgress * Math.PI * 2) * 0.15); // Wave pattern
+        const randomNoise = (Math.random() - 0.5) * 0.2; // Random variation
+        
+        // Source-specific adjustments
+        let sourceAdjustment = 0;
+        switch (source) {
+          case "twitter":
+            sourceAdjustment = -0.05;
+            break;
+          case "reddit":
+            sourceAdjustment = 0.15;
+            break;
+          case "news":
+            sourceAdjustment = -0.08;
+            break;
+          default:
+            sourceAdjustment = 0;
+        }
+        
+        const score = Math.max(-1, Math.min(1, 
+          baseSentiment + trendFactor + randomNoise + sourceAdjustment
+        ));
+        
+        return {
+          date: date,
+          score: score,
+        };
+      }),
+    };
+  });
+  
+  return rows;
+}
+
 export default function Heatmap({ initialDays = 30 }) {
   const [days, setDays] = useState(initialDays);
   const [unit, setUnit] = useState("day");
@@ -79,39 +163,30 @@ export default function Heatmap({ initialDays = 30 }) {
   const fetchHeatmap = (d, u, s) => {
     setLoading(true);
     setError(null);
-    getHeatmap(d, u, s)
-      .then((res) => {
-        const rows = res || [];
-        const coinSet = Array.from(new Set(rows.map((r) => r.coin))).sort();
-        const dateSet = Array.from(new Set(rows.map((r) => r.date))).sort();
+    
+    // Use mock data instead of API call
+    try {
+      const rows = generateMockHeatmapData(d, u, s);
+      const coinSet = Array.from(new Set(rows.map((r) => r.coin))).sort();
+      const dateSet = rows[0]?.values ? rows[0].values.map(v => v.date) : [];
 
-        const map = {};
-        rows.forEach((r) => {
-          map[r.coin] = map[r.coin] || {};
-          map[r.coin][r.date] = r.score;
-        });
+      const gridRows = rows.map((r) => ({
+        coin: r.coin,
+        values: r.values,
+      }));
 
-        const gridRows = coinSet.map((c) => ({
-          coin: c,
-          values: dateSet.map((d) => ({
-            date: d,
-            score:
-              map[c] && map[c][d] !== undefined ? map[c][d] : null,
-          })),
-        }));
-
-        const normalized = normalizeScores(gridRows);
-        setCoins(coinSet);
-        setDates(dateSet);
-        setGrid(normalized);
-      })
-      .catch((e) => {
-        setError(e.message || "Failed to load heatmap");
-        setGrid([]);
-        setDates([]);
-        setCoins([]);
-      })
-      .finally(() => setLoading(false));
+      const normalized = normalizeScores(gridRows);
+      setCoins(coinSet);
+      setDates(dateSet);
+      setGrid(normalized);
+    } catch (e) {
+      setError(e.message || "Failed to load heatmap");
+      setGrid([]);
+      setDates([]);
+      setCoins([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

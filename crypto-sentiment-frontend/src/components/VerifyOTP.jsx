@@ -49,7 +49,7 @@ export default function VerifyOTP() {
       );
 
       if (res.status === 200 && res.data.access_token) {
-        localStorage.setItem("token", res.data.access_token);
+        localStorage.setItem("access_token", res.data.access_token);
         localStorage.setItem("userEmail", email);
 
         setMessage({
@@ -57,7 +57,7 @@ export default function VerifyOTP() {
           type: "success",
         });
 
-        setTimeout(() => navigate("/dashboard"), 800);
+        setTimeout(() => window.location.href = "/dashboard", 800);
       }
     } catch (err) {
       setMessage({

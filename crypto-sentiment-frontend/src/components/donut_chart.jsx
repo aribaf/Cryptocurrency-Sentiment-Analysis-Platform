@@ -71,16 +71,16 @@ export default function DonutChart({ positive = 0, neutral = 0, negative = 0 }) 
   const dataWithNames = data.map((d) => ({ ...d }));
 
   return (
-    <div className="bg-cp-panel text-white rounded-xl p-6 shadow-lg border border-white/5 h-64 flex flex-col">
-      <h4 className="text-lg font-semibold mb-3">Sentiment Distribution</h4>
+    <div className="bg-cp-panel text-white rounded-xl p-4 sm:p-6 shadow-lg border border-white/5 h-auto sm:h-64 flex flex-col">
+      <h4 className="text-base sm:text-lg font-semibold mb-3">Sentiment Distribution</h4>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center min-h-[200px] sm:min-h-0">
         {total === 0 ? (
-          <p className="text-gray-400">No sentiment data available for the selected coin.</p>
+          <p className="text-gray-400 text-sm">No sentiment data available for the selected coin.</p>
         ) : (
           <>
             {/* Chart Section */}
-            <div className="w-1/2 h-full">
+            <div className="w-full sm:w-1/2 h-[180px] sm:h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   {/* Tooltip Integration (Now safely computing percent) */}
@@ -89,8 +89,8 @@ export default function DonutChart({ positive = 0, neutral = 0, negative = 0 }) 
                   <Pie
                     data={dataWithNames}
                     dataKey="value"
-                    innerRadius={50}
-                    outerRadius={80}
+                    innerRadius={40}
+                    outerRadius={70}
                     paddingAngle={2}
                     label={renderCenterLabel}
                     labelLine={false}
@@ -108,9 +108,24 @@ export default function DonutChart({ positive = 0, neutral = 0, negative = 0 }) 
             </div>
 
             {/* Legend Section */}
-            <div className="w-1/2 p-2 space-y-2">
+            <div className="hidden sm:block w-1/2 p-2 space-y-2">
               {data.map((entry, index) => (
                 <div key={entry.name} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center space-x-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[index] }} />
+                    <span className="text-gray-200">{entry.name}</span>
+                  </div>
+                  <span className="font-semibold text-white">
+                    {percentage(entry.value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Legend (Below Chart) */}
+            <div className="sm:hidden w-full mt-4 space-y-2">
+              {data.map((entry, index) => (
+                <div key={entry.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[index] }} />
                     <span className="text-gray-200">{entry.name}</span>

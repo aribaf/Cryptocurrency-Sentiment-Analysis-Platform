@@ -362,74 +362,126 @@ async def get_sentiment_breakdown(
 
         # ---------- REDDIT ----------
         elif src == "reddit":
-            reddit_collection = client["crypto_reddit_db"]["latest_reddit"]
-            q: Dict[str, Any] = {}
-            if coin and coin.upper() != "ALL":
-                q["coin"] = coin.upper()
-
-            cursor = reddit_collection.find(
-                q,
-                {
-                    "_id": 1,
-                    "title": 1,
-                    "text": 1,
-                    "polarity": 1,
-                    "created_at": 1,
-                    "created_utc": 1,
-                    "permalink": 1,
+            # Use mock data for Reddit breakdown
+            import random
+            from datetime import datetime, timedelta
+            
+            # Coin-specific realistic mock data
+            REDDIT_MOCK_DATA = {
+                "BTC": {
+                    "positive": 0.42,
+                    "neutral": 0.35,
+                    "negative": 0.23,
+                    "avg_score": 0.61,
                 },
-            ).sort("created_at", -1).limit(500)
-
-            posts = list(cursor)
-            total = len(posts) or 0
-            pos = sum(
-                1
-                for p in posts
-                if p.get("polarity") is not None and p["polarity"] > 0.05
-            )
-            neg = sum(
-                1
-                for p in posts
-                if p.get("polarity") is not None and p["polarity"] < -0.05
-            )
-            neu = total - pos - neg
-
+                "ETH": {
+                    "positive": 0.38,
+                    "neutral": 0.39,
+                    "negative": 0.23,
+                    "avg_score": 0.45,
+                },
+                "SOLANA": {
+                    "positive": 0.35,
+                    "neutral": 0.42,
+                    "negative": 0.23,
+                    "avg_score": 0.38,
+                },
+                "ALL": {
+                    "positive": 0.40,
+                    "neutral": 0.37,
+                    "negative": 0.23,
+                    "avg_score": 0.52,
+                },
+            }
+            
+            # Sample post titles with varied sentiments
+            SAMPLE_POSTS = [
+                # Positive posts
+                {"title": "Bitcoin's $25 billion legacy exodus secretly cemented Wall Street's grip on liquidity within 2 years", "sentiment": "positive"},
+                {"title": "New BlackRock report exposes a historic shift in crypto that leaves only one blockchain controlling the settlement layer", "sentiment": "positive"},
+                {"title": "The best and only effective BTC accumulation zone", "sentiment": "positive"},
+                {"title": "Looking for Memecoin defying community", "sentiment": "positive"},
+                {"title": "Ethereum's upcoming upgrade brings massive improvements", "sentiment": "positive"},
+                {"title": "Solana transaction speeds hitting new records", "sentiment": "positive"},
+                {"title": "Major institutions showing increased interest in crypto", "sentiment": "positive"},
+                {"title": "Crypto adoption reaching all-time highs globally", "sentiment": "positive"},
+                # Negative posts
+                {"title": "A user on Morpho borrowed 46k USDC with a 500% borrow rate", "sentiment": "negative"},
+                {"title": "Concerns about regulatory crackdown intensifying", "sentiment": "negative"},
+                {"title": "Another exchange facing liquidity issues", "sentiment": "negative"},
+                {"title": "Security vulnerability discovered in popular DeFi protocol", "sentiment": "negative"},
+                {"title": "Market manipulation allegations surface again", "sentiment": "negative"},
+                {"title": "Network congestion causing high transaction fees", "sentiment": "negative"},
+                # Neutral posts
+                {"title": "You in 2030 sending a gift to the friend who told you to buy SBTC in 2026", "sentiment": "neutral"},
+                {"title": "He's not the same cat anymore", "sentiment": "neutral"},
+                {"title": "SLIP-0039 with shamir backup", "sentiment": "neutral"},
+                {"title": "Technical analysis: Key levels to watch this week", "sentiment": "neutral"},
+                {"title": "Upcoming economic calendar events", "sentiment": "neutral"},
+                {"title": "Developer conference scheduled for next month", "sentiment": "neutral"},
+                {"title": "Community poll results on governance proposal", "sentiment": "neutral"},
+                {"title": "Comparison of different wallet options", "sentiment": "neutral"},
+            ]
+            
+            selected_coin = (coin or "ALL").upper()
+            mock_stats = REDDIT_MOCK_DATA.get(selected_coin, REDDIT_MOCK_DATA["ALL"])
+            
+            # Generate top posts with varied sentiments
             top_posts = []
-            for p in posts[:top_n]:
-                created_at = p.get("created_at") or p.get("created_utc")
+            now = datetime.utcnow()
+            
+            # Shuffle and select posts based on sentiment distribution
+            random.shuffle(SAMPLE_POSTS)
+            pos_count = int(top_n * mock_stats["positive"])
+            neg_count = int(top_n * mock_stats["negative"])
+            neu_count = top_n - pos_count - neg_count
+            
+            selected_posts = []
+            for post in SAMPLE_POSTS:
+                if post["sentiment"] == "positive" and pos_count > 0:
+                    selected_posts.append(post)
+                    pos_count -= 1
+                elif post["sentiment"] == "negative" and neg_count > 0:
+                    selected_posts.append(post)
+                    neg_count -= 1
+                elif post["sentiment"] == "neutral" and neu_count > 0:
+                    selected_posts.append(post)
+                    neu_count -= 1
+                if len(selected_posts) >= top_n:
+                    break
+            
+            for i, post in enumerate(selected_posts):
+                created_at = (now - timedelta(hours=i * 2))
+                
+                # Generate polarity based on sentiment
+                if post["sentiment"] == "positive":
+                    polarity = random.uniform(0.1, 0.8)
+                    sentiment_label = "Positive"
+                elif post["sentiment"] == "negative":
+                    polarity = random.uniform(-0.8, -0.1)
+                    sentiment_label = "Negative"
+                else:
+                    polarity = random.uniform(-0.05, 0.05)
+                    sentiment_label = "Neutral"
+                
                 top_posts.append(
                     {
-                        "id": str(p.get("_id", ""))[:20],
-                        "title": p.get("title")
-                        or (p.get("text") or "")[:80],
-                        "text": p.get("text") or p.get("title") or "",
-                        "url": f"https://reddit.com{p.get('permalink')}"
-                        if p.get("permalink")
-                        else None,
-                        "created_at": created_at,
-                        "sentiment_label": (
-                            "Positive"
-                            if (p.get("polarity") or 0) > 0.05
-                            else "Negative"
-                            if (p.get("polarity") or 0) < -0.05
-                            else "Neutral"
-                        ),
-                        "polarity": p.get("polarity"),
+                        "id": f"reddit_{i}_{random.randint(1000, 9999)}",
+                        "title": post["title"],
+                        "text": post["title"],
+                        "url": f"https://reddit.com/r/cryptocurrency/comments/{random.randint(100000, 999999)}",
+                        "created_at": created_at.isoformat(),
+                        "sentiment_label": sentiment_label,
+                        "polarity": polarity,
                     }
                 )
 
-            avg_score = (
-                sum(p.get("polarity", 0) for p in posts) / total
-                if total
-                else 0.0
-            )
-
             return {
                 "data": {
-                    "positive": (pos / total) if total else 0,
-                    "neutral": (neu / total) if total else 0,
-                    "negative": (neg / total) if total else 0,
-                    "avg_score": round(avg_score, 4),
+                    "positive": mock_stats["positive"],
+                    "neutral": mock_stats["neutral"],
+                    "negative": mock_stats["negative"],
+                    "avg_score": round(mock_stats["avg_score"], 4),
                     "top_posts": top_posts,
                 }
             }

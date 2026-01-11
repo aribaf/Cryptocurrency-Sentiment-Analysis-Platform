@@ -32,7 +32,7 @@ export default function Login() {
       if (res.status === 200 && res.data.access_token) {
 localStorage.setItem("access_token", res.data.access_token);
         setMessage({ type: "success", text: "Login successful! Redirecting..." });
-        navigate("/");
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       const errorMsg = error.response?.data?.detail || "Authentication Failed. Check credentials.";

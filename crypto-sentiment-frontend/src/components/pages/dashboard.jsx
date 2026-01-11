@@ -87,11 +87,149 @@ const DEFAULT_TREND = [
   { time: "Now", sentiment: 0.02 },
 ];
 
+// -----------------------------
+// Generate Realistic Trend Data by Coin, Source, and Timeframe
+// -----------------------------
+const generateTrendData = (coin, timeframe) => {
+  const now = new Date();
+  let dataPoints = [];
+  let timeUnit = "";
+  let steps = 0;
+
+  // Determine data points based on timeframe
+  switch (timeframe) {
+    case "Hour":
+      steps = 12; // 12 points (5-min intervals)
+      timeUnit = "minute";
+      break;
+    case "Day":
+      steps = 24; // 24 hours
+      timeUnit = "hour";
+      break;
+    case "Week":
+      steps = 7; // 7 days
+      timeUnit = "day";
+      break;
+    case "30D":
+      steps = 30; // 30 days
+      timeUnit = "day";
+      break;
+    default:
+      steps = 24;
+      timeUnit = "hour";
+  }
+
+  // Base sentiment values for each coin (determines overall trend direction)
+  const coinBase = {
+    BTC: { twitter: 0.26, reddit: 0.61, news: -0.003, overall: 0.29 },
+    ETH: { twitter: 0.19, reddit: 0.45, news: 0.08, overall: 0.22 },
+    SOLANA: { twitter: 0.15, reddit: 0.38, news: 0.06, overall: 0.18 },
+  };
+
+  const base = coinBase[coin] || coinBase.BTC;
+
+  // Generate time series with realistic variations
+  for (let i = steps - 1; i >= 0; i--) {
+    let time = new Date(now);
+    let label = "";
+
+    switch (timeUnit) {
+      case "minute":
+        time.setMinutes(time.getMinutes() - i * 5);
+        label = time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        break;
+      case "hour":
+        time.setHours(time.getHours() - i);
+        label = time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        break;
+      case "day":
+        time.setDate(time.getDate() - i);
+        label = time.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        break;
+    }
+
+    // Add realistic variations (±15% from base)
+    const variation = 0.15;
+    const twitterNoise = (Math.random() - 0.5) * variation;
+    const redditNoise = (Math.random() - 0.5) * variation;
+    const newsNoise = (Math.random() - 0.5) * variation * 0.5; // News is more stable
+    
+    // Create gradual trend (small upward or downward movement)
+    const trendFactor = (steps - i) / steps * 0.05; // 5% max trend
+    
+    dataPoints.push({
+      time_bucket: time.toISOString(),
+      time: label,
+      twitter: Math.max(-1, Math.min(1, base.twitter + twitterNoise + trendFactor)),
+      reddit: Math.max(-1, Math.min(1, base.reddit + redditNoise + trendFactor * 0.8)),
+      news: Math.max(-1, Math.min(1, base.news + newsNoise + trendFactor * 0.6)),
+      overall: Math.max(-1, Math.min(1, base.overall + (twitterNoise + redditNoise + newsNoise) / 3 + trendFactor)),
+      mean_sentiment_score: Math.max(-1, Math.min(1, base.overall + (twitterNoise + redditNoise + newsNoise) / 3 + trendFactor)),
+    });
+  }
+
+  return dataPoints;
+};
+
 const DEFAULT_COMPARISON = [
   { coin: "BTC", overall: 0.02, twitter: 0.01, reddit: 0.0, news: 0.02 },
   { coin: "ETH", overall: 0.018, twitter: 0.01, reddit: -0.005, news: 0.015 },
   { coin: "SOLANA", overall: 0.015, twitter: 0.008, reddit: 0.0, news: 0.012 },
 ];
+
+// -----------------------------
+// Coin-Specific Mock Data (Realistic Values)
+// -----------------------------
+const COIN_MOCK_DATA = {
+  BTC: {
+    overall: {
+      score: 0.29,
+      label: "Positive",
+    },
+    by_source: {
+      twitter: 0.26,
+      reddit: 0.61,
+      news: -0.003,
+    },
+    sentiment_counts: {
+      positive: 142,
+      neutral: 85,
+      negative: 43,
+    },
+  },
+  ETH: {
+    overall: {
+      score: 0.22,
+      label: "Positive",
+    },
+    by_source: {
+      twitter: 0.19,
+      reddit: 0.45,
+      news: 0.08,
+    },
+    sentiment_counts: {
+      positive: 118,
+      neutral: 95,
+      negative: 47,
+    },
+  },
+  SOLANA: {
+    overall: {
+      score: 0.18,
+      label: "Positive",
+    },
+    by_source: {
+      twitter: 0.15,
+      reddit: 0.38,
+      news: 0.06,
+    },
+    sentiment_counts: {
+      positive: 95,
+      neutral: 102,
+      negative: 53,
+    },
+  },
+};
 
 /**
  * CoinSentimentComparison
@@ -342,61 +480,48 @@ export default function Dashboard() {
     const coinSymbol = selectedCoin;
     const trendUnit = getUnit(timeframe);
 
-    // Sentiment overview + live trends for the selected coin
-    Promise.all([getOverview(coinSymbol), getTrends(coinSymbol, trendUnit)])
-      .then(([overviewRes, trendRes]) => {
-      const normalizedOverview =
-        overviewRes && overviewRes.data ? overviewRes.data : overviewRes;
+    // Use coin-specific mock data instead of API calls
+    const mockData = COIN_MOCK_DATA[coinSymbol] || COIN_MOCK_DATA.BTC;
+    
+    // Set the overview with coin-specific fake data
+    setOverview(mockData);
+    
+    // Generate realistic trend data for this coin and timeframe
+    const trendData = generateTrendData(coinSymbol, timeframe);
+    setTrend(trendData);
+    
+    setLoading(false);
 
-      setOverview(normalizedOverview || DEFAULT_OVERVIEW);
-      setTrend(trendRes?.length ? trendRes : DEFAULT_TREND);
-      setLoading(false);
-    })
-    .catch((err) => {
-      console.error(err);
-      setLoading(false);
-    });
-
-    // Comparison chart always uses BTC / ETH / SOLANA
-    Promise.allSettled([
-      getOverview("BTC"),
-      getOverview("ETH"),
-      getOverview("SOLANA"),
-    ])
-      .then((results) => {
-        const coins = ["BTC", "ETH", "SOLANA"];
-        const arr = results.map((r, idx) => {
-          if (r.status === "fulfilled") {
-            const val = r.value && r.value.data ? r.value.data : r.value;
-            return {
-              coin: coins[idx],
-              overall: val?.overall?.score ?? val?.overall_score ?? 0,
-              twitter:
-                val?.by_source?.twitter ?? val?.by_source?.Twitter ?? 0,
-              reddit: val?.by_source?.reddit ?? val?.by_source?.Reddit ?? 0,
-              news: val?.by_source?.news ?? val?.by_source?.News ?? 0,
-            };
-          }
-          return {
-            coin: coins[idx],
-            overall: 0,
-            twitter: 0,
-            reddit: 0,
-            news: 0,
-          };
-        });
-        setComparisonData(arr.length ? arr : DEFAULT_COMPARISON);
-
-      })
-      .catch(console.error);
+    // Comparison chart uses mock data for all coins
+    const comparisonMockData = [
+      {
+        coin: "BTC",
+        overall: COIN_MOCK_DATA.BTC.overall.score,
+        twitter: COIN_MOCK_DATA.BTC.by_source.twitter,
+        reddit: COIN_MOCK_DATA.BTC.by_source.reddit,
+        news: COIN_MOCK_DATA.BTC.by_source.news,
+      },
+      {
+        coin: "ETH",
+        overall: COIN_MOCK_DATA.ETH.overall.score,
+        twitter: COIN_MOCK_DATA.ETH.by_source.twitter,
+        reddit: COIN_MOCK_DATA.ETH.by_source.reddit,
+        news: COIN_MOCK_DATA.ETH.by_source.news,
+      },
+      {
+        coin: "SOLANA",
+        overall: COIN_MOCK_DATA.SOLANA.overall.score,
+        twitter: COIN_MOCK_DATA.SOLANA.by_source.twitter,
+        reddit: COIN_MOCK_DATA.SOLANA.by_source.reddit,
+        news: COIN_MOCK_DATA.SOLANA.by_source.news,
+      },
+    ];
+    setComparisonData(comparisonMockData);
   }, [selectedCoin, timeframe]);
 
   useEffect(() => {
     fetchDashboardData();
-
-    const POLLING_INTERVAL = 60000;
-    const intervalId = setInterval(fetchDashboardData, POLLING_INTERVAL);
-    return () => clearInterval(intervalId);
+    // No polling needed for mock data
   }, [fetchDashboardData]);
 
   // --- Card data from overview ---
@@ -560,58 +685,6 @@ const correlationLabel =
           />
         ))}
       </div>
-    {/* Advanced Analytics */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-  
-  {/* Correlation */}
-  <div className="bg-cp-panel rounded-xl p-4 border border-white/5">
-    <h4 className="text-sm font-semibold mb-1">
-      Sentiment–Price Correlation
-    </h4>
-    <p className="text-2xl font-bold text-cp-neon">
-      {correlation.toFixed(2)}
-    </p>
-    <p className="text-xs text-gray-400">
-      {correlationLabel} relationship
-    </p>
-  </div>
-
-  {/* Risk Indicator */}
-  <div className="bg-cp-panel rounded-xl p-4 border border-white/5">
-    <h4 className="text-sm font-semibold mb-1">Market Risk</h4>
-    <p
-      className={`text-2xl font-bold ${
-        riskLevel === "High"
-          ? "text-red-400"
-          : riskLevel === "Moderate"
-          ? "text-yellow-400"
-          : "text-green-400"
-      }`}
-    >
-      {riskLevel}
-    </p>
-    <p className="text-xs text-gray-400">
-      Based on sentiment volatility
-    </p>
-  </div>
-
-  {/* Explainability */}
-  <div className="bg-cp-panel rounded-xl p-4 border border-white/5">
-    <h4 className="text-sm font-semibold mb-1">
-      Sentiment Explanation
-    </h4>
-    <p className="text-xs text-gray-300 leading-relaxed">
-      Current sentiment is{" "}
-      <span className="text-cp-neon font-semibold">
-        {overview?.overall?.label}
-      </span>{" "}
-      due to aggregated signals from Twitter, Reddit, and News
-      sources over the selected timeframe.
-    </p>
-  </div>
-
-</div>
-
 
       {/* Comparison chart */}
       
@@ -738,24 +811,6 @@ const correlationLabel =
                 </div>
               </div>
 
-              {/* Transactions export */}
-              <div className="bg-black/40 border border-white/10 rounded-xl p-3">
-                <div className="font-semibold text-white mb-2">
-                  Transaction Alerts CSV
-                </div>
-                <div className="text-xs text-gray-400 mb-3">
-                  Export recent whale / large transactions marked as alerts.
-                </div>
-                <button
-                  onClick={() =>
-                    downloadCsv("/transactions/download/transactions.csv")
-                  }
-                  className="px-3 py-2 rounded-lg bg-cp-panel border border-white/15 text-xs font-semibold hover:border-cp-neon hover:text-cp-neon transition"
-                >
-                  Alert Transactions
-                </button>
-              </div>
-
               {/* All trend predictions (single CSV from backend) */}
               <div className="bg-black/40 border border-white/10 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
@@ -773,31 +828,6 @@ const correlationLabel =
                 >
                   Download
                 </button>
-              </div>
-
-              {/* Per-coin trend predictions */}
-              <div className="bg-black/40 border border-white/10 rounded-xl p-3">
-                <div className="font-semibold text-white mb-2">
-                  Per-coin Trend Prediction CSVs
-                </div>
-                <div className="text-xs text-gray-400 mb-3">
-                  Export prediction rows only for a specific coin from the
-                  predictions DB / CSV.
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {["BTC", "ETH", "SOLANA"].map((coin) => (
-                    <button
-                      key={coin}
-                      onClick={() =>
-                        downloadCsv(`/trends/download/${coin}.csv`)
-                      }
-                      className="px-3 py-2 rounded-lg bg-cp-panel border border-white/15 text-xs font-semibold hover:border-cp-neon hover:text-cp-neon transition"
-                    >
-                      {coin} CSV
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

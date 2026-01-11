@@ -42,6 +42,125 @@ const DEFAULT_TREND = [
   { time: "Now", sentiment: 0.02 },
 ];
 
+// -----------------------------
+// Coin-Specific Mock Data (Same as Dashboard)
+// -----------------------------
+const COIN_MOCK_DATA = {
+  BTC: {
+    overall: {
+      score: 0.29,
+      label: "Positive",
+    },
+    by_source: {
+      twitter: 0.26,
+      reddit: 0.61,
+      news: -0.003,
+    },
+  },
+  ETH: {
+    overall: {
+      score: 0.22,
+      label: "Positive",
+    },
+    by_source: {
+      twitter: 0.19,
+      reddit: 0.45,
+      news: 0.08,
+    },
+  },
+  SOLANA: {
+    overall: {
+      score: 0.18,
+      label: "Positive",
+    },
+    by_source: {
+      twitter: 0.15,
+      reddit: 0.38,
+      news: 0.06,
+    },
+  },
+};
+
+// -----------------------------
+// Generate Realistic Trend Data (Same as Dashboard)
+// -----------------------------
+const generateTrendData = (coin, timeframe) => {
+  const now = new Date();
+  let dataPoints = [];
+  let timeUnit = "";
+  let steps = 0;
+
+  // Determine data points based on timeframe
+  switch (timeframe) {
+    case "hour":
+      steps = 12; // 12 points (5-min intervals)
+      timeUnit = "minute";
+      break;
+    case "day":
+      steps = 24; // 24 hours
+      timeUnit = "hour";
+      break;
+    case "week":
+      steps = 7; // 7 days
+      timeUnit = "day";
+      break;
+    default:
+      steps = 24;
+      timeUnit = "hour";
+  }
+
+  // Base sentiment values for each coin
+  const coinBase = {
+    BTC: { twitter: 0.26, reddit: 0.61, news: -0.003, overall: 0.29 },
+    ETH: { twitter: 0.19, reddit: 0.45, news: 0.08, overall: 0.22 },
+    SOLANA: { twitter: 0.15, reddit: 0.38, news: 0.06, overall: 0.18 },
+  };
+
+  const base = coinBase[coin] || coinBase.BTC;
+
+  // Generate time series with realistic variations
+  for (let i = steps - 1; i >= 0; i--) {
+    let time = new Date(now);
+    let label = "";
+
+    switch (timeUnit) {
+      case "minute":
+        time.setMinutes(time.getMinutes() - i * 5);
+        label = time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        break;
+      case "hour":
+        time.setHours(time.getHours() - i);
+        label = time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        break;
+      case "day":
+        time.setDate(time.getDate() - i);
+        label = time.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        break;
+    }
+
+    // Add realistic variations (±15% from base)
+    const variation = 0.15;
+    const twitterNoise = (Math.random() - 0.5) * variation;
+    const redditNoise = (Math.random() - 0.5) * variation;
+    const newsNoise = (Math.random() - 0.5) * variation * 0.5;
+    
+    // Create gradual trend
+    const trendFactor = (steps - i) / steps * 0.05;
+    
+    dataPoints.push({
+      time_bucket: time.toISOString(),
+      time: label,
+      twitter: Math.max(-1, Math.min(1, base.twitter + twitterNoise + trendFactor)),
+      reddit: Math.max(-1, Math.min(1, base.reddit + redditNoise + trendFactor * 0.8)),
+      news: Math.max(-1, Math.min(1, base.news + newsNoise + trendFactor * 0.6)),
+      overall: Math.max(-1, Math.min(1, base.overall + (twitterNoise + redditNoise + newsNoise) / 3 + trendFactor)),
+      mean_sentiment_score: Math.max(-1, Math.min(1, base.overall + (twitterNoise + redditNoise + newsNoise) / 3 + trendFactor)),
+    });
+  }
+
+  return dataPoints;
+};
+
 // developer-provided uploaded file (local path)
 const UPLOADED_SCREENSHOT = "/mnt/data/debf3a90-480b-4245-bf7c-e60e2d7754af.png";
 
@@ -58,12 +177,12 @@ export default function SentimentAnalysis() {
     setLoadingOverview(true);
     setError(null);
     try {
-      const [ov, tr] = await Promise.all([
-        getOverview(coin),
-        getTrends(coin, tf),
-      ]);
-      setOverview(ov || DEFAULT_OVERVIEW);
-      setTrendData(tr?.length ? tr : DEFAULT_TREND);
+      // Use mock data instead of API calls
+      const mockData = COIN_MOCK_DATA[coin] || COIN_MOCK_DATA.BTC;
+      const trendData = generateTrendData(coin, tf);
+      
+      setOverview(mockData);
+      setTrendData(trendData);
 
     } catch (e) {
       setError(e.message || String(e));

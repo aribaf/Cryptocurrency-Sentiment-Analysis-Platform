@@ -1,4 +1,4 @@
-# 🚀 CryptoSent - Cryptocurrency Sentiment Analysis Platform
+# CryptoSent - Cryptocurrency Sentiment Analysis Platform
 
 A comprehensive real-time cryptocurrency sentiment analysis platform that scrapes, analyzes, and predicts market trends using social media data from Twitter, Reddit, and news sources.
 
